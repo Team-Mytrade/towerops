@@ -1,1 +1,113 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap');
+
+@import "primeicons/primeicons.css";
+
+@import "./tailwind.css";
+
+:root {
+  --to-bg: #f8fafc;
+  --to-surface: #ffffff;
+  --to-sidebar: #0f172a;
+  --to-primary: #2563eb;
+  --to-primary-soft: #eff6ff;
+  --to-text: #0f172a;
+  --to-muted: #64748b;
+  --to-border: #e2e8f0;
+
+  --to-success: #10b981;
+  --to-warning: #f59e0b;
+  --to-danger: #ef4444;
+  --to-info: #06b6d4;
+  --to-purple: #8b5cf6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--to-bg);
+  color: var(--to-text);
+  font-family: "Outfit", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+.to-heading {
+  font-family: "Sora", sans-serif;
+}
+
+.to-card {
+  background: var(--to-surface);
+  border: 1px solid var(--to-border);
+  border-radius: 14px;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 10px 24px rgba(15, 23, 42, 0.05);
+}
+/* PrimeNG Select overlay rendered in body */
+.to-location-panel {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.14) !important;
+
+  --p-select-overlay-background: #ffffff;
+  --p-select-list-background: #ffffff;
+  --p-select-option-background: #ffffff;
+  --p-select-option-color: #0f172a;
+  --p-select-option-focus-background: #f8fafc;
+  --p-select-option-focus-color: #0f172a;
+  --p-select-option-selected-background: #eff6ff;
+  --p-select-option-selected-color: #2563eb;
+  --p-select-option-selected-focus-background: #dbeafe;
+  --p-select-option-selected-focus-color: #1d4ed8;
+}
+
+.to-location-panel,
+.to-location-panel * {
+  color-scheme: light;
+}
+
+.to-location-panel .p-select-list-container,
+.to-location-panel .p-select-list,
+.to-location-panel .p-select-option {
+  background: #ffffff !important;
+}
+
+.to-location-panel .p-select-option {
+  color: #0f172a !important;
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+}
+
+.to-location-panel .p-select-option:hover,
+.to-location-panel .p-select-option.p-focus {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.to-location-panel .p-select-option-selected {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+}
+
+.to-location-panel .p-select-option * {
+  color: inherit !important;
+}
+
+/* hide scrollbar */
+.to-location-panel .p-select-list-container {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.to-location-panel .p-select-list-container::-webkit-scrollbar {
+  display: none;
+}

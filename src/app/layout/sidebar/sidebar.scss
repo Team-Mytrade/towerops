@@ -1,0 +1,241 @@
+:host {
+  display: block;
+  height: 100vh;
+}
+
+.to-sidebar {
+  width: 260px;
+  height: 100vh;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: #0d1117;
+  color: #cbd5e1;
+  border-right: 1px solid rgba(0, 0, 0, 0.2);
+  transition: width 300ms ease;
+  overflow: hidden;
+}
+
+.to-sidebar--collapsed {
+  width: 72px;
+}
+
+.to-sidebar__brand {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.to-sidebar__logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #4f46e5;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.to-sidebar__brand-text {
+  margin-left: 12px;
+  line-height: 1.1;
+  min-width: 0;
+}
+
+.to-sidebar__title {
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+.to-sidebar__subtitle {
+  margin-top: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.to-sidebar__nav {
+  flex: 1;
+  padding: 20px 12px;
+  overflow-y: auto;
+}
+
+.to-sidebar__section-title {
+  padding: 0 12px;
+  margin-bottom: 8px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.nav-link {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: 160ms ease;
+}
+
+.nav-link i {
+  width: 18px;
+  font-size: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.nav-link.active {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.nav-link__label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-link__badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.to-sidebar__divider {
+  margin: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.to-sidebar__collapse {
+  margin: 0 12px 12px;
+  min-height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 160ms ease;
+}
+
+.to-sidebar__collapse:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.to-sidebar__user-wrap {
+  padding: 12px 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.to-sidebar__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+
+.to-sidebar__user--collapsed {
+  justify-content: center;
+}
+
+.to-sidebar__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: #4f46e5;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.to-sidebar__user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.to-sidebar__user-name {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.to-sidebar__user-role {
+  margin-top: 3px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.to-sidebar__logout {
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: 160ms ease;
+}
+
+.to-sidebar__logout:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.to-sidebar--collapsed .nav-link {
+  justify-content: center;
+  padding: 10px;
+}
+
+.to-sidebar--collapsed .nav-link i {
+  width: auto;
+}

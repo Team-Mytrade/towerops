@@ -1,0 +1,118 @@
+  <header
+    class="h-20 bg-white border-b border-slate-200 flex items-center justify-between pl-6 pr-6 shrink-0"
+    data-testid="app-topbar"
+  >
+    <div class="flex items-center gap-5 flex-1 min-w-0">
+     <p-select
+  [(ngModel)]="selectedLocation"
+  [options]="locations"
+  optionLabel="name"
+  appendTo="body"
+  styleClass="to-location-select"
+  panelStyleClass="to-location-panel"
+  data-testid="topbar-location-select"
+>
+  <ng-template #selectedItem let-location>
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="w-9 h-9 rounded-lg bg-[#4F46E5] flex items-center justify-center shrink-0">
+        <i class="pi pi-map-marker text-white text-sm"></i>
+      </div>
+
+      <div class="text-left min-w-0">
+        <div class="font-semibold text-sm text-slate-900 truncate leading-tight">
+          {{ location.name }}
+        </div>
+        <div class="text-[11px] text-slate-500 truncate mt-0.5">
+          {{ location.region }}
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #item let-location>
+    <div class="flex items-center justify-between gap-4 w-full">
+      <div class="min-w-0">
+        <div class="text-sm font-semibold text-slate-900 truncate">
+          {{ location.name }}
+        </div>
+        <div class="text-xs text-slate-500 truncate mt-0.5">
+          {{ location.region }} · {{ location.towerCount }} towers
+        </div>
+      </div>
+
+      <span
+        class="rounded-full px-2 py-0.5 text-[11px] font-bold"
+        [class.bg-red-50]="location.criticalCount > 0"
+        [class.text-red-600]="location.criticalCount > 0"
+        [class.bg-emerald-50]="location.criticalCount === 0"
+        [class.text-emerald-600]="location.criticalCount === 0"
+      >
+        {{ location.criticalCount > 0 ? location.criticalCount + ' Critical' : 'Healthy' }}
+      </span>
+    </div>
+  </ng-template>
+</p-select>
+
+      <div class="hidden md:block min-w-0">
+        <div class="font-display text-[22px] font-bold text-slate-900 tracking-tight leading-none">
+          Facility Overview
+        </div>
+        <div class="text-xs text-slate-500 mt-1.5">
+          Real-time status of all towers and sites across your operations
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="hidden lg:flex items-center text-sm text-slate-700 font-medium gap-3 pr-3 mr-1 border-r border-slate-200">
+        <span>{{ now() | date: 'MMM d, y' }}</span>
+        <span class="w-px h-3.5 bg-slate-200"></span>
+        <span class="font-mono !font-medium text-slate-900">
+          {{ now() | date: 'hh:mm a' }}
+        </span>
+      </div>
+
+      <button
+    type="button"
+    data-testid="topbar-notifications"
+    class="relative p-2.5 rounded-md bg-white hover:bg-slate-50 text-slate-700 border-none"
+    pTooltip="Alarms"
+    tooltipPosition="bottom"
+  >
+    <i class="pi pi-bell text-[14px]"></i>
+
+    <span
+      *ngIf="alertCount() > 0"
+      class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#DC2626] text-[10px] font-semibold text-white flex items-center justify-center border-2 border-white"
+    >
+      {{ alertCount() }}
+    </span>
+  </button>
+      <button
+    type="button"
+    data-testid="topbar-messages"
+    class="p-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border-none"
+    pTooltip="Messages"
+    tooltipPosition="bottom"
+  >
+    <i class="pi pi-comments text-[14px]"></i>
+  </button>
+
+      <button
+        type="button"
+        data-testid="topbar-fullscreen"
+        class="p-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border-none"
+        pTooltip="Fullscreen"
+        tooltipPosition="bottom"
+        (click)="toggleFullscreen()"
+      >
+      @if (!isFullscreen()) {
+        <i class="pi pi-arrow-up-right-and-arrow-down-left-from-center text-[14px]" ></i>
+
+      }
+      @else {
+        <i class="pi pi-arrow-down-left-and-arrow-up-right-to-center text-[14px]"></i>
+      }
+      </button>
+    </div>
+  </header>
