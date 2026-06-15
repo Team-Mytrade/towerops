@@ -3,251 +3,301 @@
   flex-shrink: 0;
 }
 
-button {
-  transition:
-    background-color 160ms ease,
-    color 160ms ease,
-    border-color 160ms ease,
-    transform 160ms ease;
+.to-topbar {
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-button:active {
-  transform: scale(0.97);
-}
-:host ::ng-deep .to-location-select {
-  width: 260px;
-  min-height: 52px;
-  border-radius: 8px !important;
-  border: 1px solid #e2e8f0 !important;
-  background: #f8fafc !important;
-  box-shadow: none !important;
+.to-topbar__left,
+.to-topbar__right {
+  display: flex;
+  align-items: center;
 }
 
-:host ::ng-deep .to-location-select .p-select-label {
-  padding: 8px 10px !important;
+.to-topbar__left {
+  gap: 24px;
+  min-width: 0;
 }
 
-:host ::ng-deep .to-location-select .p-select-dropdown {
-  width: 34px;
-  color: #64748b !important;
+.to-topbar__right {
+  gap: 16px;
 }
 
-:host ::ng-deep .to-location-panel {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 14px !important;
-  overflow: hidden !important;
-  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.14) !important;
-}
-
-:host ::ng-deep .to-location-panel .p-select-list-container {
-  background: #ffffff !important;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-:host ::ng-deep .to-location-panel .p-select-list-container::-webkit-scrollbar {
+.to-facility {
   display: none;
+  flex-direction: column;
+
+  @media (min-width: 768px) {
+    display: flex;
+  }
 }
 
-:host ::ng-deep .to-location-panel .p-select-list {
-  background: #ffffff !important;
-  padding: 6px !important;
+.to-facility__label {
+  font-family: 'Sora', sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #64748b;
 }
 
-:host ::ng-deep .to-location-panel .p-select-option {
-  background: #ffffff !important;
-  color: #0f172a !important;
-  border-radius: 10px !important;
-  padding: 10px 12px !important;
-  margin-bottom: 2px;
+.to-facility-selected {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+
+  i {
+    font-size: 12px;
+    color: #64748b;
+  }
 }
 
-:host ::ng-deep .to-location-panel .p-select-option:hover {
-  background: #f8fafc !important;
-}
-
-:host ::ng-deep .to-location-panel .p-select-option-selected {
-  background: #eff6ff !important;
-  color: #2563eb !important;
-}
-:host {
-  display: block;
-  flex-shrink: 0;
-}
-
-button {
-  transition:
-    background-color 160ms ease,
-    color 160ms ease,
-    border-color 160ms ease,
-    transform 160ms ease;
-}
-
-button:active {
-  transform: scale(0.97);
-}
-
-/* =========================================================
-   Location Select
-========================================================= */
-
-:host ::ng-deep .to-location-select {
-  width: 280px;
-  min-height: 56px;
-  border-radius: 10px !important;
-  border: 1px solid #e2e8f0 !important;
-  background: #f8fafc !important;
-  box-shadow: none !important;
-}
-
-:host ::ng-deep .to-location-select:hover {
-  border-color: #cbd5e1 !important;
-}
-
-:host ::ng-deep .to-location-select .p-select-label {
-  padding: 8px 12px !important;
-}
-
-:host ::ng-deep .to-location-select .p-select-dropdown {
-  width: 38px !important;
-  color: #64748b !important;
-  background: transparent !important;
-}
-
-:host ::ng-deep .to-location-select.p-focus {
-  border-color: #2563eb !important;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08) !important;
-}
-
-/* =========================================================
-   Select Overlay
-========================================================= */
-
-:host ::ng-deep .to-location-panel {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 14px !important;
-  overflow: hidden !important;
-  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.14) !important;
-
-  /* Aura theme overrides */
-  --p-select-option-focus-background: #f8fafc;
-  --p-select-option-selected-background: #eff6ff;
-  --p-select-option-selected-focus-background: #dbeafe;
-  --p-select-option-color: #0f172a;
-}
-
-:host ::ng-deep .to-location-panel .p-select-list-container {
-  background: #ffffff !important;
-
-  /* Hide Scrollbar */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-:host ::ng-deep .to-location-panel .p-select-list-container::-webkit-scrollbar {
+.to-overview {
   display: none;
+  flex-direction: column;
+  border-left: 1px solid #e2e8f0;
+  padding-left: 24px;
+
+  @media (min-width: 1024px) {
+    display: flex;
+  }
+
+  span:last-child {
+    margin-top: 2px;
+    font-family: 'Sora', sans-serif;
+    font-size: 12px;
+    color: #64748b;
+  }
 }
 
-:host ::ng-deep .to-location-panel .p-select-list {
-  background: #ffffff !important;
-  padding: 6px !important;
+.label-tag {
+  font-family: 'Sora', sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #64748b;
+  font-weight: 600;
 }
 
-:host ::ng-deep .to-location-panel .p-select-option {
-  background: #ffffff !important;
-  color: #0f172a !important;
-  border-radius: 10px !important;
-  margin-bottom: 2px;
-  padding: 10px 12px !important;
-  transition: all 160ms ease;
+.to-clock {
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+
+  @media (min-width: 768px) {
+    display: flex;
+  }
+
+  span {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #0f172a;
+  }
+
+  small {
+    font-family: 'Sora', sans-serif;
+    font-size: 10px;
+    color: #64748b;
+  }
 }
 
-:host ::ng-deep .to-location-panel .p-select-option * {
-  color: inherit !important;
-}
-
-/* Hover */
-
-:host ::ng-deep .to-location-panel .p-select-option:hover,
-:host ::ng-deep .to-location-panel .p-select-option.p-focus {
-  background: #f8fafc !important;
-  color: #0f172a !important;
-}
-
-/* Selected */
-
-:host ::ng-deep .to-location-panel .p-select-option-selected {
-  background: #eff6ff !important;
-  color: #2563eb !important;
-}
-
-/* Selected + Hover */
-
-:host ::ng-deep .to-location-panel .p-select-option-selected:hover,
-:host ::ng-deep .to-location-panel .p-select-option-selected.p-focus {
-  background: #dbeafe !important;
-  color: #1d4ed8 !important;
-}
-
-/* =========================================================
-   Action Buttons
-========================================================= */
-
-.to-topbar-action {
-  width: 42px;
-  height: 42px;
+.to-icon-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
   border-radius: 10px;
   border: 1px solid #e2e8f0;
   background: #ffffff;
   color: #475569;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 160ms ease;
+
   cursor: pointer;
+  transition: all 160ms ease;
+
+  i {
+    font-size: 14px;
+  }
+
+  &:hover {
+    background: #f8fafc;
+    color: #0f172a;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
 }
 
-.to-topbar-action:hover {
-  background: #f8fafc;
-  color: #0f172a;
+.to-icon-btn--danger:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
 }
-
-.to-topbar-action:active {
-  transform: scale(0.97);
-}
-
-.to-topbar-action i {
-  font-size: 16px;
-}
-
-/* =========================================================
-   Notification Badge
-========================================================= */
 
 .to-notification-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: -5px;
+  right: -5px;
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
   background: #dc2626;
   color: #ffffff;
-  font-size: 10px;
-  font-weight: 700;
+  border: 2px solid #ffffff;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #ffffff;
+
+  font-size: 10px;
+  font-weight: 700;
 }
 
-/* =========================================================
-   Utility
-========================================================= */
+.to-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 12px;
+  border-left: 1px solid #e2e8f0;
+}
 
-.font-display {
+.to-user__info {
+  display: none;
+  text-align: right;
+
+  @media (min-width: 640px) {
+    display: block;
+  }
+
+  div {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #0f172a;
+    line-height: 1.2;
+  }
+
+  span {
+    font-family: 'Sora', sans-serif;
+    font-size: 10px;
+    color: #64748b;
+    text-transform: capitalize;
+  }
+}
+
+.to-user__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0052ff 0%, #0077ff 50%, #00b2ff 100%);
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* PrimeNG Select reset */
+:host ::ng-deep .to-facility-select {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  min-height: auto !important;
+}
+
+:host ::ng-deep .to-facility-select .p-select-label {
+  padding: 0 !important;
+}
+
+:host ::ng-deep .to-facility-select .p-select-dropdown {
+  display: none !important;
+}
+
+/* Select Overlay */
+:host ::ng-deep .to-location-panel {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.14) !important;
+}
+
+:host ::ng-deep .to-location-panel .p-select-list {
+  padding: 6px !important;
+  background: #ffffff !important;
+}
+
+:host ::ng-deep .to-location-panel .p-select-option {
+  background: #ffffff !important;
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+  color: #0f172a !important;
+}
+
+:host ::ng-deep .to-location-panel .p-select-option:hover,
+:host ::ng-deep .to-location-panel .p-select-option.p-focus {
+  background: #f8fafc !important;
+}
+
+:host ::ng-deep .to-location-panel .p-select-option-selected {
+  background: #eff6ff !important;
+}
+
+.to-location-option {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.to-location-option__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.to-location-option__meta {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.to-location-option__status {
+  align-self: center;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.to-location-option__status.is-critical {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.to-location-option__status.is-healthy {
+  background: #ecfdf5;
+  color: #059669;
 }

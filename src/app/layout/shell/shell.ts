@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 import { Sidebar } from '../sidebar/sidebar';
 import { Topbar } from '../topbar/topbar';
+import { RequestLoaderService } from '../../core/services/request-loader.service';
 
 @Component({
   selector: 'to-shell',
@@ -10,4 +11,6 @@ import { Topbar } from '../topbar/topbar';
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
-export class Shell {}
+export class Shell {
+  readonly loader = inject(RequestLoaderService);
+}

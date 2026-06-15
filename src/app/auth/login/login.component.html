@@ -1,134 +1,115 @@
-<div class="min-h-screen grid lg:grid-cols-2 bg-[#F5F6F8]" data-testid="login-page">
-  <section class="hidden lg:flex bg-[#0D1117] text-white p-12 flex-col justify-between border-r border-black/20">
-    <div class="flex items-center gap-3">
-      <div class="w-11 h-11 rounded-lg bg-[#4F46E5] flex items-center justify-center font-extrabold text-xl">
-        T
-      </div>
+<div class="login-page" data-testid="login-page">
+  <section class="login-context">
+    <div class="grid-bg"></div>
+    <div class="glow"></div>
 
+    <div class="brand">
+      <div class="brand__logo">T</div>
       <div>
-        <div class="font-display text-xl font-bold">TowerOps</div>
-        <div class="text-[10px] uppercase tracking-[0.22em] text-slate-500 font-medium mt-0.5">
-          NOC Platform
+        <div class="brand__name">TowerOps</div>
+        <div class="brand__sub">Telecom Operations Platform</div>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="label-tag text-blue-400">Telecom NOC Suite</div>
+
+      <h1 class="font-outfit text-4xl lg:text-5xl font-semibold leading-[1.1] tracking-tight">
+        Monitor every tower.<br />
+        <span class="text-brand-gradient">Resolve every fault.</span>
+      </h1>
+
+      <p>
+        Real-time monitoring across towers, buildings, and warehouses.
+        Automated alarms, work order dispatch, and a field engineer mobile workflow —
+        all in one place.
+      </p>
+
+      <div class="stats">
+        <div *ngFor="let metric of metrics; let last = last">
+          <div class="stats__value">{{ metric.value }}</div>
+          <div class="label-tag">{{ metric.label }}</div>
+          <div *ngIf="!last" class="stats__divider"></div>
         </div>
       </div>
     </div>
 
-    <div class="space-y-8 max-w-md">
-      <div>
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300 font-medium">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-dot"></span>
-          Live · Chennai Network
-        </div>
-
-        <h1 class="font-display text-[54px] font-bold leading-[1.05] tracking-tight mt-4">
-          Detect.<br />
-          Dispatch.<br />
-          Verify.
-        </h1>
-
-        <p class="text-slate-400 mt-4 text-[15px] leading-relaxed">
-          Real-time IoT monitoring for telecom towers — automatic fault detection,
-          engineer assignment, and sensor-verified ticket closure.
-        </p>
-      </div>
-
-      <div class="grid grid-cols-3 gap-3 max-w-sm">
-        <div
-          *ngFor="let metric of metrics"
-          class="bg-white/5 border border-white/10 rounded-lg p-3"
-        >
-          <i [class]="metric.icon" class="text-slate-400 text-sm"></i>
-
-          <div class="font-display text-xl font-bold mt-2 leading-none">
-            {{ metric.value }}
-          </div>
-
-          <div class="text-[10px] text-slate-400 mt-1 uppercase tracking-widest">
-            {{ metric.label }}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="text-xs text-slate-500">
-      © {{currentYear}}TowerOps. Trusted by World's leading telecom ops teams.
-    </div>
+    <div class="footer">© {{ currentYear }} TowerOps · Demo Build</div>
   </section>
 
-  <section class="flex items-center justify-center p-8">
-    <form
-      class="w-full max-w-sm space-y-6"
-      data-testid="login-form"
-      (ngSubmit)="submit()"
-    >
-      <div class="space-y-1.5">
-        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200">
-          <span class="w-1.5 h-1.5 rounded-full bg-[#4F46E5]"></span>
-          <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-widest">
-            Sign In
-          </span>
-        </div>
-
-        <h2 class="font-display text-[30px] font-bold tracking-tight text-slate-900 mt-2">
-          Welcome back
-        </h2>
-
-        <p class="text-sm text-slate-500">
-          Log in to access your NOC dashboard.
-        </p>
+  <section class="login-form-wrap">
+    <form class="login-form" data-testid="login-form" (ngSubmit)="submit()">
+      <div class="mobile-brand">
+        <div class="brand__logo">T</div>
+        <div class="brand__name text-slate-900">TowerOps</div>
       </div>
 
-      <div class="space-y-4">
-        <div>
-          <label class="text-[11px] uppercase tracking-widest font-semibold text-slate-500">
-            Email
-          </label>
+      <h2>Sign in</h2>
+      <p>Access the NOC dashboard and field workflows.</p>
 
-          <input
-            data-testid="login-email"
-            name="email"
-            type="email"
-            required
-            [(ngModel)]="email"
-            class="mt-1.5 w-full px-4 py-3 rounded-lg border border-slate-200 bg-white focus:border-[#4F46E5] focus:ring-2 focus:ring-indigo-100 outline-none text-sm transition-shadow"
-          />
-        </div>
+      <div class="mt-8 space-y-4">
+        <label class="label-tag block mb-2">Email</label>
+        <input
+          data-testid="login-email"
+          name="email"
+          type="email"
+          required
+          [(ngModel)]="email"
+          class="input"
+        />
+      </div>
 
-        <div>
-          <label class="text-[11px] uppercase tracking-widest font-semibold text-slate-500">
-            Password
-          </label>
+      <div class="mt-6">
+        <label class="label-tag block mb-2">Password</label>
 
+        <div class="password-field">
           <input
             data-testid="login-password"
             name="password"
-            type="password"
+            [type]="showPassword() ? 'text' : 'password'"
             required
             [(ngModel)]="password"
-            class="mt-1.5 w-full px-4 py-3 rounded-lg border border-slate-200 bg-white focus:border-[#4F46E5] focus:ring-2 focus:ring-indigo-100 outline-none text-sm transition-shadow"
+            class="input pr-12"
           />
+
+          <button type="button" class="eye-btn" (click)="togglePassword()">
+            <i [class]="showPassword() ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+          </button>
         </div>
       </div>
 
-      <button
-        pButton
-        data-testid="login-submit"
-        type="submit"
-        class="w-full btn-primary disabled:opacity-60 !text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 text-sm"
-        [disabled]="loading()"
-      >
-        <i *ngIf="loading()" class="pi pi-spin pi-spinner"></i>
-        <span>{{ loading() ? 'Signing in...' : 'Sign In' }}</span>
-      </button>
-
-      <div class="text-xs text-slate-500 text-center">
-        Don't have an account?
-        <a routerLink="/register" class="text-[#4F46E5] font-semibold">
-          Create one
+      <div class="flex justify-between my-4">
+        <a routerLink="/forgot-password" class="font-sora text-sm text-blue-600 hover:text-blue-700">
+          Forgot password?
         </a>
       </div>
 
-     
+     <button
+  data-testid="login-submit"
+  type="submit"
+  class="submit-btn"
+  [disabled]="loading()"
+>
+  <i *ngIf="loading()" class="pi pi-spin pi-spinner"></i>
+  <span>{{ loading() ? 'Signing in...' : 'Sign in' }}</span>
+</button>
+
+      <div class="demo">
+        <div class="label-tag mb-3">Demo accounts · click to fill</div>
+
+        <div class="demo__grid">
+          <button
+            *ngFor="let account of demoAccounts"
+            type="button"
+            class="demo-card"
+            [attr.data-testid]="account.testId"
+            (click)="fillDemo(account)"
+          >
+            <div>{{ account.role }}</div>
+            <span>{{ account.email }}</span>
+          </button>
+        </div>
+      </div>
     </form>
   </section>
 </div>

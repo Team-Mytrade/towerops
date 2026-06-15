@@ -4,8 +4,14 @@
 
     <div class="flex min-w-0 flex-1 flex-col">
       <to-topbar />
+      @if(loader.loading()) {
+      <div class="to-loading-bar">
+        <div class="to-loading-bar__indicator"></div>
+      </div>
+      }
 
-      <main class="flex-1 p-6">
+
+      <main class="flex-1 p-6" [class.to-shell-content--loading]="loader.loading()">
         <router-outlet />
       </main>
     </div>

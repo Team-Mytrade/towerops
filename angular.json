@@ -57,12 +57,30 @@
                   "maximumError": "32kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ]
             },
             "development": {
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "staging": {
+              "optimization": true,
+              "extractLicenses": true,
+              "sourceMap": true,
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.staging.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -75,6 +93,9 @@
             },
             "development": {
               "buildTarget": "towerops:build:development"
+            },
+            "staging": {
+              "buildTarget": "towerops:build:staging"
             }
           },
           "defaultConfiguration": "development"

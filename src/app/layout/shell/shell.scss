@@ -1,3 +1,31 @@
 :host {
   display: block;
 }
+.to-loading-bar {
+  height: 3px;
+  overflow: hidden;
+  background: transparent;
+}
+
+.to-loading-bar__indicator {
+  height: 100%;
+  width: 40%;
+  background: var(--primary-color);
+  animation: loading-slide 1s infinite ease-in-out;
+}
+
+.to-shell-content--loading {
+  pointer-events: none;
+  opacity: 0.75;
+  user-select: none;
+}
+
+@keyframes loading-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(300%);
+  }
+}
