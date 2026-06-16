@@ -6,8 +6,8 @@ import { environment } from '../../../environments/environment';
 })
 export class EnvironmentService {
   readonly production = environment.production;
-
-  readonly apiUrl = environment.apiUrl;
-
   readonly appName = environment.appName;
+  readonly apiUrl = environment.apiUrl;
+  readonly useMockApi = environment.useMockApi;
+  readonly realtime = environment.realtime;
 }

@@ -207,31 +207,62 @@ h4 {
 }
 
 
-// Common Pages
+/* Common Pages */
 .to-basic-page {
-  @apply min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-6 text-center bg-slate-50;
+  min-height: calc(100vh - 4rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 1.5rem;
+  text-align: center;
+  background: #f8fafc;
 }
 
 .to-basic-page__icon {
-  @apply mb-6 flex h-20 w-20 items-center justify-center rounded-2xl text-3xl shadow-sm border;
+  margin-bottom: 1.5rem;
+  display: flex;
+  height: 5rem;
+  width: 5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  border: 1px solid transparent;
+  font-size: 1.875rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
 .to-basic-page__icon--warn {
-  @apply border-amber-100 bg-amber-50 text-amber-500;
+  border-color: #fef3c7;
+  background: #fffbeb;
+  color: #f59e0b;
 }
 
 .to-basic-page__icon--info {
-  @apply border-blue-100 bg-blue-50 text-blue-500;
+  border-color: #dbeafe;
+  background: #eff6ff;
+  color: #3b82f6;
 }
 
 .to-basic-page__icon--danger {
-  @apply border-red-100 bg-red-50 text-red-500;
+  border-color: #fee2e2;
+  background: #fef2f2;
+  color: #ef4444;
 }
 
 .to-basic-page__title {
-  @apply font-outfit text-3xl font-semibold tracking-tight text-slate-900;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.875rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: #0f172a;
 }
 
 .to-basic-page__text {
-  @apply mt-3 mb-6 max-w-md text-sm leading-6 text-slate-500;
+  margin-top: 0.75rem;
+  margin-bottom: 1.5rem;
+  max-width: 28rem;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  color: #64748b;
 }

@@ -29,8 +29,8 @@
   inset: 0;
   opacity: 0.25;
   background-image:
-    linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   background-size: 36px 36px;
 }
 
@@ -192,12 +192,7 @@
 .brand__logo,
 .glow,
 .submit-btn {
-  background: linear-gradient(
-    135deg,
-    #0052ff 0%,
-    #0077ff 50%,
-    #00b2ff 100%
-  );
+  background: linear-gradient(135deg, #0052ff 0%, #0077ff 50%, #00b2ff 100%);
 }
 
 .hero h1 span {
@@ -312,6 +307,11 @@
 .demo-card:hover {
   border-color: #93c5fd;
   background: rgba(239, 246, 255, 0.5);
+}
+
+.demo-card:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .demo-card div {

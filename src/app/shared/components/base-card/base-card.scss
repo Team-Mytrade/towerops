@@ -1,0 +1,37 @@
+.to-card {
+  border-radius: 0.75rem;
+  border: 1px solid #f1f5f9;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+}
+
+.to-card__header {
+  border-bottom: 1px solid #f1f5f9;
+  padding: 1rem 1.25rem;
+}
+
+.to-card__title {
+  font-family: Outfit, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  color: #0f172a;
+}
+
+.to-card__subtitle {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.to-card__body {
+  padding: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .to-card__header,
+  .to-card__body {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}

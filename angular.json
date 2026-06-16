@@ -92,7 +92,8 @@
               "buildTarget": "towerops:build:production"
             },
             "development": {
-              "buildTarget": "towerops:build:development"
+              "buildTarget": "towerops:build:development",
+              "proxyConfig": "proxy.conf.json"
             },
             "staging": {
               "buildTarget": "towerops:build:staging"

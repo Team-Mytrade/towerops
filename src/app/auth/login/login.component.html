@@ -20,9 +20,8 @@
       </h1>
 
       <p>
-        Real-time monitoring across towers, buildings, and warehouses.
-        Automated alarms, work order dispatch, and a field engineer mobile workflow —
-        all in one place.
+        Real-time monitoring across towers, buildings, and warehouses. Automated alarms, work order
+        dispatch, and a field engineer mobile workflow — all in one place.
       </p>
 
       <div class="stats">
@@ -79,23 +78,21 @@
       </div>
 
       <div class="flex justify-between my-4">
-        <a routerLink="/forgot-password" class="font-sora text-sm text-blue-600 hover:text-blue-700">
+        <a
+          routerLink="/forgot-password"
+          class="font-sora text-sm text-blue-600 hover:text-blue-700"
+        >
           Forgot password?
         </a>
       </div>
 
-     <button
-  data-testid="login-submit"
-  type="submit"
-  class="submit-btn"
-  [disabled]="loading()"
->
-  <i *ngIf="loading()" class="pi pi-spin pi-spinner"></i>
-  <span>{{ loading() ? 'Signing in...' : 'Sign in' }}</span>
-</button>
+      <button data-testid="login-submit" type="submit" class="submit-btn" [disabled]="loading()">
+        <i *ngIf="loading()" class="pi pi-spin pi-spinner"></i>
+        <span>{{ loading() ? 'Signing in...' : 'Sign in' }}</span>
+      </button>
 
       <div class="demo">
-        <div class="label-tag mb-3">Demo accounts · click to fill</div>
+        <div class="label-tag mb-3">Demo accounts · click to sign in</div>
 
         <div class="demo__grid">
           <button
@@ -103,7 +100,8 @@
             type="button"
             class="demo-card"
             [attr.data-testid]="account.testId"
-            (click)="fillDemo(account)"
+            [disabled]="loading()"
+            (click)="demoLogin(account)"
           >
             <div>{{ account.role }}</div>
             <span>{{ account.email }}</span>

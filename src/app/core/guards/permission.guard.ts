@@ -19,6 +19,5 @@ export const permissionGuard: CanActivateFn = (route) => {
     return true;
   }
 
-  router.navigate(['/no-access']);
-  return false;
+  return router.createUrlTree(['/no-access']);
 };
