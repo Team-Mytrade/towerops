@@ -10,4 +10,5 @@ export class EnvironmentService {
   readonly apiUrl = environment.apiUrl;
   readonly useMockApi = environment.useMockApi;
   readonly realtime = environment.realtime;
+  readonly useMockAuth = environment.useMockAuth;
 }

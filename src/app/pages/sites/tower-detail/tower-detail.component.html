@@ -1,0 +1,213 @@
+<section class="tower-detail-page" data-testid="tower-detail-page">
+  <div class="tower-detail-top">
+    <article class="tower-summary-card tower-summary-card--main">
+      <div class="tower-summary-head">
+        <div>
+          <p class="label-tag">Site Summary</p>
+
+          <div class="tower-title-row">
+            <i class="fa-solid fa-tower-cell"></i>
+            <h2>{{ tower().name }}</h2>
+          </div>
+
+          <div class="tower-location">
+            <i class="pi pi-map-marker"></i>
+            {{ tower().city }} · {{ tower().latitude }},
+            {{ tower().longitude }}
+          </div>
+        </div>
+
+        <p-tag
+          [value]="tower().status"
+          [severity]="severity(tower().status)"
+        />
+      </div>
+
+      <div class="tower-kpi-grid">
+        <div>
+          <span>Devices</span>
+          <strong>{{ devices.length }}</strong>
+        </div>
+
+        <div>
+          <span>Open Alarms</span>
+          <strong class="danger">{{ tower().openAlarms }}</strong>
+        </div>
+
+        <div>
+          <span>Tickets</span>
+          <strong>{{ tower().openTickets }}</strong>
+        </div>
+
+        <div>
+          <span>Online</span>
+          <strong class="success">{{ onlineDevices() }}</strong>
+        </div>
+      </div>
+    </article>
+
+    <article class="tower-summary-card">
+      <p class="label-tag">Device Health</p>
+
+      <div class="mini-chart">
+        <p-chart
+          type="doughnut"
+          [data]="deviceHealthData"
+          [options]="doughnutOptions"
+          height="110"
+        />
+      </div>
+
+      <div class="chart-summary-grid">
+        @for (item of deviceHealthSummary(); track item.label) {
+          <div [class]="item.className">
+            <span>{{ item.label }}</span>
+            <strong>{{ item.value }}</strong>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="tower-summary-card">
+      <p class="label-tag">Fuel Level</p>
+
+      <div class="mini-chart mini-chart--fuel">
+        <p-chart
+          type="doughnut"
+          [data]="fuelData()"
+          [options]="doughnutOptions"
+          height="110"
+        />
+
+        <span>{{ tower().fuelLevel }}%</span>
+      </div>
+
+      <div class="chart-summary-grid chart-summary-grid--fuel">
+        <div>
+          <span>Available</span>
+          <strong>{{ tower().fuelLevel }}%</strong>
+        </div>
+
+        <div>
+          <span>Empty</span>
+          <strong>{{ 100 - tower().fuelLevel }}%</strong>
+        </div>
+      </div>
+    </article>
+
+    <article class="tower-summary-card tower-summary-card--alarms">
+      <div class="tower-card-header">
+        <div>
+          <p class="label-tag">Recent</p>
+          <h3>Latest Alarms</h3>
+        </div>
+
+        <a routerLink="/alerts">View All →</a>
+      </div>
+
+      <div class="tower-alarm-list">
+        @for (alarm of latestAlarms; track alarm.id) {
+          <div class="tower-alarm">
+            <span
+              class="status-dot"
+              [class]="'status-' + alarm.severity"
+            ></span>
+
+            <div>
+              <strong>{{ alarm.title }}</strong>
+              <p>{{ alarm.description }}</p>
+
+              <div class="tower-alarm__meta">
+                <p-tag
+                  [value]="alarm.severity"
+                  [severity]="alarmSeverity(alarm.severity)"
+                />
+
+                <small>{{ alarm.time }}</small>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+  </div>
+
+  <article class="tower-chart-card">
+    <div class="tower-section-header">
+      <div>
+        <p class="label-tag">Live</p>
+        <h3>Realtime Telemetry Stream</h3>
+      </div>
+
+      <span class="stream-status">
+        <i></i>
+        MQTT Stream Active
+      </span>
+    </div>
+
+    <div class="line-chart">
+      <p-chart
+        type="line"
+        [data]="telemetryTrendData"
+        [options]="lineOptions"
+        height="260"
+      />
+    </div>
+
+    <div class="chart-summary-grid chart-summary-grid--telemetry">
+      @for (item of telemetrySummary; track item.label) {
+        <div>
+          <span>{{ item.label }}</span>
+          <strong>{{ item.value }}</strong>
+        </div>
+      }
+    </div>
+  </article>
+
+  <div class="tower-section-header tower-section-header--devices">
+    <div>
+      <p class="label-tag">Devices</p>
+      <h3>Live Telemetry · {{ devices.length }} devices</h3>
+    </div>
+  </div>
+
+  <div class="device-grid">
+    @for (device of devices; track device.id) {
+      <a
+        class="device-card"
+        [routerLink]="['/devices', device.id]"
+        [attr.data-testid]="'device-card-' + device.id"
+      >
+        <div class="device-card__top">
+          <div>
+            <p>{{ device.type }}</p>
+            <h4>{{ device.name }}</h4>
+          </div>
+
+          <div class="live-pill">
+            <span [class]="'status-dot status-' + device.status"></span>
+            LIVE
+          </div>
+        </div>
+
+        <div class="device-metrics">
+          @for (metric of device.metrics; track metric.label) {
+            <div>
+              <span>{{ metric.label }}</span>
+              <strong>{{ metric.value }}</strong>
+            </div>
+          }
+        </div>
+
+        <div class="device-card__footer">
+          <p-tag
+            [value]="device.status"
+            [severity]="severity(device.status)"
+          />
+
+          <span>Tap to view →</span>
+        </div>
+      </a>
+    }
+  </div>
+</section>

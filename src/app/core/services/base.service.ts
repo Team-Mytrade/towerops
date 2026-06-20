@@ -7,6 +7,7 @@ import { EnvironmentService } from './environment.service';
 export abstract class BaseService {
   protected readonly http = inject(HttpClient);
   protected readonly env = inject(EnvironmentService);
+  
 
   protected readonly apiUrl = this.env.apiUrl;
 

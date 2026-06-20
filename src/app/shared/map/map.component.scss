@@ -1,0 +1,145 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.to-map {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+}
+
+:host ::ng-deep .leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #f8fafc;
+  font-family: var(--to-font-body, sans-serif);
+}
+
+:host ::ng-deep .leaflet-control-zoom {
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+:host ::ng-deep .leaflet-control-zoom a {
+  color: #0f172a;
+  border-color: #e2e8f0;
+}
+
+:host ::ng-deep .to-map-marker {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+}
+
+:host ::ng-deep .to-map-marker__pulse {
+  position: absolute;
+  inset: 3px;
+  border-radius: 999px;
+  background: var(--marker-color);
+  opacity: 0.18;
+  animation: map-marker-pulse 1.8s ease-out infinite;
+}
+
+:host ::ng-deep .to-map-marker__icon {
+  position: relative;
+  z-index: 1;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  background: var(--marker-color);
+  color: #ffffff;
+  font-size: 0.78rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.22);
+}
+
+:host ::ng-deep .to-map-marker--building .to-map-marker__icon {
+  border-radius: 0.65rem;
+}
+
+:host ::ng-deep .to-map-marker--warehouse .to-map-marker__icon {
+  border-radius: 0.5rem;
+}
+:host ::ng-deep .to-map-tooltip {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  box-shadow: none;
+  padding: 0;
+}
+
+:host ::ng-deep .to-map-tooltip-card {
+  min-width: 160px;
+  padding: 0.45rem 0.55rem;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+:host ::ng-deep .to-map-tooltip-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.15rem;
+}
+
+:host ::ng-deep .to-map-tooltip-card__type,
+:host ::ng-deep .to-map-tooltip-card__status {
+  font-size: 0.55rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+:host ::ng-deep .to-map-tooltip-card__title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #0f172a;
+}
+
+:host ::ng-deep .to-map-tooltip-card__meta {
+  margin-top: 1px;
+  font-size: 0.62rem;
+  line-height: 1.2;
+  color: #64748b;
+}
+
+:host ::ng-deep .to-map-tooltip-card__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.2rem;
+  padding-top: 0.2rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+:host ::ng-deep .to-map-tooltip-card__row span,
+:host ::ng-deep .to-map-tooltip-card__row strong {
+  font-size: 0.62rem;
+  line-height: 1.1;
+}
+
+:host ::ng-deep .to-map-tooltip-card__row strong {
+  font-weight: 600;
+  color: #0f172a;
+  font-family: inherit;
+}
+@keyframes map-marker-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.32;
+  }
+
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}

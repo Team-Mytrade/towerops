@@ -1,30 +1,104 @@
 import { Routes } from '@angular/router';
 
 import { Shell } from './layout/shell/shell';
-import { authGuard } from './core/guards/auth.guard';
-import { guestGuard } from './core/guards/guest.guard';
+import { WorkspaceLayout } from './layout/workspace-layout/workspace-layout';
 
 export const routes: Routes = [
   {
     path: 'auth',
-    canActivate: [guestGuard],
     loadChildren: () =>
       import('./auth/auth.routes').then((m) => m.authRoutes),
   },
   {
     path: '',
-    component: Shell,
-    canActivate: [authGuard],
+    component: WorkspaceLayout,
     children: [
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'dashboard',
+        redirectTo: 'sites',
       },
       {
-        path: 'dashboard',
+        path: 'select',
         loadComponent: () =>
-          import('./pages/dashboard/dashboard').then((m) => m.Dashboard),
+          import('./pages/site-selector/site-selector').then(
+            (m) => m.SiteSelector
+          ),
+      },
+    ],
+  },
+
+
+  {
+    path: '',
+    component: Shell,
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'sites',
+      },
+      {
+        path: 'dashboard/:siteType',
+        loadComponent: () =>
+          import('./pages/dashboard/dashboard').then(
+            (m) => m.Dashboard
+          ),
+      },
+      {
+  path: 'tickets',
+  loadComponent: () =>
+    import('./pages/work-orders/work-orders').then(
+      (m) => m.WorkOrdersComponent
+    ),
+},
+      {
+  path: 'users',
+  loadComponent: () =>
+    import('./pages/users/users.component').then(
+      (m) => m.UsersComponent
+    ),
+},
+      {
+        path: 'sites',
+        loadChildren: () => import('./pages/sites/sites.routes').then(
+          (m) => (m.SITES_ROUTES) as Routes
+        ),
+      },
+      {
+        path: 'maintenance',
+        loadComponent: () =>
+          import('./pages/maintenance/maintenance').then(
+            (m) => m.MaintenanceComponent
+          ),
+      },
+      {
+        path: 'assets',
+        loadComponent: () =>
+          import('./pages/assets/assets.component').then(
+            (m) => m.AssetsComponent
+          ),
+      },
+      {
+        path: 'alerts',
+        loadComponent: () =>
+          import('./pages/alerts/alerts.component').then(
+            (m) => m.AlertsComponent
+          ),
+      },
+      {
+        path: 'map',
+        loadComponent: () =>
+          import('./pages/network-map/network-map.component').then(
+            (m) => m.NetworkMapComponent
+          ),
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./pages/settings/settings.component').then(
+            (m) => m.SettingsComponent
+          ),
       },
       {
         path: 'no-access',
@@ -40,15 +114,9 @@ export const routes: Routes = [
             (m) => m.ServerErrorPage
           ),
       },
-      {
-        path: 'maintenance',
-        loadComponent: () =>
-          import('./shared/pages/maintenance/maintenance.page').then(
-            (m) => m.MaintenancePage
-          ),
-      },
     ],
   },
+
   {
     path: '**',
     loadComponent: () =>

@@ -43,4 +43,12 @@ export class ThemeService {
   setTheme(theme: AppTheme): void {
     this._theme.set(theme);
   }
+
+  setLight(): void {
+    this.setTheme('light');
+  }
+
+  setDark(): void {
+    this.setTheme('dark');
+  }
 }

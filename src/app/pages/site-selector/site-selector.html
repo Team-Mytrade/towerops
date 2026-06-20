@@ -1,0 +1,59 @@
+<section class="site-selector" data-testid="site-selector-page">
+  <div class="site-selector__content">
+    <div class="site-selector__eyebrow">
+      Select Operational Scope
+    </div>
+
+    <h1 class="site-selector__title">
+      Choose a Site Type
+    </h1>
+
+    <p class="site-selector__subtitle">
+      You have access to {{ siteTypes.length }} site types. Pick one to enter the dashboard.
+    </p>
+
+    <div class="site-selector__grid">
+      @for (site of siteTypes; track site.type) {
+        <button
+          type="button"
+          class="site-card"
+          [attr.data-testid]="'site-type-' + site.type"
+          (click)="openSite(site.type)"
+        >
+          <div class="site-card__media">
+            <img [src]="site.image" [alt]="site.title" />
+
+            <div class="site-card__overlay"></div>
+
+            <div class="site-card__icon">
+              <i [class]="site.icon"></i>
+            </div>
+
+            <div class="site-card__count">
+              {{ site.count }} Sites
+            </div>
+          </div>
+
+          <div class="site-card__body">
+            <h2>{{ site.title }}</h2>
+            <p>{{ site.subtitle }}</p>
+
+            <div class="site-card__footer">
+              <span>Enter Dashboard</span>
+              <i class="pi pi-arrow-right"></i>
+            </div>
+          </div>
+        </button>
+      }
+    </div>
+
+    <button
+      type="button"
+      class="site-selector__global"
+      data-testid="goto-global-dashboard"
+      (click)="openGlobalDashboard()"
+    >
+      Or open the Global Network Dashboard →
+    </button>
+  </div>
+</section>

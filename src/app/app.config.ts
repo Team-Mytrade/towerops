@@ -4,29 +4,26 @@ import {
   provideZoneChangeDetection,
 } from '@angular/core';
 
-import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-
-import { routes } from './app.routes';
 
 import { provideHttpApi } from './core/providers/http-api.provider';
 import { providePrimeTheme } from './core/providers/primeng.provider';
 import { provideAppRouter } from './core/providers/app-router.provider';
 
 export const appConfig: ApplicationConfig = {
-providers: [
-  provideBrowserGlobalErrorListeners(),
+  providers: [
+    provideBrowserGlobalErrorListeners(),
 
-  provideZoneChangeDetection({
-    eventCoalescing: true,
-  }),
+    provideZoneChangeDetection({
+      eventCoalescing: true,
+    }),
 
-  provideAppRouter(),
+    provideAppRouter(),
 
-  provideHttpApi(),
+    provideHttpApi(),
 
-  provideAnimationsAsync(),
+    provideAnimationsAsync(),
 
-  providePrimeTheme(),
-]
+    providePrimeTheme(),
+  ],
 };

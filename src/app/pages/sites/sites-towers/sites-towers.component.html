@@ -1,0 +1,84 @@
+<section class="sites-towers-page" data-testid="sites-towers-page">
+  <article class="sites-map-card">
+    <div class="sites-map">
+      <to-map [markers]="filteredTowers()" />
+    </div>
+  </article>
+
+  <div class="sites-toolbar">
+    <div class="sites-search">
+      <i class="pi pi-search"></i>
+      <input
+        pInputText
+        type="text"
+        placeholder="Search towers..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        data-testid="sites-search"
+      />
+    </div>
+
+    <p-select
+      [options]="statusOptions"
+      [ngModel]="status()"
+      (ngModelChange)="status.set($event)"
+      optionLabel="label"
+      optionValue="value"
+      data-testid="sites-status-filter"
+    />
+  </div>
+
+  <div class="sites-grid">
+    @for (tower of filteredTowers(); track tower.id) {
+      <a
+        class="site-card"
+        [routerLink]="['/sites/towers', tower.id]"
+        [attr.data-testid]="'site-card-' + tower.id"
+      >
+        <div class="site-card__top">
+          <div>
+            <div class="site-card__code">{{ tower.id }}</div>
+            <div class="site-card__name">{{ tower.name }}</div>
+            <div class="site-card__city">{{ tower.city }}</div>
+          </div>
+
+          <p-tag
+            [value]="tower.status"
+            [severity]="severity(tower.status)"
+          />
+        </div>
+
+        <div class="site-card__metrics">
+          <div>
+            <strong>{{ tower.deviceCount }}</strong>
+            <span>Devices</span>
+          </div>
+
+          <div>
+            <strong class="danger">{{ tower.activeAlarms }}</strong>
+            <span>Alarms</span>
+          </div>
+
+          <div>
+            <strong>{{ tower.openTickets }}</strong>
+            <span>Tickets</span>
+          </div>
+        </div>
+
+        <div class="site-card__fuel">
+          <div>
+            <span>Fuel</span>
+            <strong>{{ tower.fuelLevel }}%</strong>
+          </div>
+
+          <div class="fuel-bar">
+            <div
+              [style.width.%]="tower.fuelLevel"
+              [style.background]="fuelColor(tower.fuelLevel)"
+            ></div>
+          </div>
+        </div>
+      </a>
+    }
+  </div>
+</section>

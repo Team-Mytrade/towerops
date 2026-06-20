@@ -3,6 +3,7 @@ export const environment = {
   appName: 'TowerOps',
   apiUrl: '/api',
   useMockApi: true,
+  useMockAuth: true,
 
   realtime: {
     websocketUrl: 'ws://localhost:8080/ws',

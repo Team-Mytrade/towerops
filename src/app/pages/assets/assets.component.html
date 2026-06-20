@@ -1,0 +1,321 @@
+<section class="assets-page" data-testid="assets-page">
+  <div class="assets-header">
+    <div>
+      <p class="label-tag">Registry</p>
+      <h2>Asset Registry</h2>
+      <span>Track installed assets, allocation, live telemetry, alarms and maintenance.</span>
+    </div>
+
+    <button
+      pButton
+      type="button"
+      label="Add Asset"
+      icon="pi pi-plus"
+      data-testid="add-asset-btn"
+      (click)="openAddDialog()"
+    ></button>
+  </div>
+
+  <div class="assets-filters">
+    <div class="asset-search">
+      <i class="pi pi-search"></i>
+      <input
+        pInputText
+        type="text"
+        placeholder="Search asset, serial number or allocation..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+    </div>
+
+    <p-select
+      [options]="typeOptions"
+      [ngModel]="type()"
+      (ngModelChange)="type.set($event)"
+      optionLabel="label"
+      optionValue="value"
+    />
+
+    <p-select
+      [options]="statusOptions"
+      [ngModel]="status()"
+      (ngModelChange)="status.set($event)"
+      optionLabel="label"
+      optionValue="value"
+    />
+
+    <p-select
+      [options]="siteTypeOptions"
+      [ngModel]="siteType()"
+      (ngModelChange)="siteType.set($event)"
+      optionLabel="label"
+      optionValue="value"
+    />
+  </div>
+
+  <div class="assets-grid">
+    @for (asset of filteredAssets(); track asset.id) {
+      <button
+        type="button"
+        class="asset-card"
+        [attr.data-testid]="'asset-card-' + asset.id"
+        (click)="openAsset(asset)"
+      >
+        <div class="asset-card__top">
+          <div class="asset-icon">
+            <i [class]="icon(asset.type)"></i>
+          </div>
+
+          <p-tag
+            [value]="asset.status"
+            [severity]="severity(asset.status)"
+          />
+        </div>
+
+        <h3>{{ asset.name }}</h3>
+        <p>{{ asset.serialNo }}</p>
+
+        <div class="asset-meta">
+          <div>
+            <span>Allocated To</span>
+            <strong>{{ asset.allocatedTo }}</strong>
+          </div>
+
+          <div>
+            <span>Location</span>
+            <strong>{{ asset.location }} · {{ asset.emirate }}</strong>
+          </div>
+        </div>
+
+        <div class="asset-card__bottom">
+          <span>{{ asset.activeAlarms }} alarms</span>
+          <span>{{ asset.maintenanceCount }} maintenance</span>
+        </div>
+      </button>
+    }
+  </div>
+
+  <p-drawer
+    [visible]="!!selectedAsset()"
+    position="right"
+    styleClass="asset-drawer asset-drawer--wide"
+    [modal]="true"
+    (onHide)="closeDrawer()"
+  >
+    @if (selectedAsset(); as asset) {
+      <div class="asset-drawer-content asset-drawer-content--wide">
+  <div class="asset-drawer-top">
+    <img
+      class="asset-image"
+      [src]="asset.image"
+      [alt]="asset.name"
+    />
+
+    <div class="asset-drawer-head">
+      <div>
+        <p class="label-tag">{{ asset.type }}</p>
+        <h2>{{ asset.name }}</h2>
+        <span>{{ asset.serialNo }}</span>
+      </div>
+
+      <p-tag
+        [value]="asset.status"
+        [severity]="severity(asset.status)"
+      />
+    </div>
+  </div>
+
+  <div class="asset-drawer-grid">
+    <section class="drawer-section drawer-section--telemetry">
+      <h3>Realtime Data</h3>
+
+      <div class="telemetry-grid">
+        @for (item of asset.telemetry; track item.label) {
+          <div>
+            <span>{{ item.label }}</span>
+            <strong>{{ item.value }} {{ item.unit || '' }}</strong>
+          </div>
+        }
+
+        <div>
+          <span>Last seen</span>
+          <strong>{{ asset.lastSeen }}</strong>
+        </div>
+
+        <div>
+          <span>Active alarms</span>
+          <strong>{{ asset.activeAlarms }}</strong>
+        </div>
+
+        <div>
+          <span>Maintenance</span>
+          <strong>{{ asset.maintenanceCount }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="drawer-section">
+      <h3>Allocation</h3>
+
+      <div class="detail-list">
+        <div>
+          <span>Allocated to</span>
+          <strong>{{ asset.allocatedTo }}</strong>
+        </div>
+
+        <div>
+          <span>Site type</span>
+          <strong>{{ asset.siteType }}</strong>
+        </div>
+
+        <div>
+          <span>Location</span>
+          <strong>{{ asset.location }}, {{ asset.emirate }}</strong>
+        </div>
+
+        <div>
+          <span>Coordinates</span>
+          <strong>{{ asset.latitude }}, {{ asset.longitude }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="drawer-section">
+      <h3>Asset Details</h3>
+
+      <div class="detail-list">
+        <div>
+          <span>Manufacturer</span>
+          <strong>{{ asset.manufacturer }}</strong>
+        </div>
+
+        <div>
+          <span>Model</span>
+          <strong>{{ asset.model }}</strong>
+        </div>
+
+        <div>
+          <span>Installed on</span>
+          <strong>{{ asset.installedOn }}</strong>
+        </div>
+
+        <div>
+          <span>Warranty until</span>
+          <strong>{{ asset.warrantyUntil }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="drawer-section">
+      <h3>Active Alarms</h3>
+
+      <div class="timeline-list timeline-list--compact">
+        @for (alarm of asset.alarms; track alarm.title) {
+          <div>
+            <span [class]="'status-dot status-' + alarm.severity"></span>
+
+            <div>
+              <strong>{{ alarm.title }}</strong>
+              <p>{{ alarm.time }}</p>
+            </div>
+          </div>
+        }
+
+        @if (!asset.alarms.length) {
+          <p class="empty-text">No active alarms.</p>
+        }
+      </div>
+    </section>
+
+    <section class="drawer-section drawer-section--wide">
+      <h3>Maintenance History</h3>
+
+      <div class="timeline-list timeline-list--inline">
+        @for (item of asset.maintenance; track item.title) {
+          <div>
+            <span class="status-dot status-healthy"></span>
+
+            <div>
+              <strong>{{ item.title }}</strong>
+              <p>{{ item.date }} · {{ item.technician }} · {{ item.status }}</p>
+            </div>
+          </div>
+        }
+
+        @if (!asset.maintenance.length) {
+          <p class="empty-text">No maintenance history available.</p>
+        }
+      </div>
+    </section>
+  </div>
+</div>
+    }
+  </p-drawer>
+
+  <p-dialog
+    [visible]="addDialogOpen()"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    styleClass="asset-dialog"
+    header="Add Asset"
+    (visibleChange)="addDialogOpen.set($event)"
+  >
+    <div class="asset-form">
+      <label>
+        <span>Asset Name</span>
+        <input pInputText [(ngModel)]="newAsset.name" placeholder="Example: Temperature Sensor" />
+      </label>
+
+      <label>
+        <span>Serial Number</span>
+        <input pInputText [(ngModel)]="newAsset.serialNo" placeholder="SERIAL-001" />
+      </label>
+
+      <label>
+        <span>Asset Type</span>
+        <p-select
+          [options]="typeOptions.slice(1)"
+          [(ngModel)]="newAsset.type"
+          optionLabel="label"
+          optionValue="value"
+        />
+      </label>
+
+      <label>
+        <span>Allocate To</span>
+        <input pInputText [(ngModel)]="newAsset.allocatedTo" placeholder="Tower / Building / Warehouse name" />
+      </label>
+
+      <label>
+        <span>Allocation Type</span>
+        <p-select
+          [options]="siteTypeOptions.slice(1)"
+          [(ngModel)]="newAsset.siteType"
+          optionLabel="label"
+          optionValue="value"
+          appendTo="body"
+        />
+      </label>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button
+        pButton
+        type="button"
+        label="Cancel"
+        severity="secondary"
+        [outlined]="true"
+        (click)="addDialogOpen.set(false)"
+      ></button>
+
+      <button
+        pButton
+        type="button"
+        label="Save Asset"
+        icon="pi pi-check"
+        (click)="addAsset()"
+      ></button>
+    </ng-template>
+  </p-dialog>
+</section>

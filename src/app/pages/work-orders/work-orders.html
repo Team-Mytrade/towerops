@@ -1,1 +1,229 @@
-<p>work-orders works!</p>
+<section class="work-orders-page" data-testid="work-orders-page">
+  <div class="work-summary">
+    <article>
+      <span>Total</span>
+      <strong>{{ summary().total }}</strong>
+    </article>
+
+    <article class="danger">
+      <span>Open</span>
+      <strong>{{ summary().open }}</strong>
+    </article>
+
+    <article class="warning">
+      <span>Assigned</span>
+      <strong>{{ summary().assigned }}</strong>
+    </article>
+
+    <article class="info">
+      <span>Active</span>
+      <strong>{{ summary().active }}</strong>
+    </article>
+
+    <article class="success">
+      <span>Resolved</span>
+      <strong>{{ summary().resolved }}</strong>
+    </article>
+  </div>
+
+  <div class="kanban-board" cdkDropListGroup>
+    @for (column of columns; track column.id) {
+      <section class="kanban-column">
+        <div class="kanban-column__head">
+          <div>
+            <h3>{{ column.title }}</h3>
+            <span>{{ column.subtitle }}</span>
+          </div>
+
+          <strong>{{ columnTickets(column.id).length }}</strong>
+        </div>
+
+        <div
+          class="kanban-column__list"
+          cdkDropList
+          [id]="column.id"
+          [cdkDropListData]="columnTickets(column.id)"
+          [cdkDropListConnectedTo]="connectedLists"
+          (cdkDropListDropped)="onDrop($event, column.id)"
+        >
+          @for (ticket of columnTickets(column.id); track ticket.id) {
+            <article
+  class="ticket-card"
+  cdkDrag
+  (click)="openDetails(ticket)"
+  [attr.data-testid]="'ticket-card-' + ticket.id"
+>
+  <div class="ticket-card__head">
+    <span>{{ ticket.siteName }}</span>
+
+    <p-tag
+      [value]="ticket.priority"
+      [severity]="prioritySeverity(ticket.priority)"
+    />
+  </div>
+
+  <h4>{{ ticket.title }}</h4>
+
+  <p>{{ ticket.description }}</p>
+
+  <div class="ticket-card__date">
+    {{ ticket.createdAt }}
+  </div>
+</article>
+          }
+
+          @if (!columnTickets(column.id).length) {
+            <div class="empty-column">
+              Drop tickets here
+            </div>
+          }
+        </div>
+      </section>
+    }
+  </div>
+
+  <p-dialog
+    [visible]="assignDialogOpen()"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    header="Assign Engineer"
+    styleClass="assign-dialog"
+    (visibleChange)="assignDialogOpen.set($event)"
+  >
+    <div class="assign-box">
+      <div class="assign-warning">
+        <i class="pi pi-info-circle"></i>
+        <div>
+          <strong>Engineer assignment required</strong>
+          <p>This ticket must be assigned before moving to Assigned or In Progress.</p>
+        </div>
+      </div>
+
+      <label>
+        <span>Select Engineer</span>
+        <p-select
+          [options]="engineerOptions"
+          [ngModel]="selectedEngineerId()"
+          (ngModelChange)="selectedEngineerId.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          appendTo="body"
+          placeholder="Choose engineer"
+        />
+      </label>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button
+        pButton
+        type="button"
+        label="Cancel"
+        severity="secondary"
+        [outlined]="true"
+        (click)="assignDialogOpen.set(false)"
+      ></button>
+
+      <button
+        pButton
+        type="button"
+        label="Assign & Move"
+        icon="pi pi-check"
+        [disabled]="!selectedEngineerId()"
+        (click)="assignEngineer()"
+      ></button>
+    </ng-template>
+  </p-dialog>
+
+  <p-drawer
+    [visible]="!!selectedTicket()"
+    position="right"
+    styleClass="ticket-drawer"
+    [modal]="true"
+    (onHide)="closeDetails()"
+  >
+    @if (selectedTicket(); as ticket) {
+      <div class="ticket-drawer-content">
+        <div class="ticket-drawer-head">
+          <div>
+            <p class="label-tag">{{ ticket.id }}</p>
+            <h2>{{ ticket.title }}</h2>
+            <span>{{ ticket.description }}</span>
+          </div>
+
+          <p-tag
+            [value]="ticket.status"
+            [severity]="statusSeverity(ticket.status)"
+          />
+        </div>
+
+        <section class="drawer-section">
+          <h3>Ticket Context</h3>
+
+          <div class="detail-grid">
+            <div>
+              <span>Priority</span>
+              <strong>{{ ticket.priority }}</strong>
+            </div>
+
+            <div>
+              <span>Status</span>
+              <strong>{{ statusLabel(ticket.status) }}</strong>
+            </div>
+
+            <div>
+              <span>Site</span>
+              <strong>{{ ticket.siteName }}</strong>
+            </div>
+
+            <div>
+              <span>Asset</span>
+              <strong>{{ ticket.assetName }}</strong>
+            </div>
+
+            <div>
+              <span>Location</span>
+              <strong>{{ ticket.location }}</strong>
+            </div>
+
+            <div>
+              <span>Engineer</span>
+              <strong>{{ ticket.assignedEngineerName || 'Unassigned' }}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="drawer-section">
+          <h3>Checklist</h3>
+
+          <div class="checklist">
+            @for (item of ticket.checklist; track item) {
+              <label>
+                <input type="checkbox" />
+                <span>{{ item }}</span>
+              </label>
+            }
+          </div>
+        </section>
+
+        <section class="drawer-section">
+          <h3>Timeline</h3>
+
+          <div class="timeline-list">
+            @for (item of ticket.timeline; track item.title) {
+              <div>
+                <span class="timeline-dot"></span>
+
+                <div>
+                  <strong>{{ item.title }}</strong>
+                  <p>{{ item.description }}</p>
+                  <small>{{ item.time }}</small>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+    }
+  </p-drawer>
+</section>

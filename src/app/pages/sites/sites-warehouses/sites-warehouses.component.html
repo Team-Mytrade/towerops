@@ -1,0 +1,87 @@
+<section class="sites-warehouses-page" data-testid="sites-warehouses-page">
+  <article class="sites-map-card">
+    <div class="sites-map">
+      <to-map [markers]="filteredWarehouses()" />
+    </div>
+  </article>
+
+  <div class="sites-toolbar">
+    <div class="sites-search">
+      <i class="pi pi-search"></i>
+
+      <input
+        pInputText
+        type="text"
+        placeholder="Search warehouses..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        data-testid="warehouses-search"
+      />
+    </div>
+
+    <p-select
+      [options]="statusOptions"
+      [ngModel]="status()"
+      (ngModelChange)="status.set($event)"
+      optionLabel="label"
+      optionValue="value"
+      data-testid="warehouses-status-filter"
+    />
+  </div>
+
+  <div class="sites-grid">
+    @for (warehouse of filteredWarehouses(); track warehouse.id) {
+      <a
+        class="site-card"
+        [routerLink]="['/sites/warehouses', warehouse.id]"
+        [attr.data-testid]="'warehouse-card-' + warehouse.id"
+      >
+        <div class="site-card__top">
+          <div>
+            <div class="site-card__code">{{ warehouse.id }}</div>
+            <div class="site-card__name">{{ warehouse.name }}</div>
+            <div class="site-card__city">
+              {{ warehouse.location }} · {{ warehouse.emirate }}
+            </div>
+          </div>
+
+          <p-tag
+            [value]="warehouse.status"
+            [severity]="severity(warehouse.status)"
+          />
+        </div>
+
+        <div class="site-card__metrics">
+          <div>
+            <strong>{{ warehouse.deviceCount }}</strong>
+            <span>Devices</span>
+          </div>
+
+          <div>
+            <strong>{{ warehouse.zones }}</strong>
+            <span>Zones</span>
+          </div>
+
+          <div>
+            <strong class="danger">{{ warehouse.activeAlarms }}</strong>
+            <span>Alarms</span>
+          </div>
+        </div>
+
+        <div class="site-card__progress">
+          <div>
+            <span>Capacity Used</span>
+            <strong>{{ warehouse.capacityUsed }}%</strong>
+          </div>
+
+          <div class="progress-bar">
+            <div
+              [style.width.%]="warehouse.capacityUsed"
+              [style.background]="capacityColor(warehouse.capacityUsed)"
+            ></div>
+          </div>
+        </div>
+      </a>
+    }
+  </div>
+</section>

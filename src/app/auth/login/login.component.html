@@ -91,23 +91,7 @@
         <span>{{ loading() ? 'Signing in...' : 'Sign in' }}</span>
       </button>
 
-      <div class="demo">
-        <div class="label-tag mb-3">Demo accounts · click to sign in</div>
-
-        <div class="demo__grid">
-          <button
-            *ngFor="let account of demoAccounts"
-            type="button"
-            class="demo-card"
-            [attr.data-testid]="account.testId"
-            [disabled]="loading()"
-            (click)="demoLogin(account)"
-          >
-            <div>{{ account.role }}</div>
-            <span>{{ account.email }}</span>
-          </button>
-        </div>
-      </div>
+      
     </form>
   </section>
 </div>

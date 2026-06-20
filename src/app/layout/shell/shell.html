@@ -1,19 +1,32 @@
-<div class="min-h-screen bg-slate-50">
-  <div class="flex min-h-screen">
-    <to-sidebar />
+<div class="to-shell" [class.to-shell--mobile-open]="mobileSidebarOpen()">
+  <div
+    class="to-shell__backdrop"
+    data-testid="sidebar-backdrop"
+    (click)="closeMobileSidebar()"
+  ></div>
 
-    <div class="flex min-w-0 flex-1 flex-col">
-      <to-topbar />
-      @if(loader.loading()) {
+  <to-sidebar
+    class="to-shell__sidebar"
+    (navigated)="closeMobileSidebar()"
+  />
+
+  <div class="to-shell__body">
+    <to-topbar
+      class="to-shell__topbar"
+      (mobileMenuClick)="openMobileSidebar()"
+    />
+
+    @if (loader.loading()) {
       <div class="to-loading-bar">
         <div class="to-loading-bar__indicator"></div>
       </div>
-      }
+    }
 
-
-      <main class="flex-1 p-6" [class.to-shell-content--loading]="loader.loading()">
-        <router-outlet />
-      </main>
-    </div>
+    <main
+      class="to-shell__content"
+      [class.to-shell-content--loading]="loader.loading()"
+    >
+      <router-outlet />
+    </main>
   </div>
 </div>

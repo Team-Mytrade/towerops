@@ -1,0 +1,182 @@
+<section class="users-page" data-testid="users-page">
+  <div class="users-summary">
+    <article>
+      <span>Total Users</span>
+      <strong>{{ summary().total }}</strong>
+    </article>
+
+    <article>
+      <span>Admins</span>
+      <strong>{{ summary().admins }}</strong>
+    </article>
+
+    <article>
+      <span>NOC</span>
+      <strong>{{ summary().noc }}</strong>
+    </article>
+
+    <article>
+      <span>Field Team</span>
+      <strong>{{ summary().field }}</strong>
+    </article>
+
+    <article>
+      <span>Active</span>
+      <strong>{{ summary().active }}</strong>
+    </article>
+  </div>
+
+  <div class="users-filters">
+    <div class="users-search">
+      <i class="pi pi-search"></i>
+
+      <input
+        pInputText
+        type="text"
+        placeholder="Search user, email, phone or zone..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+    </div>
+
+    <p-select
+      [options]="roleOptions"
+      [ngModel]="role()"
+      (ngModelChange)="role.set($event)"
+      optionLabel="label"
+      optionValue="value"
+    />
+
+    <p-select
+      [options]="statusOptions"
+      [ngModel]="status()"
+      (ngModelChange)="status.set($event)"
+      optionLabel="label"
+      optionValue="value"
+    />
+
+    <button
+      pButton
+      type="button"
+      label="Reset"
+      icon="pi pi-refresh"
+      severity="secondary"
+      [outlined]="true"
+      (click)="clearFilters()"
+    ></button>
+  </div>
+
+  <to-data-table
+    [rows]="filteredUsers()"
+    [columns]="columns"
+    rowKey="id"
+    [rowsPerPage]="5"
+    [rowsPerPageOptions]="[5, 10, 20]"
+    [paginator]="true"
+    emptyMessage="No users found"
+    (rowClick)="openUser($event)"
+  />
+
+  <p-drawer
+    [visible]="!!selectedUser()"
+    position="right"
+    styleClass="user-drawer"
+    [modal]="true"
+    (onHide)="closeDrawer()"
+  >
+    @if (selectedUser(); as user) {
+      <div class="user-drawer-content">
+        <div class="user-profile">
+          <div class="user-avatar">
+            {{ initials(user.name) }}
+          </div>
+
+          <div>
+            <p class="label-tag">{{ formatRole(user.role) }}</p>
+            <h2>{{ user.name }}</h2>
+            <span>{{ user.email }}</span>
+          </div>
+
+          <p-tag
+            [value]="user.status"
+            [severity]="severity(user.status)"
+          />
+        </div>
+
+        <section class="drawer-section">
+          <h3>User Details</h3>
+
+          <div class="detail-grid">
+            <div>
+              <span>Phone</span>
+              <strong>{{ user.phone }}</strong>
+            </div>
+
+            <div>
+              <span>Department</span>
+              <strong>{{ user.department }}</strong>
+            </div>
+
+            <div>
+              <span>Zone</span>
+              <strong>{{ user.zone }}</strong>
+            </div>
+
+            <div>
+              <span>Last Active</span>
+              <strong>{{ user.lastActive }}</strong>
+            </div>
+
+            <div>
+              <span>Open Tasks</span>
+              <strong>{{ user.openTasks }}</strong>
+            </div>
+
+            <div>
+              <span>Completed</span>
+              <strong>{{ user.completedTasks }}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="drawer-section">
+          <h3>Assigned Sites</h3>
+
+          <div class="chip-list">
+            @for (site of user.assignedSites; track site) {
+              <span>{{ site }}</span>
+            }
+          </div>
+        </section>
+
+        <section class="drawer-section">
+          <h3>Permissions</h3>
+
+          <div class="chip-list">
+            @for (permission of user.permissions; track permission) {
+              <span>{{ permission }}</span>
+            }
+          </div>
+        </section>
+
+        <section class="drawer-section">
+          <h3>Recent Activity</h3>
+
+          <div class="timeline-list">
+            @for (item of user.activity; track item.title) {
+              <div>
+                <span class="timeline-dot"></span>
+
+                <div>
+                  <strong>{{ item.title }}</strong>
+                  <p>{{ item.description }}</p>
+                  <small>{{ item.time }}</small>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+    }
+  </p-drawer>
+</section>

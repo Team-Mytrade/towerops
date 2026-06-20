@@ -1,0 +1,212 @@
+<section class="warehouse-detail-page" data-testid="warehouse-detail-page">
+  <div class="warehouse-detail-top">
+    <article class="warehouse-summary-card warehouse-summary-card--main">
+      <div class="warehouse-summary-head">
+        <div>
+          <p class="label-tag">Warehouse Summary</p>
+
+          <div class="warehouse-title-row">
+            <i class="fa-solid fa-warehouse"></i>
+            <h2>{{ warehouse().name }}</h2>
+          </div>
+
+          <div class="warehouse-location">
+            <i class="pi pi-map-marker"></i>
+            {{ warehouse().location }} · {{ warehouse().emirate }} ·
+            {{ warehouse().latitude }}, {{ warehouse().longitude }}
+          </div>
+        </div>
+
+        <p-tag
+          [value]="warehouse().status"
+          [severity]="severity(warehouse().status)"
+        />
+      </div>
+
+      <div class="warehouse-kpi-grid">
+        <div>
+          <span>Devices</span>
+          <strong>{{ devices.length }}</strong>
+        </div>
+
+        <div>
+          <span>Zones</span>
+          <strong>{{ warehouse().zones }}</strong>
+        </div>
+
+        <div>
+          <span>Open Alarms</span>
+          <strong class="danger">{{ warehouse().openAlarms }}</strong>
+        </div>
+
+        <div>
+          <span>Online</span>
+          <strong class="success">{{ onlineDevices() }}</strong>
+        </div>
+      </div>
+    </article>
+
+    <article class="warehouse-summary-card">
+      <p class="label-tag">Device Health</p>
+
+      <div class="mini-chart">
+        <p-chart
+          type="doughnut"
+          [data]="deviceHealthData"
+          [options]="doughnutOptions"
+          height="110"
+        />
+      </div>
+
+      <div class="chart-summary-grid">
+        @for (item of deviceHealthSummary(); track item.label) {
+          <div [class]="item.className">
+            <span>{{ item.label }}</span>
+            <strong>{{ item.value }}</strong>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="warehouse-summary-card">
+      <p class="label-tag">Capacity</p>
+
+      <div class="mini-chart mini-chart--center">
+        <p-chart
+          type="doughnut"
+          [data]="capacityData()"
+          [options]="doughnutOptions"
+          height="110"
+        />
+
+        <span>{{ warehouse().capacityUsed }}%</span>
+      </div>
+
+      <div class="chart-summary-grid">
+        <div>
+          <span>Used</span>
+          <strong>{{ warehouse().capacityUsed }}%</strong>
+        </div>
+
+        <div>
+          <span>Free</span>
+          <strong>{{ 100 - warehouse().capacityUsed }}%</strong>
+        </div>
+      </div>
+    </article>
+
+    <article class="warehouse-summary-card warehouse-summary-card--alarms">
+      <div class="warehouse-card-header">
+        <div>
+          <p class="label-tag">Recent</p>
+          <h3>Latest Alarms</h3>
+        </div>
+
+        <a routerLink="/alerts">View All →</a>
+      </div>
+
+      <div class="warehouse-alarm-list">
+        @for (alarm of latestAlarms; track alarm.id) {
+          <div class="warehouse-alarm">
+            <span
+              class="status-dot"
+              [class]="'status-' + alarm.severity"
+            ></span>
+
+            <div>
+              <strong>{{ alarm.title }}</strong>
+              <p>{{ alarm.description }}</p>
+
+              <div class="warehouse-alarm__meta">
+                <p-tag
+                  [value]="alarm.severity"
+                  [severity]="severity(alarm.severity)"
+                />
+                <small>{{ alarm.time }}</small>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+  </div>
+
+  <article class="warehouse-chart-card">
+    <div class="warehouse-section-header">
+      <div>
+        <p class="label-tag">Live</p>
+        <h3>Realtime Warehouse Telemetry</h3>
+      </div>
+
+      <span class="stream-status">
+        <i></i>
+        WMS IoT Stream Active
+      </span>
+    </div>
+
+    <div class="line-chart">
+      <p-chart
+        type="line"
+        [data]="telemetryTrendData"
+        [options]="lineOptions"
+        height="260"
+      />
+    </div>
+
+    <div class="chart-summary-grid chart-summary-grid--telemetry">
+      @for (item of telemetrySummary; track item.label) {
+        <div>
+          <span>{{ item.label }}</span>
+          <strong>{{ item.value }}</strong>
+        </div>
+      }
+    </div>
+  </article>
+
+  <div class="warehouse-section-header warehouse-section-header--devices">
+    <div>
+      <p class="label-tag">Devices</p>
+      <h3>Warehouse Systems · {{ devices.length }} devices</h3>
+    </div>
+  </div>
+
+  <div class="device-grid">
+    @for (device of devices; track device.id) {
+      <a
+        class="device-card"
+        [routerLink]="['/devices', device.id]"
+        [attr.data-testid]="'warehouse-device-card-' + device.id"
+      >
+        <div class="device-card__top">
+          <div>
+            <p>{{ device.type }}</p>
+            <h4>{{ device.name }}</h4>
+          </div>
+
+          <div class="live-pill">
+            <span [class]="'status-dot status-' + device.status"></span>
+            LIVE
+          </div>
+        </div>
+
+        <div class="device-metrics">
+          @for (metric of device.metrics; track metric.label) {
+            <div>
+              <span>{{ metric.label }}</span>
+              <strong>{{ metric.value }}</strong>
+            </div>
+          }
+        </div>
+
+        <div class="device-card__footer">
+          <p-tag
+            [value]="device.status"
+            [severity]="severity(device.status)"
+          />
+
+          <span>Tap to view →</span>
+        </div>
+      </a>
+    }
+  </div>
+</section>

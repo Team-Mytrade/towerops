@@ -1,84 +1,84 @@
 <header class="to-topbar" data-testid="app-topbar">
   <div class="to-topbar__left">
-    <div class="to-facility">
-      <span class="to-facility__label">Facility</span>
+    <button
+      type="button"
+      class="to-mobile-menu-btn"
+      data-testid="mobile-menu-btn"
+      pTooltip="Open navigation"
+      tooltipPosition="bottom"
+      (click)="mobileMenuClick.emit()"
+    >
+      <i class="pi pi-bars"></i>
+    </button>
 
-      <p-select
-        [(ngModel)]="selectedLocation"
-        [options]="locations"
-        optionLabel="name"
-        appendTo="body"
-        styleClass="to-facility-select"
-        panelStyleClass="to-location-panel"
-        data-testid="facility-dropdown"
-      >
-        <ng-template #selectedItem let-location>
-          <div class="to-facility-selected">
-            <span>{{ location.name }}</span>
-            <i class="pi pi-chevron-down"></i>
-          </div>
-        </ng-template>
+    @if (isSiteSelector()) {
+      <div class="to-workspace-brand">
+        <div class="to-workspace-brand__logo">
+          <i class="fa-solid fa-tower-broadcast"></i>
+        </div>
 
-        <ng-template #item let-location>
-          <div class="to-location-option">
-            <div>
-              <div class="to-location-option__name">{{ location.name }}</div>
-              <div class="to-location-option__meta">
-                {{ location.region }} · {{ location.towerCount }} towers
-              </div>
-            </div>
-
-            <span
-              class="to-location-option__status"
-              [class.is-critical]="location.criticalCount > 0"
-              [class.is-healthy]="location.criticalCount === 0"
-            >
-              {{ location.criticalCount > 0 ? location.criticalCount + ' Critical' : 'Healthy' }}
-            </span>
-          </div>
-        </ng-template>
-      </p-select>
-    </div>
-
-    <div class="to-overview">
-      <span class="label-tag">Facility Overview</span>
-      <span>Real-time status of all towers and sites across your operations</span>
-    </div>
+        <div class="to-workspace-brand__copy">
+          <div class="to-workspace-brand__title">TowerOps</div>
+          <div class="to-workspace-brand__subtitle">NOC Platform</div>
+        </div>
+      </div>
+    } @else {
+      <div class="to-overview">
+        <to-page-header [title]="pageTitle" [subtitle]="subtitle" />
+      </div>
+    }
   </div>
 
   <div class="to-topbar__right">
-    <div class="to-clock">
-      <span>{{ now() | date: 'hh:mm a' }}</span>
-      <small>{{ now() | date: 'EEE, d MMM, y' }}</small>
-    </div>
+    @if (!isSiteSelector()) {
+      <p-button
+        icon="pi pi-bell"
+        [text]="true"
+        pTooltip="Alarms"
+        tooltipPosition="bottom"
+        severity="secondary"
+      />
+
+      <p-button
+        [icon]="themeService.isDark() ? 'pi pi-sun' : 'pi pi-moon'"
+        [text]="true"
+        [pTooltip]="themeService.isDark() ? 'Light mode' : 'Dark mode'"
+        tooltipPosition="bottom"
+        severity="secondary"
+        (click)="toggleTheme()"
+      />
+
+      <p-button
+        icon="pi pi-arrow-up-right-and-arrow-down-left-from-center"
+        [text]="true"
+        pTooltip="Full Screen"
+        tooltipPosition="bottom"
+        severity="secondary"
+        (click)="toggleFullscreen()"
+      />
+    }
+
+    <p-menu
+      #tenantMenu
+      [model]="tenantMenuItems"
+      [popup]="true"
+      appendTo="body"
+      styleClass="to-tenant-menu"
+    />
 
     <button
       type="button"
-      data-testid="notif-bell"
-      class="to-icon-btn"
-      pTooltip="Alarms"
-      tooltipPosition="bottom"
+      class="to-tenant-switcher"
+      data-testid="tenant-switcher"
+      (click)="tenantMenu.toggle($event)"
     >
-      <i class="pi pi-bell"></i>
+      <span class="to-tenant-switcher__dot"></span>
 
-      <span *ngIf="alertCount() > 0" class="to-notification-badge">
-        {{ alertCount() }}
+      <span class="to-tenant-switcher__label">
+        {{ selectedTenant }}
       </span>
-    </button>
 
-    <button
-      type="button"
-      data-testid="fullscreen-toggle"
-      class="to-icon-btn"
-      pTooltip="Fullscreen"
-      tooltipPosition="bottom"
-      (click)="toggleFullscreen()"
-    >
-      @if (!isFullscreen()) {
-        <i class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
-      } @else {
-        <i class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
-      }
+      <i class="pi pi-chevron-down"></i>
     </button>
 
     <div class="to-user">
@@ -89,15 +89,13 @@
 
       <div class="to-user__avatar">VS</div>
 
-      <button
-        type="button"
-        data-testid="logout-btn"
-        class="to-icon-btn to-icon-btn--danger"
+      <p-button
+        severity="secondary"
+        [text]="true"
+        icon="pi pi-sign-out"
         pTooltip="Logout"
         tooltipPosition="bottom"
-      >
-        <i class="pi pi-sign-out"></i>
-      </button>
+      />
     </div>
   </div>
 </header>

@@ -1,0 +1,36 @@
+:root {
+  /* PrimeNG Mapping */
+
+  --p-primary-color: var(--to-primary);
+  --p-primary-hover-color: var(--to-primary-hover);
+  --p-primary-active-color: var(--to-primary-active);
+  --p-primary-contrast-color: var(--to-text-inverse);
+
+  --p-content-background: var(--to-surface);
+  --p-content-color: var(--to-text);
+  --p-content-border-color: var(--to-border);
+
+  --p-text-color: var(--to-text);
+  --p-text-muted-color: var(--to-muted);
+
+  --p-surface-0: #ffffff;
+  --p-surface-50: #f8fafc;
+  --p-surface-100: #f1f5f9;
+  --p-surface-200: #e2e8f0;
+  --p-surface-300: #cbd5e1;
+  --p-surface-400: #94a3b8;
+  --p-surface-500: #64748b;
+  --p-surface-600: #475569;
+  --p-surface-700: #334155;
+  --p-surface-800: #1e293b;
+  --p-surface-900: #0f172a;
+  --p-surface-950: #020617;
+
+  --p-border-radius-xs: 0.25rem;
+  --p-border-radius-sm: var(--to-radius-sm);
+  --p-border-radius-md: var(--to-radius-md);
+  --p-border-radius-lg: var(--to-radius-lg);
+  --p-border-radius-xl: var(--to-radius-xl);
+
+  --p-mask-background: rgba(15, 23, 42, 0.35);
+}

@@ -1,0 +1,51 @@
+.tower-detail-top {
+  align-items: start;
+}
+
+.tower-summary-card {
+  height: auto;
+  align-self: start;
+}
+
+.tower-summary-card--main {
+  min-height: 210px;
+}
+
+.tower-summary-card--alarms {
+  min-height: 260px;
+}
+
+.tower-chart-card {
+  min-height: 390px;
+}
+.tower-detail-top {
+  align-items: start;
+}
+
+.tower-summary-card {
+  height: auto;
+  align-self: start;
+}
+
+.tower-summary-card--main {
+  min-height: 210px;
+}
+
+.tower-summary-card--alarms {
+  min-height: 260px;
+}
+
+.tower-chart-card {
+  min-height: 390px;
+}
+.tower-detail-top {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.45fr)
+    minmax(220px, 0.75fr)
+    minmax(220px, 0.75fr)
+    minmax(280px, 0.9fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: start;
+}

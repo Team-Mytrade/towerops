@@ -112,7 +112,7 @@ export class LoginComponent {
     setTimeout(() => {
       this.authService.setSession(this.createDemoSession(account));
       this.loading.set(false);
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/sites']);
     }, 600);
   }
 

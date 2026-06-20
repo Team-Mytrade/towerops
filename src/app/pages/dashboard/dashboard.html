@@ -1,40 +1,197 @@
-<section class="space-y-6">
-  <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-    <div>
-      <h1 class="font-sora text-2xl font-bold tracking-tight text-slate-950">
-        Welcome to TowerOps
-      </h1>
-      <p class="mt-1 text-sm text-slate-500">
-        Monitor tower health, critical alarms, work orders, and field operations in real time.
-      </p>
-    </div>
+<section class="to-dashboard" data-testid="dashboard-page">
+  <div class="to-kpi-grid">
+    @for (kpi of kpis; track kpi.label) {
+      <article class="to-kpi-card" [attr.data-testid]="kpi.testId">
+        <div>
+          <p>{{ kpi.label }}</p>
+          <strong>{{ kpi.value }}</strong>
+        </div>
 
-    <button
-      class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
-    >
-      Simulate Fault
-    </button>
+        <div class="to-kpi-card__icon" [class]="kpi.variant">
+          <i [class]="kpi.icon"></i>
+        </div>
+      </article>
+    }
   </div>
 
-  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-    <div class="to-card p-5">
-      <div class="text-sm text-slate-500">Total Towers</div>
-      <div class="mt-2 text-3xl font-bold">24</div>
+  <div class="to-dashboard__main-grid">
+    <article class="to-card to-card--map" data-testid="dashboard-map-card">
+      <div class="to-card__header">
+        <div>
+          <p class="label-tag">UAE Network Map</p>
+          <h2>All Sites · 36</h2>
+        </div>
+
+        <div class="to-map-legend">
+          <span><i class="healthy"></i>Healthy</span>
+          <span><i class="warning"></i>Warning</span>
+          <span><i class="critical"></i>Critical</span>
+          <span><i class="offline"></i>Offline</span>
+        </div>
+      </div>
+
+      <div class="to-map-wrap">
+        <to-tower-map [markers]="towers" />
+      </div>
+    </article>
+
+    <div class="to-dashboard__side-column">
+      <article class="to-card" data-testid="site-health-card">
+        <p class="label-tag">Site Health</p>
+        <h3>Distribution</h3>
+
+        <div class="to-chart-box to-chart-box--small-doughnut">
+          <p-chart
+            type="doughnut"
+            [data]="siteHealthData"
+            [options]="doughnutOptions"
+             width="180"
+    height="145"
+          />
+        </div>
+
+        <div class="to-health-list">
+          @for (item of healthDistribution; track item.name) {
+            <div>
+              <span>
+                <i [style.background]="item.color"></i>
+                {{ item.name }}
+              </span>
+              <strong>{{ item.value }}</strong>
+            </div>
+          }
+        </div>
+      </article>
+
+      <article class="to-card" data-testid="power-status-card">
+        <div class="to-card__header">
+          <div>
+            <p class="label-tag">Power</p>
+            <h3>Power Source Status</h3>
+          </div>
+
+          <span class="to-average">92% stable</span>
+        </div>
+
+        <div class="to-chart-box to-chart-box--mini">
+          <p-chart
+            type="line"
+            [data]="powerStatusData"
+            [options]="lineOptions"
+          />
+        </div>
+      </article>
     </div>
 
-    <div class="to-card p-5">
-      <div class="text-sm text-slate-500">Healthy Towers</div>
-      <div class="mt-2 text-3xl font-bold text-emerald-600">23</div>
-    </div>
+    <article class="to-card to-card--alarms" data-testid="latest-alarms-card">
+      <div class="to-card__header">
+        <div>
+          <p class="label-tag">Recent</p>
+          <h3>Latest Alarms</h3>
+        </div>
 
-    <div class="to-card p-5">
-      <div class="text-sm text-slate-500">Critical Alarms</div>
-      <div class="mt-2 text-3xl font-bold text-red-600">1</div>
-    </div>
+        <a routerLink="/alerts" data-testid="view-all-alarms">
+          View All →
+        </a>
+      </div>
 
-    <div class="to-card p-5">
-      <div class="text-sm text-slate-500">Open Work Orders</div>
-      <div class="mt-2 text-3xl font-bold text-blue-600">3</div>
-    </div>
+      <div class="to-alarm-list">
+        @for (alarm of latestAlarms; track alarm.title + alarm.severity) {
+          <div class="to-alarm" [class]="getSeverityClass(alarm.severity)">
+            <span class="to-alarm__dot"></span>
+
+            <div>
+              <small>{{ alarm.severity }}</small>
+              <strong>{{ alarm.title }}</strong>
+              <p>{{ alarm.description }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+  </div>
+
+  <div class="to-dashboard__bottom-grid">
+    <article class="to-card" data-testid="alarm-trends-card">
+      <p class="label-tag">7-Day</p>
+      <h3>Alarm Trends</h3>
+
+      <div class="to-chart-box to-chart-box--bar ">
+        <p-chart
+          type="bar"
+          [data]="alarmTrendData"
+          [options]="barOptions"
+          height="260"
+        />
+      </div>
+    </article>
+
+    <article class="to-card" data-testid="fuel-overview-card">
+      <div class="to-card__header">
+        <div>
+          <p class="label-tag">Fuel</p>
+          <h3>Generator Fuel Overview</h3>
+        </div>
+
+        <span class="to-average">Avg 66.8%</span>
+      </div>
+
+      <div class="to-fuel-list">
+        @for (site of fuelSites; track site.code) {
+          <div class="to-fuel-row">
+            <span>{{ site.code }}</span>
+
+            <div class="to-fuel-bar">
+              <div
+                [style.width.%]="site.fuel"
+                [style.background]="getFuelColor(site.fuel)"
+              ></div>
+            </div>
+
+            <strong>{{ site.fuel }}%</strong>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="to-card" data-testid="maintenance-card">
+      <div class="to-card__header">
+        <div>
+          <p class="label-tag">Maintenance</p>
+
+
+          
+          <h3>Upcoming Maintenance</h3>
+        </div>
+
+       <div class="flex flex-col flex-wrap">
+         <span class="to-average">4 scheduled</span>
+        <a routerLink="/maintenance" data-testid="view-all-alarms">
+          View All →
+        </a>
+       </div>
+      </div>
+
+      <div class="to-maintenance-list">
+        @for (item of maintenances; track item.id) {
+          <div class="to-maintenance-item" [class]="item.priority">
+            <div class="to-maintenance-item__date">
+              <strong>{{ item.day }}</strong>
+              <span>{{ item.month }}</span>
+            </div>
+
+            <div class="to-maintenance-item__content">
+              <strong>{{ item.title }}</strong>
+              <p>{{ item.site }}</p>
+              <small>{{ item.window }}</small>
+            </div>
+
+            <span class="to-maintenance-item__badge">
+              {{ item.priority }}
+            </span>
+          </div>
+        }
+      </div>
+    </article>
   </div>
 </section>

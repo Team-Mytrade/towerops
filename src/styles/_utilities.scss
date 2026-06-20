@@ -1,0 +1,72 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--to-bg);
+  color: var(--to-text);
+  font-family: var(--to-font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-outfit {
+  font-family: var(--to-font-heading);
+}
+
+.font-sora {
+  font-family: var(--to-font-body);
+}
+
+.to-heading,
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--to-font-heading);
+}
+
+.to-card {
+  background: var(--to-surface);
+  border: 1px solid var(--to-border);
+  border-radius: var(--to-radius-lg);
+  box-shadow: var(--to-shadow-sm);
+}
+
+.label-tag {
+  font-family: var(--to-font-body);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--to-muted);
+  font-weight: 600;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.p-button {
+  border-radius: var(--to-radius-lg);
+  font-weight: 600;
+}
+
+.p-inputtext,
+.p-password-input,
+.p-select {
+  border-radius: var(--to-radius-lg);
+}
+
+.p-card {
+  border-radius: var(--to-radius-lg);
+  border: 1px solid var(--to-border);
+  box-shadow: var(--to-shadow-sm);
+}

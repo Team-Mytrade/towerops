@@ -1,0 +1,16 @@
+<div class="to-workspace-layout">
+  <to-topbar />
+
+  @if (loader.loading()) {
+    <div class="to-loading-bar">
+      <div class="to-loading-bar__indicator"></div>
+    </div>
+  }
+
+  <main
+    class="to-workspace-layout__main"
+    [class.to-shell-content--loading]="loader.loading()"
+  >
+    <router-outlet />
+  </main>
+</div>
