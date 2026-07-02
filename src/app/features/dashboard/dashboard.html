@@ -1,78 +1,186 @@
-<section class="to-page dashboard-page" data-testid="dashboard-page">
-  <header class="to-page-header">
+<section class="to-dashboard" data-testid="site-category-dashboard-page">
+  <header class="to-dashboard__header">
     <div>
-      <h1 class="to-page-title">Platform Overview</h1>
-      <p class="to-page-description">
-        Monitor tenants, sites, devices, alerts and pending approvals.
-      </p>
+      <p class="to-eyebrow">Operations Overview</p>
+      <h1>{{ pageTitle() | titlecase }}</h1>
+      <span>Monitor sites, alerts, maintenance and work orders.</span>
     </div>
 
-    <button type="button" class="refresh-btn">
-      <i class="pi pi-refresh"></i>
-      Refresh
-    </button>
+    <p-button
+      label="Refresh"
+      icon="pi pi-refresh"
+      severity="secondary"
+      outlined
+      [loading]="loading()"
+      (onClick)="loadSites()"
+      data-testid="refresh-dashboard-btn"
+    />
   </header>
 
-  <div class="dashboard-kpis">
-    @for (stat of stats(); track stat.label) {
-      <article class="dashboard-kpi">
-        <div class="dashboard-kpi__icon" [class]="stat.tone">
-          <i [class]="stat.icon"></i>
+  <div class="to-kpi-grid">
+    @for (kpi of kpis(); track kpi.label) {
+      <article class="to-kpi-card" [class]="'to-kpi-card--' + kpi.tone">
+        <div>
+          <span>{{ kpi.label }}</span>
+          <strong>{{ kpi.value }}</strong>
         </div>
 
-        <div>
-          <span>{{ stat.label }}</span>
-          <strong>{{ stat.value }}</strong>
-          <p>{{ stat.meta }}</p>
-        </div>
+        <i [class]="kpi.icon"></i>
       </article>
     }
   </div>
 
-  <div class="dashboard-grid">
-    <article class="dashboard-card">
-      <header>
-        <h2>Tenant Health</h2>
-        <span>{{ tenants().length }} tenants</span>
-      </header>
+  <div class="to-dashboard__grid">
+    <article class="to-card to-map-card">
+      <div class="to-card__header">
+        <div>
+          <p class="to-eyebrow">Live Map</p>
+          <h2>{{ category() | titlecase }} Sites</h2>
+        </div>
+      </div>
 
-      <div class="tenant-list">
-        @for (tenant of tenants(); track tenant.name) {
-          <div class="tenant-row">
-            <div>
-              <strong>{{ tenant.name }}</strong>
-              <span>{{ tenant.sites }} sites · {{ tenant.devices }} devices</span>
-            </div>
+      <div class="to-map">
+        @for (site of sites(); track site.id) {
+          <button
+            type="button"
+            class="to-map-marker"
+            [style.left.%]="30 + ($index * 13) % 55"
+            [style.top.%]="25 + ($index * 17) % 45"
+            [class.is-offline]="!site.enabled || !site.active"
+            (click)="selectSite(site)"
+            [attr.data-testid]="'map-site-marker-' + site.id"
+          >
+            <span></span>
+          </button>
+        }
 
-            <div class="tenant-row__right">
-              <small>{{ tenant.alerts }} alerts</small>
-              <to-status-badge
-                [label]="tenant.status"
-                [tone]="statusTone(tenant.status)"
-              />
-            </div>
+        @if (!sites().length && !loading()) {
+          <div class="to-empty-map">
+            No {{ category() }} sites available.
           </div>
         }
       </div>
     </article>
 
-    <article class="dashboard-card">
-      <header>
-        <h2>Operational Flow</h2>
-      </header>
+    <aside class="to-side-stack">
+      <article class="to-card">
+        <div class="to-card__header">
+          <h2>Alerts</h2>
+          <button type="button" (click)="goTo('/alerts')">View all</button>
+        </div>
 
-      <div class="flow-list">
-        @for (step of flowSteps; track step.label) {
-          <div class="flow-item">
-            <i [class]="step.icon"></i>
-
-            <div>
-              <strong>{{ step.label }}</strong>
-              <span>{{ step.description }}</span>
-            </div>
+        @for (alert of alerts; track alert.title) {
+          <div class="to-list-item danger">
+            <strong>{{ alert.title }}</strong>
+            <span>{{ alert.site }} · {{ alert.severity }}</span>
           </div>
         }
-      </div>
-    </article>
+      </article>
+
+      <article class="to-card">
+        <div class="to-card__header">
+          <h2>Work Orders</h2>
+          <button type="button" (click)="goTo('/work-orders')">View all</button>
+        </div>
+
+        @for (wo of workOrders; track wo.id) {
+          <div class="to-list-item">
+            <strong>{{ wo.id }}</strong>
+            <span>{{ wo.title }} · {{ wo.status }}</span>
+          </div>
+        }
+      </article>
+
+      <article class="to-card">
+        <div class="to-card__header">
+          <h2>Maintenance</h2>
+          <button type="button" (click)="goTo('/maintenance')">View all</button>
+        </div>
+
+        @for (item of maintenance; track item.title) {
+          <div class="to-list-item">
+            <strong>{{ item.title }}</strong>
+            <span>{{ item.date }}</span>
+          </div>
+        }
+      </article>
+    </aside>
   </div>
+
+  <article class="to-card to-sites-card">
+    <div class="to-card__header">
+      <div>
+        <p class="to-eyebrow">Sites</p>
+        <h2>Available {{ category() | titlecase }} Sites</h2>
+      </div>
+    </div>
+
+    <div class="to-site-list">
+      @for (site of sites(); track site.id) {
+        <button
+          type="button"
+          class="to-site-row"
+          (click)="selectSite(site)"
+          [attr.data-testid]="'site-row-' + site.id"
+        >
+          <div>
+            <strong>{{ site.siteName }}</strong>
+            <span>{{ site.siteCode }} · {{ site.address.city }}, {{ site.address.country }}</span>
+          </div>
+
+          <p-tag
+            [value]="site.active && site.enabled ? 'Healthy' : 'Offline'"
+            [severity]="site.active && site.enabled ? 'success' : 'danger'"
+          />
+        </button>
+      }
+    </div>
+  </article>
+
+  @if (selectedSite(); as site) {
+    <div class="to-drawer-backdrop" (click)="closeSite()"></div>
+
+    <aside class="to-site-drawer" data-testid="site-detail-drawer">
+      <header>
+        <div>
+          <p class="to-eyebrow">Site Details</p>
+          <h2>{{ site.siteName }}</h2>
+          <span>{{ site.siteCode }}</span>
+        </div>
+
+        <button type="button" (click)="closeSite()" data-testid="close-site-drawer-btn">
+          <i class="pi pi-times"></i>
+        </button>
+      </header>
+
+      <div class="to-detail-grid">
+        <div>
+          <span>Category</span>
+          <strong>{{ site.category }}</strong>
+        </div>
+
+        <div>
+          <span>Status</span>
+          <strong>{{ site.active && site.enabled ? 'Healthy' : 'Offline' }}</strong>
+        </div>
+
+        <div>
+          <span>Location</span>
+          <strong>{{ site.address.city }}, {{ site.address.country }}</strong>
+        </div>
+
+        <div>
+          <span>Coordinates</span>
+          <strong>{{ site.latitude }}, {{ site.longitude }}</strong>
+        </div>
+      </div>
+
+      <p>{{ site.description || 'No description available.' }}</p>
+
+      <div class="to-drawer-actions">
+        <p-button label="Devices" icon="pi pi-microchip" (onClick)="goTo('/devices')" />
+        <p-button label="Work Orders" icon="pi pi-briefcase" severity="secondary" outlined (onClick)="goTo('/work-orders')" />
+      </div>
+    </aside>
+  }
 </section>
