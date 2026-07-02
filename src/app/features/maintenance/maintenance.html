@@ -1,0 +1,250 @@
+<section class="to-page" data-testid="maintenance-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Maintenance</h1>
+      <p class="to-page-description">
+        Schedule preventive maintenance, track technician completion and close after admin verification.
+      </p>
+    </div>
+
+    <p-button
+      label="Create Maintenance"
+      icon="pi pi-plus"
+      data-testid="create-maintenance-btn"
+      (click)="openCreate()"
+    />
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search maintenance..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+
+      <p-select
+        [options]="typeOptions"
+        [ngModel]="typeFilter()"
+        (ngModelChange)="typeFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Type"
+      />
+
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Status"
+      />
+    </div>
+  </div>
+
+  <div class="to-card">
+    <p-table
+      [value]="filteredTickets()"
+      dataKey="id"
+      [rowHover]="true"
+      styleClass="to-prime-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Ticket</th>
+          <th>Site</th>
+          <th>Device</th>
+          <th>Type</th>
+          <th>Schedule</th>
+          <th>Technician</th>
+          <th>Priority</th>
+          <th>Status</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-ticket>
+        <tr role="button" tabindex="0" (click)="openTicket(ticket)">
+          <td>
+            <strong>{{ ticket.title }}</strong>
+            <span>{{ ticket.id }}</span>
+          </td>
+          <td>{{ ticket.site }}</td>
+          <td>{{ ticket.device }}</td>
+          <td>{{ ticket.type }}</td>
+          <td>{{ ticket.scheduledDate }}</td>
+          <td>{{ ticket.technician || 'Unassigned' }}</td>
+          <td>
+            <to-status-badge
+              [label]="ticket.priority"
+              [tone]="priorityTone(ticket.priority)"
+            />
+          </td>
+          <td>
+            <to-status-badge
+              [label]="ticket.status"
+              [tone]="statusTone(ticket.status)"
+            />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    [size]="drawerSize"
+    [title]="drawerTitle"
+    [eyebrow]="drawerEyebrow"
+    (closed)="closeDrawer()"
+  >
+    @if (drawerMode() === 'view' && selected(); as ticket) {
+      <div class="to-detail-grid">
+        <to-detail-field label="Site" [value]="ticket.site" />
+        <to-detail-field label="Device" [value]="ticket.device" />
+        <to-detail-field label="Type" [value]="ticket.type" />
+        <to-detail-field label="Scheduled Date" [value]="ticket.scheduledDate" />
+        <to-detail-field label="Technician" [value]="ticket.technician || 'Unassigned'" />
+        <to-detail-field label="Priority" [value]="ticket.priority" />
+        <to-detail-field label="Status" [value]="ticket.status" />
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Notes</h3>
+        <p class="to-description">{{ ticket.notes }}</p>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Timeline</h3>
+        <to-timeline [items]="timeline()" />
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button
+          label="Edit"
+          icon="pi pi-pencil"
+          severity="secondary"
+          (click)="editTicket()"
+        />
+
+        @if (ticket.status === 'Completed') {
+          <p-button
+            label="Close"
+            icon="pi pi-check"
+            (click)="closeMaintenance()"
+          />
+        }
+
+        @if (ticket.status === 'Closed') {
+          <p-button
+            label="Re-Open"
+            icon="pi pi-refresh"
+            severity="secondary"
+            (click)="reopenMaintenance()"
+          />
+        }
+      </ng-container>
+    }
+
+    @if (drawerMode() === 'create' || drawerMode() === 'edit') {
+      <div class="to-drawer-section">
+        <h3>Maintenance Details</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Title</span>
+            <input pInputText [(ngModel)]="newTicket.title" placeholder="Monthly tower inspection" />
+          </label>
+
+          <label>
+            <span>Type</span>
+            <p-select
+              [options]="typeOptions.slice(1)"
+              [(ngModel)]="newTicket.type"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+            />
+          </label>
+
+          <label>
+            <span>Priority</span>
+            <p-select
+              [options]="priorityOptions"
+              [(ngModel)]="newTicket.priority"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+            />
+          </label>
+
+          <label>
+            <span>Status</span>
+            <p-select
+              [options]="statusOptions.slice(1)"
+              [(ngModel)]="newTicket.status"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+            />
+          </label>
+        </div>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Assignment</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Site</span>
+            <input pInputText [(ngModel)]="newTicket.site" />
+          </label>
+
+          <label>
+            <span>Device</span>
+            <input pInputText [(ngModel)]="newTicket.device" />
+          </label>
+
+          <label>
+            <span>Scheduled Date</span>
+            <input pInputText [(ngModel)]="newTicket.scheduledDate" placeholder="30 Jun 2026" />
+          </label>
+
+          <label>
+            <span>Technician</span>
+            <p-select
+              [options]="technicians"
+              [(ngModel)]="newTicket.technician"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+            />
+          </label>
+        </div>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Notes</h3>
+
+        <textarea
+          pInputText
+          rows="5"
+          [(ngModel)]="newTicket.notes"
+          placeholder="Maintenance instructions..."
+        ></textarea>
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button label="Cancel" severity="secondary" (click)="closeDrawer()" />
+
+        <p-button
+          [label]="drawerMode() === 'edit' ? 'Save Changes' : 'Save Maintenance'"
+          icon="pi pi-check"
+          (click)="saveTicket()"
+        />
+      </ng-container>
+    }
+  </to-drawer>
+</section>

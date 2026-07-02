@@ -1,0 +1,292 @@
+<section class="to-page" data-testid="roles-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Roles & Permissions</h1>
+      <p class="to-page-description">
+        Manage backend roles and assign available permissions.
+      </p>
+    </div>
+
+    <div class="flex gap-2">
+      <p-button
+        label="Create Permission"
+        icon="pi pi-shield"
+        severity="secondary"
+        data-testid="create-permission-btn"
+        (click)="openCreatePermission()"
+      />
+
+      <p-button
+        label="Create Role"
+        icon="pi pi-plus"
+        data-testid="create-role-btn"
+        (click)="openCreateRole()"
+      />
+    </div>
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search role or permission..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        data-testid="role-search-input"
+      />
+    </div>
+
+    <div class="to-toolbar-right">
+      <p-button
+        label="Edit Selected Role"
+        icon="pi pi-pencil"
+        severity="secondary"
+        data-testid="edit-role-btn"
+        (click)="openEditRole()"
+      />
+
+      <p-button
+        label="Delete"
+        icon="pi pi-trash"
+        severity="danger"
+        [loading]="saving()"
+        data-testid="delete-role-btn"
+        (click)="deleteSelectedRole()"
+      />
+    </div>
+  </div>
+
+  <div class="to-roles-layout">
+    <aside class="to-card to-role-list">
+      <header class="to-card-header">
+        <h2 class="to-card-title">Roles</h2>
+        <span>{{ filteredRoles().length }}</span>
+      </header>
+
+      <div class="to-role-list__body">
+        @for (role of filteredRoles(); track role.id) {
+          <button
+            type="button"
+            class="to-role-card"
+            [class.active]="selectedRole()?.id === role.id"
+            [attr.data-testid]="'role-card-' + role.id"
+            (click)="selectRole(role)"
+          >
+            <div>
+              <strong>{{ role.roleName }}</strong>
+              <p>{{ role.description || '-' }}</p>
+            </div>
+
+            <div class="to-role-card__meta">
+              <span>{{ role.roleCode }}</span>
+              <span>{{ role.permissions?.length || 0 }} permissions</span>
+            </div>
+          </button>
+        } @empty {
+          <div class="to-empty-state">No roles found.</div>
+        }
+      </div>
+    </aside>
+
+    <section class="to-card to-permission-panel">
+      @if (selectedRole(); as role) {
+        <header class="to-card-header">
+          <div>
+            <h2 class="to-card-title">{{ role.roleName }}</h2>
+            <p>{{ role.description || '-' }}</p>
+          </div>
+        </header>
+
+        <div class="to-role-summary">
+          <to-detail-field label="Role ID" [value]="role.id" />
+          <to-detail-field label="Role Code" [value]="role.roleCode" />
+          <to-detail-field label="Permission Count" [value]="selectedPermissionCount()" />
+        </div>
+
+        <div class="to-permission-matrix">
+          <p-table
+            [value]="role.permissions || []"
+            [loading]="loading()"
+            styleClass="to-prime-table"
+          >
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Assigned Permissions</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-permission>
+              <tr>
+                <td>
+                  <strong>{{ permission }}</strong>
+                </td>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td>No permissions assigned.</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      } @else {
+        <div class="to-empty-state">Select a role to view permissions.</div>
+      }
+    </section>
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    size="wide"
+    [title]="
+      drawerMode() === 'createPermission'
+        ? 'Create Permission'
+        : drawerMode() === 'edit'
+          ? 'Update Role'
+          : 'Create Role'
+    "
+    [eyebrow]="
+      drawerMode() === 'createPermission'
+        ? 'New Permission'
+        : drawerMode() === 'edit'
+          ? roleForm.roleCode
+          : 'New Role'
+    "
+    (closed)="closeDrawer()"
+  >
+    @if (drawerMode() === 'create' || drawerMode() === 'edit') {
+      <div class="to-drawer-section">
+        <h3>Role Details</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Role Code</span>
+            <input
+              pInputText
+              [(ngModel)]="roleForm.roleCode"
+              placeholder="TENANT_ADMIN"
+              data-testid="role-code-input"
+            />
+          </label>
+
+          <label>
+            <span>Role Name</span>
+            <input
+              pInputText
+              [(ngModel)]="roleForm.roleName"
+              placeholder="Tenant Admin"
+              data-testid="role-name-input"
+            />
+          </label>
+
+          <label class="to-col-span-2">
+            <span>Description</span>
+            <textarea
+              pInputText
+              rows="4"
+              [(ngModel)]="roleForm.description"
+              placeholder="Describe this role..."
+              data-testid="role-description-input"
+            ></textarea>
+          </label>
+        </div>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Permissions</h3>
+
+        <div class="to-permission-check-grid">
+          @for (permission of permissions(); track permission.id) {
+            <label
+              class="to-permission-check"
+              [attr.data-testid]="'permission-check-' + permission.id"
+            >
+              <p-checkbox
+                [binary]="true"
+                [ngModel]="hasDraftPermission(permission.id)"
+                (ngModelChange)="togglePermission(permission.id)"
+              />
+
+              <span>
+                <strong>{{ permission.permissionName }}</strong>
+                <small>{{ permission.permissionCode }}</small>
+              </span>
+            </label>
+          } @empty {
+            <div class="to-empty-state">
+              No permissions available. Create permissions first.
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (drawerMode() === 'createPermission') {
+      <div class="to-drawer-section">
+        <h3>Permission Details</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Permission Code</span>
+            <input
+              pInputText
+              [(ngModel)]="permissionForm.permissionCode"
+              placeholder="SITES_VIEW"
+              data-testid="permission-code-input"
+            />
+          </label>
+
+          <label>
+            <span>Permission Name</span>
+            <input
+              pInputText
+              [(ngModel)]="permissionForm.permissionName"
+              placeholder="Sites View"
+              data-testid="permission-name-input"
+            />
+          </label>
+
+          <label class="to-col-span-2">
+            <span>Description</span>
+            <textarea
+              pInputText
+              rows="4"
+              [(ngModel)]="permissionForm.description"
+              placeholder="Allows user to view site records"
+              data-testid="permission-description-input"
+            ></textarea>
+          </label>
+        </div>
+      </div>
+    }
+
+    <ng-container drawer-actions>
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        data-testid="cancel-drawer-btn"
+        (click)="closeDrawer()"
+      />
+
+      @if (drawerMode() === 'createPermission') {
+        <p-button
+          label="Save Permission"
+          icon="pi pi-check"
+          [loading]="saving()"
+          data-testid="save-permission-btn"
+          (click)="savePermission()"
+        />
+      } @else {
+        <p-button
+          [label]="drawerMode() === 'edit' ? 'Save Changes' : 'Save Role'"
+          icon="pi pi-check"
+          [loading]="saving()"
+          data-testid="save-role-btn"
+          (click)="saveRole()"
+        />
+      }
+    </ng-container>
+  </to-drawer>
+</section>

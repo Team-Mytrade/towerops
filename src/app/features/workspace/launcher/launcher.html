@@ -1,0 +1,345 @@
+<section class="to-workspace">
+
+  <header class="to-workspace-header">
+
+    <div>
+      <p class="label-tag">
+        Operations Center
+      </p>
+
+      <h1>
+        Welcome back,
+        Ahmed Hassan
+      </h1>
+
+      <p>
+        Select the workspace you want to manage.
+      </p>
+    </div>
+
+    <div class="to-tenant-card">
+
+      <span>Tenant</span>
+
+      <strong>
+        du Telecom UAE
+      </strong>
+
+      <small>
+        Super Administrator
+      </small>
+
+    </div>
+
+  </header>
+
+  <section class="to-workspace-kpis">
+
+    <article>
+
+      <span>Total Sites</span>
+
+      <strong>
+        {{ totalSites() }}
+      </strong>
+
+    </article>
+
+    <article>
+
+      <span>Total Devices</span>
+
+      <strong>
+        {{ totalDevices() }}
+      </strong>
+
+    </article>
+
+    <article>
+
+      <span>Active Alarms</span>
+
+      <strong>
+        {{ totalAlarms() }}
+      </strong>
+
+    </article>
+
+    <article>
+
+      <span>Users</span>
+
+      <strong>
+        84
+      </strong>
+
+    </article>
+
+  </section>
+
+  <section class="to-workspace-section">
+
+    <div class="to-section-header">
+
+      <div>
+
+        <h2>
+          Operational Workspaces
+        </h2>
+
+        <p>
+          Select a workspace to access dashboards, monitoring and operations.
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="to-workspace-grid">
+
+      @for (
+        workspace of workspaces();
+        track workspace.type
+      ) {
+
+        <article
+          class="to-workspace-card"
+        >
+
+          <div class="to-workspace-card__icon">
+
+            <i
+              [class]="workspace.icon"
+            ></i>
+
+          </div>
+
+          <div class="to-workspace-card__content">
+
+            <h3>
+
+              {{ workspace.label }}
+
+            </h3>
+
+            <p>
+
+              {{ workspace.description }}
+
+            </p>
+
+          </div>
+
+          <div class="to-workspace-card__stats">
+
+            <div>
+
+              <span>Sites</span>
+
+              <strong>
+
+                {{ workspace.count }}
+
+              </strong>
+
+            </div>
+
+            <div>
+
+              <span>Devices</span>
+
+              <strong>
+
+                {{ workspace.devices }}
+
+              </strong>
+
+            </div>
+
+            <div>
+
+              <span>Alarms</span>
+
+              <strong>
+
+                {{ workspace.alarms }}
+
+              </strong>
+
+            </div>
+
+          </div>
+
+          <div class="to-health">
+
+            <div>
+
+              <i class="healthy"></i>
+
+              Healthy
+
+              <strong>
+
+                {{ workspace.healthy }}
+
+              </strong>
+
+            </div>
+
+            <div>
+
+              <i class="warning"></i>
+
+              Warning
+
+              <strong>
+
+                {{ workspace.warning }}
+
+              </strong>
+
+            </div>
+
+            <div>
+
+              <i class="critical"></i>
+
+              Critical
+
+              <strong>
+
+                {{ workspace.critical }}
+
+              </strong>
+
+            </div>
+
+            <div>
+
+              <i class="offline"></i>
+
+              Offline
+
+              <strong>
+
+                {{ workspace.offline }}
+
+              </strong>
+
+            </div>
+
+          </div>
+
+          <footer>
+
+            <p-button
+              label="View Sites"
+              severity="secondary"
+              icon="pi pi-list"
+            />
+
+            <p-button
+              label="Open Dashboard"
+              icon="pi pi-arrow-right"
+              (click)="openWorkspace(workspace)"
+            />
+
+          </footer>
+
+        </article>
+
+      }
+
+    </div>
+
+  </section>
+    <section class="to-workspace-bottom">
+    <article class="to-card">
+      <header class="to-card-header">
+        <h2 class="to-card-title">Recent Activity</h2>
+      </header>
+
+      <div class="to-activity-list">
+        <div>
+          <i class="pi pi-plus"></i>
+          <span>New tower added</span>
+          <small>West Bay Telecom Tower · 12 mins ago</small>
+        </div>
+
+        <div>
+          <i class="pi pi-bell"></i>
+          <span>Critical alarm generated</span>
+          <small>Fuel Level Sensor · 24 mins ago</small>
+        </div>
+
+        <div>
+          <i class="pi pi-wrench"></i>
+          <span>Maintenance scheduled</span>
+          <small>Generator Controller · 1h ago</small>
+        </div>
+
+        <div>
+          <i class="pi pi-sitemap"></i>
+          <span>Rule updated</span>
+          <small>High Temperature Alert · Yesterday</small>
+        </div>
+      </div>
+    </article>
+
+    <article class="to-card">
+      <header class="to-card-header">
+        <h2 class="to-card-title">System Health</h2>
+      </header>
+
+      <div class="to-system-health">
+        <div>
+          <span>API</span>
+          <strong>Healthy</strong>
+        </div>
+
+        <div>
+          <span>MQTT</span>
+          <strong>Connected</strong>
+        </div>
+
+        <div>
+          <span>Rules Engine</span>
+          <strong>Running</strong>
+        </div>
+
+        <div>
+          <span>Notifications</span>
+          <strong>Online</strong>
+        </div>
+      </div>
+    </article>
+
+    <article class="to-card">
+      <header class="to-card-header">
+        <h2 class="to-card-title">Quick Actions</h2>
+      </header>
+
+      <div class="to-quick-actions">
+        <button type="button">
+          <i class="pi pi-map-marker"></i>
+          <span>Create Site</span>
+        </button>
+
+        <button type="button">
+          <i class="pi pi-microchip"></i>
+          <span>Register Device</span>
+        </button>
+
+        <button type="button">
+          <i class="pi pi-bell"></i>
+          <span>View Alarms</span>
+        </button>
+
+        <button type="button">
+          <i class="pi pi-ticket"></i>
+          <span>Create Ticket</span>
+        </button>
+      </div>
+    </article>
+  </section>
+</section>

@@ -1,0 +1,563 @@
+<section class="to-page" data-testid="devices-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Devices</h1>
+      <p class="to-page-description">
+        Manage IoT gateways, sensors, controllers and telecom monitoring devices.
+      </p>
+    </div>
+
+    <div class="flex gap-2">
+      <p-button
+        label="Create Model"
+        icon="pi pi-box"
+        severity="secondary"
+        data-testid="create-device-model-btn"
+        (click)="openCreateModel()"
+      />
+
+      <p-button
+        label="Create Credential"
+        icon="pi pi-key"
+        severity="secondary"
+        data-testid="create-device-credential-btn"
+        (click)="openCreateCredential()"
+      />
+
+      <p-button
+        label="Create Device"
+        icon="pi pi-plus"
+        data-testid="create-device-btn"
+        (click)="openCreateDevice()"
+      />
+    </div>
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search devices..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        data-testid="device-search-input"
+      />
+
+      <p-select
+        [options]="modelOptions()"
+        [ngModel]="modelFilter()"
+        (ngModelChange)="modelFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Model"
+        appendTo="body"
+        data-testid="device-model-filter"
+      />
+
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Status"
+        appendTo="body"
+        data-testid="device-status-filter"
+      />
+    </div>
+  </div>
+
+  <div class="to-card">
+    <p-table
+      [value]="filteredDevices()"
+      dataKey="id"
+      [rowHover]="true"
+      [loading]="loading()"
+      styleClass="to-prime-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Device</th>
+          <th>Message Type</th>
+          <th>Site</th>
+          <th>Model</th>
+          <th>Status</th>
+          <th>Firmware</th>
+          <th>IP Address</th>
+          <th>Last Seen</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-device>
+        <tr
+          role="button"
+          tabindex="0"
+          [attr.data-testid]="'device-row-' + device.id"
+          (click)="openDevice(device)"
+        >
+          <td>
+            <strong>{{ device.deviceName }}</strong>
+            <span>{{ device.deviceId }} · {{ device.serialNumber }}</span>
+          </td>
+
+          <td>{{ device.messageType }}</td>
+          <td>{{ siteLabel(device.siteId) }}</td>
+          <td>{{ modelLabel(device.deviceModelId) }}</td>
+
+          <td>
+            <to-status-badge
+              [label]="device.status"
+              [tone]="statusTone(device.status)"
+            />
+          </td>
+
+          <td>{{ device.firmwareVersion || '-' }}</td>
+          <td>{{ device.ipAddress || '-' }}</td>
+          <td>{{ formatDate(device.lastSeen) }}</td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8">No devices found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    [size]="drawerSize"
+    [title]="drawerTitle"
+    [eyebrow]="drawerEyebrow"
+    (closed)="closeDrawer()"
+  >
+    @if (drawerMode() === 'create' || drawerMode() === 'edit') {
+      <div class="to-drawer-section">
+        <h3>Basic Information</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Device ID</span>
+            <input
+              pInputText
+              [(ngModel)]="deviceForm.deviceId"
+              placeholder="DEV-001"
+              data-testid="device-id-input"
+            />
+          </label>
+
+          <label>
+            <span>Device Name</span>
+            <input
+              pInputText
+              [(ngModel)]="deviceForm.deviceName"
+              placeholder="Gateway Controller 01"
+              data-testid="device-name-input"
+            />
+          </label>
+
+          <label>
+            <span>Serial Number</span>
+            <input
+              pInputText
+              [(ngModel)]="deviceForm.serialNumber"
+              placeholder="GW-DXB-001"
+              data-testid="device-serial-input"
+            />
+          </label>
+
+          <label>
+            <span>Message Type</span>
+            <p-select
+              [options]="messageTypeOptions"
+              [(ngModel)]="deviceForm.messageType"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              data-testid="device-message-type-select"
+            />
+          </label>
+
+          <label>
+            <span>Status</span>
+            <p-select
+              [options]="deviceStatusOptions"
+              [(ngModel)]="deviceForm.status"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              data-testid="device-status-select"
+            />
+          </label>
+
+          <label>
+            <span>Firmware</span>
+            <input
+              pInputText
+              [(ngModel)]="deviceForm.firmwareVersion"
+              placeholder="v2.4.1"
+              data-testid="device-firmware-input"
+            />
+          </label>
+        </div>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Assignment</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Site</span>
+            <p-select
+              [options]="siteOptions()"
+              [(ngModel)]="deviceForm.siteId"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+              appendTo="body"
+              placeholder="Search and select site"
+              data-testid="device-site-select"
+            />
+          </label>
+
+          <label>
+            <span>Device Model</span>
+            <p-select
+              [options]="modelSelectOptions()"
+              [(ngModel)]="deviceForm.deviceModelId"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+              appendTo="body"
+              placeholder="Search and select model"
+              data-testid="device-model-select"
+            />
+          </label>
+        </div>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Connectivity</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>IP Address</span>
+            <input
+              pInputText
+              [(ngModel)]="deviceForm.ipAddress"
+              placeholder="10.20.1.14"
+              data-testid="device-ip-input"
+            />
+          </label>
+
+          <label>
+            <span>MAC Address</span>
+            <input
+              pInputText
+              [(ngModel)]="deviceForm.macAddress"
+              placeholder="A1:B2:C3:D4:E5:F1"
+              data-testid="device-mac-input"
+            />
+          </label>
+
+          <label>
+            <span>Last Seen</span>
+            <input
+              pInputText
+              type="datetime-local"
+              [(ngModel)]="deviceForm.lastSeen"
+              data-testid="device-last-seen-input"
+            />
+          </label>
+        </div>
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button label="Cancel" severity="secondary" (click)="closeDrawer()" />
+
+        <p-button
+          [label]="drawerMode() === 'edit' ? 'Save Changes' : 'Save Device'"
+          icon="pi pi-check"
+          [loading]="saving()"
+          data-testid="save-device-btn"
+          (click)="saveDevice()"
+        />
+      </ng-container>
+    }
+
+    @if (drawerMode() === 'createModel') {
+      <div class="to-drawer-section">
+        <h3>Device Model</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Model Code</span>
+            <input
+              pInputText
+              [(ngModel)]="deviceModelForm.modelCode"
+              placeholder="TEMP-SENSOR-V1"
+              data-testid="device-model-code-input"
+            />
+          </label>
+
+          <label>
+            <span>Model Name</span>
+            <input
+              pInputText
+              [(ngModel)]="deviceModelForm.modelName"
+              placeholder="Temperature Sensor V1"
+              data-testid="device-model-name-input"
+            />
+          </label>
+
+          <label>
+            <span>Manufacturer</span>
+            <input
+              pInputText
+              [(ngModel)]="deviceModelForm.manufacturer"
+              placeholder="Honeywell"
+              data-testid="device-model-manufacturer-input"
+            />
+          </label>
+
+          <label>
+            <span>Category</span>
+            <p-select
+              [options]="modelCategoryOptions"
+              [(ngModel)]="deviceModelForm.category"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              data-testid="device-model-category-select"
+            />
+          </label>
+
+          <label>
+            <span>Firmware Version</span>
+            <input
+              pInputText
+              [(ngModel)]="deviceModelForm.firmwareVersion"
+              placeholder="v1.0.0"
+              data-testid="device-model-firmware-input"
+            />
+          </label>
+
+          <label>
+            <span>Status</span>
+            <p-select
+              [options]="enabledOptions"
+              [(ngModel)]="deviceModelForm.enabled"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              data-testid="device-model-enabled-select"
+            />
+          </label>
+
+          <label class="to-col-span-2">
+            <span>Description</span>
+            <textarea
+              pInputText
+              rows="3"
+              [(ngModel)]="deviceModelForm.description"
+              placeholder="Model description"
+              data-testid="device-model-description-input"
+            ></textarea>
+          </label>
+        </div>
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button label="Cancel" severity="secondary" (click)="closeDrawer()" />
+
+        <p-button
+          label="Save Model"
+          icon="pi pi-check"
+          [loading]="saving()"
+          data-testid="save-device-model-btn"
+          (click)="saveDeviceModel()"
+        />
+      </ng-container>
+    }
+
+    @if (drawerMode() === 'createCredential') {
+      <div class="to-drawer-section">
+        <h3>Device Credential</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Device</span>
+            <p-select
+              [options]="credentialDeviceOptions()"
+              [(ngModel)]="deviceCredentialForm.deviceId"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+              appendTo="body"
+              placeholder="Search and select device"
+              data-testid="credential-device-select"
+            />
+          </label>
+
+          <label>
+            <span>Secret</span>
+
+              <p-password
+    [(ngModel)]="deviceCredentialForm.secret"
+    [feedback]="false"
+    [toggleMask]="true"
+     placeholder="Device secret"
+    inputStyleClass="w-full"
+    styleClass="w-full"
+    data-testid="credential-secret-input"
+  />
+          </label>
+
+          <label>
+            <span>Tenant ID</span>
+            <input
+              pInputText
+              [(ngModel)]="deviceCredentialForm.tenantId"
+              placeholder="DEFAULT"
+              data-testid="credential-tenant-input"
+            />
+          </label>
+
+          <label>
+            <span>Device Type</span>
+            <input
+              pInputText
+              [(ngModel)]="deviceCredentialForm.deviceType"
+              placeholder="SENSOR"
+              data-testid="credential-device-type-input"
+            />
+          </label>
+
+          <label>
+            <span>Model</span>
+            <input
+              pInputText
+              [(ngModel)]="deviceCredentialForm.model"
+              placeholder="TEMP-SENSOR-V1"
+              data-testid="credential-model-input"
+            />
+          </label>
+        </div>
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button label="Cancel" severity="secondary" (click)="closeDrawer()" />
+
+        <p-button
+          label="Save Credential"
+          icon="pi pi-check"
+          [loading]="saving()"
+          data-testid="save-device-credential-btn"
+          (click)="saveDeviceCredential()"
+        />
+      </ng-container>
+    }
+
+    @if (drawerMode() === 'view' && selectedDevice(); as device) {
+      <div class="to-detail-grid">
+        <to-detail-field label="Device ID" [value]="device.deviceId" />
+        <to-detail-field label="Serial Number" [value]="device.serialNumber" />
+        <to-detail-field label="Message Type" [value]="device.messageType" />
+        <to-detail-field label="Site" [value]="siteLabel(device.siteId)" />
+        <to-detail-field label="Model" [value]="modelLabel(device.deviceModelId)" />
+        <to-detail-field label="Status" [value]="device.status" />
+        <to-detail-field label="Firmware" [value]="device.firmwareVersion || '-'" />
+        <to-detail-field label="IP Address" [value]="device.ipAddress || '-'" />
+        <to-detail-field label="MAC Address" [value]="device.macAddress || '-'" />
+        <to-detail-field label="Last Seen" [value]="formatDate(device.lastSeen)" />
+        <to-detail-field label="Active" [value]="device.active ? 'Yes' : 'No'" />
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button label="Edit Device" icon="pi pi-pencil" (click)="editDevice()" />
+
+        <p-button
+          label="Live Data"
+          icon="pi pi-wave-pulse"
+          severity="secondary"
+          (click)="openLiveData()"
+        />
+
+        <p-button
+          label="Maintenance"
+          icon="pi pi-wrench"
+          severity="secondary"
+          (click)="openMaintenance()"
+        />
+
+        <p-button
+          label="Delete"
+          icon="pi pi-trash"
+          severity="danger"
+          [loading]="saving()"
+          (click)="deleteDevice()"
+        />
+      </ng-container>
+    }
+
+    @if (drawerMode() === 'liveData' && selectedDevice(); as device) {
+      <div class="to-drawer-section">
+        <h3>Device</h3>
+        <to-detail-field label="Device" [value]="device.deviceName" />
+        <to-detail-field label="Serial No" [value]="device.serialNumber" />
+        <to-detail-field label="Site" [value]="siteLabel(device.siteId)" />
+      </div>
+
+      <div class="to-live-grid">
+        @for (metric of liveMetrics(); track metric.label) {
+          <article>
+            <span>{{ metric.label }}</span>
+            <strong>{{ metric.value }}</strong>
+            <small>{{ metric.status }}</small>
+          </article>
+        }
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button label="Back" severity="secondary" (click)="drawerMode.set('view')" />
+        <p-button label="Refresh" icon="pi pi-refresh" />
+      </ng-container>
+    }
+
+    @if (drawerMode() === 'maintenance' && selectedDevice(); as device) {
+      <div class="to-drawer-section">
+        <h3>Maintenance Summary</h3>
+        <to-detail-field label="Device" [value]="device.deviceName" />
+        <to-detail-field label="Status" [value]="device.status" />
+        <to-detail-field label="Last Seen" [value]="formatDate(device.lastSeen)" />
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>History</h3>
+
+        <div class="to-maintenance-list">
+          @for (item of maintenanceHistory(); track item.id) {
+            <article>
+              <div>
+                <strong>{{ item.title }}</strong>
+                <span>{{ item.id }} · {{ item.date }}</span>
+              </div>
+
+              <small>{{ item.status }}</small>
+            </article>
+          }
+        </div>
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button label="Back" severity="secondary" (click)="drawerMode.set('view')" />
+        <p-button label="Schedule Maintenance" icon="pi pi-plus" />
+      </ng-container>
+    }
+  </to-drawer>
+</section>

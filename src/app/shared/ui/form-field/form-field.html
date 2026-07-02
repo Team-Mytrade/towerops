@@ -1,0 +1,15 @@
+<label class="to-form-field">
+  <span>
+    {{ label() }}
+
+    @if (required()) {
+      <em>*</em>
+    }
+  </span>
+
+  <ng-content />
+
+  @if (hint()) {
+    <small>{{ hint() }}</small>
+  }
+</label>

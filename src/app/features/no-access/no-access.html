@@ -1,0 +1,35 @@
+<section class="to-no-access">
+
+  <div class="to-no-access__card">
+
+    <div class="to-no-access__icon">
+      <i class="pi pi-lock"></i>
+    </div>
+
+    <h1>Access Restricted</h1>
+
+    <p>
+      You are successfully signed in, but your account doesn't have permission
+      to access this module.
+    </p>
+
+    <div class="to-no-access__actions">
+
+      <p-button
+        label="Go to Dashboard"
+        icon="pi pi-home"
+        (click)="goDashboard()"
+      />
+
+      <p-button
+        label="Go Back"
+        severity="secondary"
+        icon="pi pi-arrow-left"
+        (click)="goBack()"
+      />
+
+    </div>
+
+  </div>
+
+</section>

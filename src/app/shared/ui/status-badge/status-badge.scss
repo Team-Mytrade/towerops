@@ -1,0 +1,46 @@
+:host {
+  display: inline-flex;
+}
+
+.to-status-badge {
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  padding: 0 8px;
+  border-radius: var(--to-radius-md);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.tone-default {
+  background: var(--to-surface-soft);
+  color: var(--to-muted);
+  border-color: var(--to-border);
+}
+
+.tone-success {
+  background: #ecfdf5;
+  color: #15803d;
+}
+
+.tone-warning {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.tone-danger {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.tone-info {
+  background: var(--to-primary-soft);
+  color: var(--to-primary);
+}
+
+.tone-muted {
+  background: var(--to-bg);
+  color: var(--to-muted);
+}

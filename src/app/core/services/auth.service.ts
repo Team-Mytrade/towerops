@@ -1,185 +1,141 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, of, tap } from 'rxjs';
+import { Router } from '@angular/router';
 
-import { BaseService } from './base.service';
-import { StorageService } from './storage.service';
-import { EnvironmentService } from './environment.service';
-
-import {
-  LoginRequest,
-  LoginResponse,
-  AuthUser,
-} from '../models/auth.models';
-
-import { API_ENDPOINTS } from '../constants/api.constants';
+import { environment } from '../../../environments/environment';
 import { STORAGE_KEYS } from '../constants/storage.constants';
-import { MOCK_USER } from '../../mock/mock-user';
+import {
+  ApiResponse,
+  LoginRequest,
+  LoginResponseData,
+} from '../models/auth.models';
+import { StorageService } from './storage.service';
 
-@Injectable({
-  providedIn: 'root',
-})
-export class AuthService extends BaseService {
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private readonly http = inject(HttpClient);
   private readonly storage = inject(StorageService);
-  private readonly _user = signal<AuthUser | null>(
-    this.storage.get<AuthUser>(STORAGE_KEYS.USER)
+  private readonly router = inject(Router);
+
+  readonly token = signal<string | null>(this.storage.get(STORAGE_KEYS.token));
+  readonly username = signal<string | null>(this.storage.get(STORAGE_KEYS.username));
+  readonly tenantId = signal<string | null>(this.storage.get(STORAGE_KEYS.tenantId));
+
+  readonly role = signal<string | null>(this.storage.get(STORAGE_KEYS.role));
+  readonly permissions = signal<string[]>(
+    this.storage.get<string[]>(STORAGE_KEYS.permissions) ?? [],
   );
 
-  readonly currentUser = this._user.asReadonly();
+  readonly authenticated = computed(() => !!this.token());
+  readonly isSuperAdmin = computed(() => this.tenantId() === 'DEFAULT');
 
-  readonly isLoggedIn = computed(
-    () => !!this.getAccessToken()
-  );
+  login(payload: LoginRequest): Promise<ApiResponse<LoginResponseData>> {
+    return new Promise((resolve, reject) => {
+      this.http
+        .post<ApiResponse<LoginResponseData>>(
+          `${environment.apiUrl}/auth/login`,
+          payload,
+        )
+        .subscribe({
+          next: (res) => {
+            if (res?.success && res.data?.token) {
+              this.setSession(res.data);
+            }
 
-  readonly permissions = computed(
-    () => this._user()?.permissions ?? []
-  );
-
-  readonly role = computed(
-    () => this._user()?.role ?? null
-  );
-
-  readonly tenant = computed(
-  () => this._user()?.tenant ?? null
-);
-
-readonly siteTypes = computed(
-  () => this._user()?.siteTypes ?? []
-);
-
-readonly country = computed(
-  () => this._user()?.country ?? null
-);
-
-hasSiteType(
-  siteType: string
-): boolean {
-  return (
-    this.siteTypes().includes(
-      siteType as any
-    )
-  );
-}
-
-hasSingleSiteType(): boolean {
-  return this.siteTypes().length === 1;
-}
-
-  login(payload: LoginRequest): Observable<LoginResponse> {
-    if (this.env.useMockAuth) {
-      const response: LoginResponse = {
-        accessToken: 'mock-access-token',
-        refreshToken: 'mock-refresh-token',
-        user: MOCK_USER,
-      };
-
-      return of(response).pipe(
-        tap((mockResponse) => {
-          this.setSession(mockResponse);
-        })
-      );
-    }
-
-    return this.post<LoginResponse>(
-      API_ENDPOINTS.auth.login,
-      payload
-    ).pipe(
-      tap((response) => {
-        this.setSession(response);
-      })
-    );
+            resolve(res);
+          },
+          error: reject,
+        });
+    });
   }
 
-  logout(): Observable<unknown> {
-    if (this.env.useMockAuth) {
-      this.clearSession();
-      return of(true);
-    }
+  setSession(data: LoginResponseData): void {
+    this.storage.set(STORAGE_KEYS.token, data.token);
+    this.storage.set(STORAGE_KEYS.username, data.username);
+    this.storage.set(STORAGE_KEYS.tenantId, data.tenantId);
 
-    return this.post(
-      API_ENDPOINTS.auth.logout,
-      {}
-    ).pipe(
-      tap(() => {
-        this.clearSession();
-      })
-    );
+    this.token.set(data.token);
+    this.username.set(data.username);
+    this.tenantId.set(data.tenantId);
+
+    this.extractJwtSession(data.token, data.tenantId);
   }
 
-  initializeMockUser(): void {
-    if (!this.env.useMockAuth) return;
+  private extractJwtSession(token: string, tenantId: string): void {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
 
-    const existingUser =
-      this.storage.get<AuthUser>(STORAGE_KEYS.USER);
+      const jwtRole = payload.roles || null;
+      const role = tenantId === 'DEFAULT' ? 'SUPER_ADMIN' : jwtRole;
 
-    const existingToken =
-      this.storage.get<string>(STORAGE_KEYS.ACCESS_TOKEN);
+      const permissions = role === 'SUPER_ADMIN' ? ['*'] : [];
 
-    if (existingUser && existingToken) {
-      this._user.set(existingUser);
-      return;
+      this.storage.set(STORAGE_KEYS.role, role);
+      this.storage.set(STORAGE_KEYS.permissions, permissions);
+
+      this.role.set(role);
+      this.permissions.set(permissions);
+    } catch {
+      const role = tenantId === 'DEFAULT' ? 'SUPER_ADMIN' : null;
+      const permissions = role === 'SUPER_ADMIN' ? ['*'] : [];
+
+      this.storage.set(STORAGE_KEYS.role, role);
+      this.storage.set(STORAGE_KEYS.permissions, permissions);
+
+      this.role.set(role);
+      this.permissions.set(permissions);
     }
-
-    const response: LoginResponse = {
-      accessToken: 'mock-access-token',
-      refreshToken: 'mock-refresh-token',
-      user: MOCK_USER,
-    };
-
-    this.setSession(response);
-  }
-
-  setSession(response: LoginResponse): void {
-    this.storage.set(
-      STORAGE_KEYS.ACCESS_TOKEN,
-      response.accessToken
-    );
-
-    if (response.refreshToken) {
-      this.storage.set(
-        STORAGE_KEYS.REFRESH_TOKEN,
-        response.refreshToken
-      );
-    }
-
-    this.storage.set(
-      STORAGE_KEYS.USER,
-      response.user
-    );
-
-    this._user.set(response.user);
   }
 
   clearSession(): void {
-    this.storage.remove(STORAGE_KEYS.ACCESS_TOKEN);
-    this.storage.remove(STORAGE_KEYS.REFRESH_TOKEN);
-    this.storage.remove(STORAGE_KEYS.USER);
+    this.storage.remove(STORAGE_KEYS.token);
+    this.storage.remove(STORAGE_KEYS.username);
+    this.storage.remove(STORAGE_KEYS.tenantId);
+    this.storage.remove(STORAGE_KEYS.role);
+    this.storage.remove(STORAGE_KEYS.permissions);
 
-    this._user.set(null);
+    this.token.set(null);
+    this.username.set(null);
+    this.tenantId.set(null);
+    this.role.set(null);
+    this.permissions.set([]);
   }
 
-  getAccessToken(): string | null {
-    return this.storage.get<string>(
-      STORAGE_KEYS.ACCESS_TOKEN
-    );
+  logout(): void {
+    this.clearSession();
+    this.router.navigateByUrl('/login', { replaceUrl: true });
   }
 
-  getRefreshToken(): string | null {
-    return this.storage.get<string>(
-      STORAGE_KEYS.REFRESH_TOKEN
-    );
+  isLoggedIn(): boolean {
+    return this.authenticated();
   }
 
-  hasPermission(permission: string): boolean {
-    return this.permissions().includes(permission);
+  getToken(): string | null {
+    return this.token();
   }
 
-  hasAnyPermission(permissions: string[]): boolean {
-    return permissions.some((permission) =>
-      this.hasPermission(permission)
-    );
+  getUsername(): string | null {
+    return this.username();
+  }
+
+  getTenantId(): string | null {
+    return this.tenantId();
   }
 
   hasRole(role: string): boolean {
     return this.role() === role;
+  }
+
+  hasAnyRole(roles: string[]): boolean {
+    return roles.includes(this.role() ?? '');
+  }
+
+  hasPermission(permission: string): boolean {
+    const permissions = this.permissions();
+    return permissions.includes('*') || permissions.includes(permission);
+  }
+
+  hasAnyPermission(permissions: string[]): boolean {
+    return permissions.some((permission) => this.hasPermission(permission));
   }
 }

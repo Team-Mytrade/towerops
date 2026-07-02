@@ -1,0 +1,28 @@
+<header class="to-page-header">
+  <div>
+    @if (eyebrow()) {
+      <p class="label-tag">{{ eyebrow() }}</p>
+    }
+
+    <h1>{{ title() }}</h1>
+
+    @if (description()) {
+      <p class="to-page-header__description">{{ description() }}</p>
+    }
+  </div>
+
+  @if (actionLabel()) {
+    <button
+      type="button"
+      class="to-page-header__action"
+      data-testid="page-primary-action"
+      (click)="actionClick.emit()"
+    >
+      @if (actionIcon()) {
+        <i [class]="actionIcon()"></i>
+      }
+
+      {{ actionLabel() }}
+    </button>
+  }
+</header>

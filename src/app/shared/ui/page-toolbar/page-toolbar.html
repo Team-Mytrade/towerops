@@ -1,0 +1,23 @@
+<div class="to-page-toolbar">
+  <div class="to-page-toolbar__left">
+    @if (showSearch()) {
+      <label class="to-page-toolbar__search">
+        <i class="pi pi-search"></i>
+
+        <input
+          type="search"
+          [value]="search()"
+          [placeholder]="searchPlaceholder()"
+          data-testid="page-search-input"
+          (input)="searchChange.emit($any($event.target).value)"
+        />
+      </label>
+    }
+
+    <ng-content select="[toolbar-left]" />
+  </div>
+
+  <div class="to-page-toolbar__right">
+    <ng-content select="[toolbar-right]" />
+  </div>
+</div>

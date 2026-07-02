@@ -1,10 +1,10 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { AccessService } from '../services/access.service';
 
-import { PermissionService } from '../services/permission.service';
 
 export const permissionGuard: CanActivateFn = (route) => {
-  const permissionService = inject(PermissionService);
+  const access = inject(AccessService);
   const router = inject(Router);
 
   const permissions = route.data?.['permissions'] as string[] | undefined;
@@ -13,11 +13,7 @@ export const permissionGuard: CanActivateFn = (route) => {
     return true;
   }
 
-  const allowed = permissionService.hasAnyPermission(permissions);
-
-  if (allowed) {
-    return true;
-  }
-
-  return router.createUrlTree(['/no-access']);
+  return access.hasAnyPermission(permissions)
+    ? true
+    : router.createUrlTree(['/no-access']);
 };

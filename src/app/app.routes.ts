@@ -1,127 +1,76 @@
 import { Routes } from '@angular/router';
 
+import { authRoutes } from './auth/auth.routes';
+import { authGuard } from './core/guards/auth.guard';
 import { Shell } from './layout/shell/shell';
-import { WorkspaceLayout } from './layout/workspace-layout/workspace-layout';
 
 export const routes: Routes = [
-  {
-    path: 'auth',
-    loadChildren: () =>
-      import('./auth/auth.routes').then((m) => m.authRoutes),
-  },
-  {
-    path: '',
-    component: WorkspaceLayout,
-    children: [
-      {
-        path: '',
-        pathMatch: 'full',
-        redirectTo: 'sites',
-      },
-      {
-        path: 'select',
-        loadComponent: () =>
-          import('./pages/site-selector/site-selector').then(
-            (m) => m.SiteSelector
-          ),
-      },
-    ],
-  },
-
+  ...authRoutes,
 
   {
     path: '',
     component: Shell,
+    canActivate: [authGuard],
     children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+
       {
-        path: '',
-        pathMatch: 'full',
-        redirectTo: 'sites',
-      },
-      {
-        path: 'dashboard/:siteType',
+        path: 'site-category-selection',
         loadComponent: () =>
-          import('./pages/dashboard/dashboard').then(
-            (m) => m.Dashboard
+          import('./features/site-category-selection/site-category-selection.component').then(
+            (m) => m.SiteCategorySelectionComponent,
           ),
       },
+
       {
-  path: 'tickets',
-  loadComponent: () =>
-    import('./pages/work-orders/work-orders').then(
-      (m) => m.WorkOrdersComponent
-    ),
-},
-      {
-  path: 'users',
-  loadComponent: () =>
-    import('./pages/users/users.component').then(
-      (m) => m.UsersComponent
-    ),
-},
-      {
-        path: 'sites',
-        loadChildren: () => import('./pages/sites/sites.routes').then(
-          (m) => (m.SITES_ROUTES) as Routes
-        ),
-      },
-      {
-        path: 'maintenance',
+        path: 'dashboard',
         loadComponent: () =>
-          import('./pages/maintenance/maintenance').then(
-            (m) => m.MaintenanceComponent
-          ),
+          import('./features/dashboard/dashboard').then((m) => m.Dashboard),
       },
+
       {
-        path: 'assets',
+        path: 'dashboard/site-category/:category',
         loadComponent: () =>
-          import('./pages/assets/assets.component').then(
-            (m) => m.AssetsComponent
-          ),
+          import('./features/dashboard/dashboard').then((m) => m.Dashboard),
       },
-      {
-        path: 'alerts',
-        loadComponent: () =>
-          import('./pages/alerts/alerts.component').then(
-            (m) => m.AlertsComponent
-          ),
-      },
-      {
-        path: 'map',
-        loadComponent: () =>
-          import('./pages/network-map/network-map.component').then(
-            (m) => m.NetworkMapComponent
-          ),
-      },
-      {
-        path: 'settings',
-        loadComponent: () =>
-          import('./pages/settings/settings.component').then(
-            (m) => m.SettingsComponent
-          ),
-      },
-      {
-        path: 'no-access',
-        loadComponent: () =>
-          import('./shared/pages/no-access/no-access.page').then(
-            (m) => m.NoAccessPage
-          ),
-      },
-      {
-        path: 'server-error',
-        loadComponent: () =>
-          import('./shared/pages/server-error/server-error.page').then(
-            (m) => m.ServerErrorPage
-          ),
-      },
+
+      // {
+      //   path: 'technician-dashboard',
+      //   loadComponent: () =>
+      //     import('./features/technician-dashboard/technician-dashboard.component').then(
+      //       (m) => m.TechnicianDashboardComponent,
+      //     ),
+      // },
+
+      { path: 'home', loadComponent: () => import('./features/home/home').then(m => m.Home) },
+
+      { path: 'tenants', loadComponent: () => import('./features/tenants/tenants').then(m => m.Tenants) },
+      { path: 'sites', loadComponent: () => import('./features/sites/sites').then(m => m.Sites) },
+      { path: 'devices', loadComponent: () => import('./features/devices/devices').then(m => m.Devices) },
+      { path: 'device-models', loadComponent: () => import('./features/device-models/device-models').then(m => m.DeviceModels) },
+      { path: 'map', loadComponent: () => import('./features/network-map/network-map').then(m => m.NetworkMap) },
+
+      { path: 'alerts', loadComponent: () => import('./features/alerts/alerts').then(m => m.Alerts) },
+      { path: 'alarms', loadComponent: () => import('./features/alarms/alarms').then(m => m.Alarms) },
+      { path: 'tickets', loadComponent: () => import('./features/tickets/tickets').then(m => m.Tickets) },
+      { path: 'work-orders', loadComponent: () => import('./features/work-orders/work-orders').then(m => m.WorkOrders) },
+      { path: 'maintenance', loadComponent: () => import('./features/maintenance/maintenance').then(m => m.Maintenance) },
+      { path: 'monitoring', loadComponent: () => import('./features/monitoring/monitoring').then(m => m.Monitoring) },
+      { path: 'approvals', loadComponent: () => import('./features/approvals/approvals').then(m => m.Approvals) },
+
+      { path: 'users', loadComponent: () => import('./features/users/users').then(m => m.Users) },
+      { path: 'technicians', loadComponent: () => import('./features/technicians/technicians').then(m => m.Technicians) },
+      { path: 'roles', loadComponent: () => import('./features/roles/roles').then(m => m.Roles) },
+      { path: 'rules', loadComponent: () => import('./features/rules/rules').then(m => m.Rules) },
+
+      { path: 'configurations', loadComponent: () => import('./features/configurations/configurations').then(m => m.Configurations) },
+      { path: 'notifications', loadComponent: () => import('./features/notification-configs/notification-configs').then(m => m.NotificationConfigs) },
+      { path: 'audit-logs', loadComponent: () => import('./features/audit-logs/audit-logs').then(m => m.AuditLogs) },
     ],
   },
 
   {
     path: '**',
-    loadComponent: () =>
-      import('./shared/pages/not-found/not-found.page').then(
-        (m) => m.NotFoundPage
-      ),
+    redirectTo: 'login',
   },
 ];

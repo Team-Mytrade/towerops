@@ -1,0 +1,397 @@
+<section class="to-page" data-testid="rules-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Rule Engine</h1>
+      <p class="to-page-description">
+        Configure device conditions, alert severity and automated actions.
+      </p>
+    </div>
+
+    <p-button
+      label="Create Rule"
+      icon="pi pi-plus"
+      data-testid="create-rule-btn"
+      (click)="openCreateRule()"
+    />
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search rules..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        data-testid="rule-search-input"
+      />
+
+      <p-select
+        [options]="enabledOptions"
+        [ngModel]="enabledFilter()"
+        (ngModelChange)="enabledFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Status"
+        appendTo="body"
+        data-testid="rule-status-filter"
+      />
+
+      <p-select
+        [options]="siteOptions()"
+        [(ngModel)]="newRule.siteCode"
+        optionLabel="label"
+        optionValue="value"
+        [filter]="true"
+        filterBy="label"
+        appendTo="body"
+        placeholder="Filter by site"
+        data-testid="rule-site-filter"
+      />
+
+      <p-select
+        [options]="deviceOptions()"
+        [(ngModel)]="newRule.deviceId"
+        optionLabel="label"
+        optionValue="value"
+        [filter]="true"
+        filterBy="label"
+        appendTo="body"
+        placeholder="Filter by device"
+        data-testid="rule-device-filter"
+      />
+
+      <p-button
+        label="Load Rules"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [loading]="loading()"
+        data-testid="load-device-rules-btn"
+        (click)="loadRulesForDevice()"
+      />
+    </div>
+  </div>
+
+  <div class="to-card">
+    <p-table
+      [value]="filteredRules()"
+      dataKey="id"
+      [rowHover]="true"
+      [loading]="loading()"
+      styleClass="to-prime-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Rule</th>
+          <th>Site</th>
+          <th>Device</th>
+          <th>Action</th>
+          <th>Severity</th>
+          <th>Priority</th>
+          <th>Status</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-rule>
+        <tr
+          role="button"
+          tabindex="0"
+          [attr.data-testid]="'rule-row-' + rule.id"
+          (click)="openRule(rule)"
+        >
+          <td>
+            <strong>{{ rule.name }}</strong>
+            <span>{{ rule.ruleCode }}</span>
+          </td>
+
+          <td>{{ siteLabel(rule.siteCode) }}</td>
+          <td>{{ deviceLabel(rule.deviceId) }}</td>
+          <td>{{ rule.actionType }} → {{ rule.actionTarget || '-' }}</td>
+
+          <td>
+            <to-status-badge
+              [label]="rule.severity"
+              [tone]="severityTone(rule.severity)"
+            />
+          </td>
+
+          <td>{{ rule.priority }}</td>
+
+          <td>
+            <to-status-badge
+              [label]="statusLabel(rule.enabled)"
+              [tone]="statusTone(rule.enabled)"
+            />
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7">Select site and device, then load rules.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    [size]="drawerSize"
+    [title]="drawerTitle"
+    [eyebrow]="drawerEyebrow"
+    (closed)="closeDrawer()"
+  >
+    @if (drawerMode() === 'view' && selectedRule(); as rule) {
+      <div class="to-detail-grid">
+        <to-detail-field label="Rule Code" [value]="rule.ruleCode" />
+        <to-detail-field label="Name" [value]="rule.name" />
+        <to-detail-field label="Description" [value]="rule.description || '-'" />
+        <to-detail-field label="Category" [value]="rule.category" />
+        <to-detail-field label="Scope" [value]="rule.scope" />
+        <to-detail-field label="Tenant" [value]="rule.tenantId" />
+        <to-detail-field label="Site" [value]="siteLabel(rule.siteCode)" />
+        <to-detail-field label="Device" [value]="deviceLabel(rule.deviceId)" />
+        <to-detail-field label="Action Type" [value]="rule.actionType" />
+        <to-detail-field label="Action Target" [value]="rule.actionTarget || '-'" />
+        <to-detail-field label="Severity" [value]="rule.severity" />
+        <to-detail-field label="Priority" [value]="rule.priority" />
+        <to-detail-field label="Status" [value]="statusLabel(rule.enabled)" />
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Conditions</h3>
+
+        <div class="to-rule-list">
+          @for (condition of rule.definition.conditions; track $index) {
+            <article>
+              IF {{ condition.field }} {{ condition.operator }} {{ condition.value }}
+              {{ condition.logicalOperator }}
+            </article>
+          } @empty {
+            <article>No conditions configured.</article>
+          }
+        </div>
+      </div>
+    }
+
+    @if (drawerMode() === 'create') {
+      <div class="to-drawer-section">
+        <h3>Rule Details</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Rule Code</span>
+            <input
+              pInputText
+              [(ngModel)]="newRule.ruleCode"
+              placeholder="RULE_SIGNAL_DROP"
+              data-testid="rule-code-input"
+            />
+          </label>
+
+          <label>
+            <span>Rule Name</span>
+            <input
+              pInputText
+              [(ngModel)]="newRule.name"
+              placeholder="Signal Drop Rule"
+              data-testid="rule-name-input"
+            />
+          </label>
+
+          <label class="to-col-span-2">
+            <span>Description</span>
+            <textarea
+              pInputText
+              rows="3"
+              [(ngModel)]="newRule.description"
+              placeholder="Describe this rule"
+              data-testid="rule-description-input"
+            ></textarea>
+          </label>
+
+          <label>
+            <span>Scope</span>
+            <p-select
+              [options]="scopeOptions"
+              [(ngModel)]="newRule.scope"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              data-testid="rule-scope-select"
+            />
+          </label>
+
+          <label>
+            <span>Site</span>
+            <p-select
+              [options]="siteOptions()"
+              [(ngModel)]="newRule.siteCode"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+              appendTo="body"
+              placeholder="Search and select site"
+              data-testid="rule-site-select"
+            />
+          </label>
+
+          <label>
+            <span>Device</span>
+            <p-select
+              [options]="deviceOptions()"
+              [(ngModel)]="newRule.deviceId"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+              appendTo="body"
+              placeholder="Search and select device"
+              data-testid="rule-device-select"
+            />
+          </label>
+
+          <label>
+            <span>Action Type</span>
+            <p-select
+              [options]="actionTypeOptions"
+              [(ngModel)]="newRule.actionType"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              data-testid="rule-action-type-select"
+            />
+          </label>
+
+          <label>
+            <span>Action Target</span>
+            <input
+              pInputText
+              [(ngModel)]="newRule.actionTarget"
+              placeholder="Tenant Admin / Critical Alert"
+              data-testid="rule-action-target-input"
+            />
+          </label>
+
+          <label>
+            <span>Severity</span>
+            <p-select
+              [options]="severityOptions"
+              [(ngModel)]="newRule.severity"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              data-testid="rule-severity-select"
+            />
+          </label>
+
+          <label>
+            <span>Priority</span>
+            <input
+              pInputText
+              type="number"
+              [(ngModel)]="newRule.priority"
+              data-testid="rule-priority-input"
+            />
+          </label>
+
+          <label>
+            <span>Status</span>
+            <p-select
+              [options]="activeOptions"
+              [(ngModel)]="newRule.enabled"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              data-testid="rule-enabled-select"
+            />
+          </label>
+        </div>
+      </div>
+
+      <div class="to-drawer-section">
+        <div class="to-section-row">
+          <h3>Conditions</h3>
+
+          <p-button
+            label="Add"
+            size="small"
+            severity="secondary"
+            data-testid="add-rule-condition-btn"
+            (click)="addCondition()"
+          />
+        </div>
+
+        <div class="to-rule-builder-list">
+          @for (condition of newRule.definition.conditions; track $index) {
+            <div class="to-rule-builder-row">
+              <p-select
+                [options]="fieldOptions"
+                [(ngModel)]="condition.field"
+                optionLabel="label"
+                optionValue="value"
+                [filter]="true"
+                filterBy="label"
+                appendTo="body"
+                placeholder="Field"
+              />
+
+              <p-select
+                [options]="operatorOptions"
+                [(ngModel)]="condition.operator"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                placeholder="Operator"
+              />
+
+              <input
+                pInputText
+                [(ngModel)]="condition.value"
+                placeholder="Value"
+              />
+
+              <p-select
+                [options]="logicalOperatorOptions"
+                [(ngModel)]="condition.logicalOperator"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                placeholder="Logic"
+              />
+
+              <p-button
+                icon="pi pi-trash"
+                severity="danger"
+                [text]="true"
+                (click)="removeCondition($index)"
+              />
+            </div>
+          } @empty {
+            <div class="to-empty-state">
+              No conditions added.
+            </div>
+          }
+        </div>
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button
+          label="Cancel"
+          severity="secondary"
+          data-testid="cancel-rule-btn"
+          (click)="closeDrawer()"
+        />
+
+        <p-button
+          label="Save Rule"
+          icon="pi pi-check"
+          [loading]="saving()"
+          data-testid="save-rule-btn"
+          (click)="saveRule()"
+        />
+      </ng-container>
+    }
+  </to-drawer>
+</section>

@@ -1,0 +1,37 @@
+:host {
+  display: block;
+}
+
+.to-section {
+  border: 1px solid var(--to-border);
+  border-radius: var(--to-radius-lg);
+  background: var(--to-surface);
+}
+
+.to-section__head {
+  min-height: 52px;
+  padding: 12px;
+  border-bottom: 1px solid var(--to-border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  h2 {
+    margin: 3px 0 0;
+    font-family: var(--to-font-heading);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--to-text);
+  }
+
+  p:not(.label-tag) {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--to-muted);
+  }
+}
+
+.to-section__body {
+  padding: 12px;
+}

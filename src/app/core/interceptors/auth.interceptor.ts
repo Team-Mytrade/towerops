@@ -1,44 +1,30 @@
-import {
-  HttpInterceptorFn,
-  HttpRequest,
-} from '@angular/common/http';
-
+import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 
-import { AuthService } from '../services/auth.service';
+import { STORAGE_KEYS } from '../constants/storage.constants';
+import { StorageService } from '../services/storage.service';
 
-const AUTH_EXCLUDED_URLS = [
-  '/auth/login',
-  '/auth/refresh',
-  '/auth/forgot-password',
-  '/auth/reset-password',
-];
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const storage = inject(StorageService);
 
-export const authInterceptor: HttpInterceptorFn = (
-  req,
-  next
-) => {
-  const authService = inject(AuthService);
+  const token = storage.get(STORAGE_KEYS.token);
+  const username = storage.get(STORAGE_KEYS.username);
+  const tenantId = storage.get(STORAGE_KEYS.tenantId);
 
-  const isExcluded = AUTH_EXCLUDED_URLS.some(
-    (url) => req.url.includes(url)
-  );
+  let headers = req.headers;
 
-  if (isExcluded) {
-    return next(req);
+  if (token) {
+    headers = headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const token = authService.getAccessToken();
-
-  if (!token) {
-    return next(req);
+  if (tenantId) {
+    headers = headers.set('X-Tenant-Id', tenantId);
+    headers = headers.set('tenantId', tenantId);
   }
 
-  const authRequest = req.clone({
-    setHeaders: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  if (username) {
+    headers = headers.set('username', username);
+  }
 
-  return next(authRequest);
+  return next(req.clone({ headers }));
 };

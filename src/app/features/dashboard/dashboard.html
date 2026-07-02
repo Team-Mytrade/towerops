@@ -1,0 +1,78 @@
+<section class="to-page dashboard-page" data-testid="dashboard-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Platform Overview</h1>
+      <p class="to-page-description">
+        Monitor tenants, sites, devices, alerts and pending approvals.
+      </p>
+    </div>
+
+    <button type="button" class="refresh-btn">
+      <i class="pi pi-refresh"></i>
+      Refresh
+    </button>
+  </header>
+
+  <div class="dashboard-kpis">
+    @for (stat of stats(); track stat.label) {
+      <article class="dashboard-kpi">
+        <div class="dashboard-kpi__icon" [class]="stat.tone">
+          <i [class]="stat.icon"></i>
+        </div>
+
+        <div>
+          <span>{{ stat.label }}</span>
+          <strong>{{ stat.value }}</strong>
+          <p>{{ stat.meta }}</p>
+        </div>
+      </article>
+    }
+  </div>
+
+  <div class="dashboard-grid">
+    <article class="dashboard-card">
+      <header>
+        <h2>Tenant Health</h2>
+        <span>{{ tenants().length }} tenants</span>
+      </header>
+
+      <div class="tenant-list">
+        @for (tenant of tenants(); track tenant.name) {
+          <div class="tenant-row">
+            <div>
+              <strong>{{ tenant.name }}</strong>
+              <span>{{ tenant.sites }} sites · {{ tenant.devices }} devices</span>
+            </div>
+
+            <div class="tenant-row__right">
+              <small>{{ tenant.alerts }} alerts</small>
+              <to-status-badge
+                [label]="tenant.status"
+                [tone]="statusTone(tenant.status)"
+              />
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="dashboard-card">
+      <header>
+        <h2>Operational Flow</h2>
+      </header>
+
+      <div class="flow-list">
+        @for (step of flowSteps; track step.label) {
+          <div class="flow-item">
+            <i [class]="step.icon"></i>
+
+            <div>
+              <strong>{{ step.label }}</strong>
+              <span>{{ step.description }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+  </div>
+</section>

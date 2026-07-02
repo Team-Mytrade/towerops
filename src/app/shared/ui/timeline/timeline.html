@@ -1,0 +1,19 @@
+<div class="to-timeline">
+  @for (item of items(); track item.title + item.time) {
+    <div class="to-timeline__item" [class]="'tone-' + (item.tone || 'default')">
+      <span class="to-timeline__dot"></span>
+
+      <div class="to-timeline__content">
+        <strong>{{ item.title }}</strong>
+
+        @if (item.description) {
+          <p>{{ item.description }}</p>
+        }
+
+        @if (item.time) {
+          <small>{{ item.time }}</small>
+        }
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,92 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.to-no-access {
+  min-height: calc(100vh - var(--to-topbar-h));
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 32px;
+
+  background: var(--to-bg);
+}
+
+.to-no-access__card {
+  width: min(480px, 100%);
+
+  background: var(--to-surface);
+
+  border: 1px solid var(--to-border);
+
+  border-radius: var(--to-radius-xl);
+
+  box-shadow: var(--to-shadow-md);
+
+  padding: 48px;
+
+  text-align: center;
+}
+
+.to-no-access__icon {
+  width: 82px;
+  height: 82px;
+
+  margin: 0 auto 24px;
+
+  border-radius: 50%;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(239, 68, 68, .08);
+
+  color: var(--to-danger);
+
+  font-size: 34px;
+}
+
+.to-no-access h1 {
+  margin: 0;
+
+  font-size: 28px;
+  font-weight: 700;
+
+  color: var(--to-text);
+}
+
+.to-no-access p {
+  margin: 18px 0 32px;
+
+  color: var(--to-muted);
+
+  line-height: 1.7;
+
+  font-size: 15px;
+}
+
+.to-no-access__actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+
+  .to-no-access__card {
+    padding: 32px 24px;
+  }
+
+  .to-no-access__actions {
+    flex-direction: column;
+  }
+
+  :host ::ng-deep .p-button {
+    width: 100%;
+  }
+
+}

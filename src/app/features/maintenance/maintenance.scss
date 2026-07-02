@@ -1,0 +1,93 @@
+:host {
+  display: block;
+}
+
+.to-toolbar input[pInputText] {
+  width: 280px;
+}
+
+.to-card {
+  overflow: hidden;
+}
+
+:host ::ng-deep .to-prime-table tbody tr {
+  cursor: pointer;
+}
+
+:host ::ng-deep .to-prime-table td strong {
+  display: block;
+  font-weight: 500;
+  color: var(--to-text);
+}
+
+:host ::ng-deep .to-prime-table td span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--to-muted);
+}
+
+.to-detail-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.to-drawer-section {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--to-border-soft);
+}
+
+.to-drawer-section h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--to-text);
+}
+
+.to-description {
+  margin: 0;
+  border: 1px solid var(--to-border);
+  border-radius: var(--to-radius-lg);
+  background: var(--to-bg);
+  padding: 12px;
+  color: var(--to-text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.to-form-grid-wide {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.to-form-grid-wide label {
+  display: grid;
+  gap: 6px;
+}
+
+.to-form-grid-wide span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--to-muted);
+}
+
+.to-form-grid-wide input[pInputText],
+.to-form-grid-wide p-select,
+textarea[pInputText] {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .to-toolbar input[pInputText] {
+    width: 100%;
+  }
+
+  .to-form-grid-wide {
+    grid-template-columns: 1fr;
+  }
+}

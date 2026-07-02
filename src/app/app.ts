@@ -1,7 +1,6 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
-import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -9,13 +8,7 @@ import { AuthService } from './core/services/auth.service';
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App  implements OnInit {
-  constructor(
-    private readonly auth: AuthService
-  ) {}
+export class App {
 
-  ngOnInit(): void {
-    this.auth.initializeMockUser();
-  }
   protected readonly title = signal('towerops');
 }

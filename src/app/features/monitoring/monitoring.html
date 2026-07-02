@@ -1,0 +1,221 @@
+<section class="to-page" data-testid="monitoring-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Monitoring</h1>
+      <p class="to-page-description">
+        Live network telemetry, device health and operational status across all sites.
+      </p>
+    </div>
+
+    <p-button label="Refresh" icon="pi pi-refresh" severity="secondary" />
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search live devices..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Status"
+      />
+    </div>
+  </div>
+
+  <div class="to-kpi-grid">
+    <article class="to-monitor-kpi healthy">
+      <span>Healthy</span>
+      <strong>{{ summary().healthy }}</strong>
+    </article>
+
+    <article class="to-monitor-kpi warning">
+      <span>Warning</span>
+      <strong>{{ summary().warning }}</strong>
+    </article>
+
+    <article class="to-monitor-kpi critical">
+      <span>Critical</span>
+      <strong>{{ summary().critical }}</strong>
+    </article>
+
+    <article class="to-monitor-kpi offline">
+      <span>Offline</span>
+      <strong>{{ summary().offline }}</strong>
+    </article>
+  </div>
+
+  <div class="to-grid-2">
+    <article class="to-card">
+      <header class="to-card-header">
+        <h2 class="to-card-title">Device Health</h2>
+      </header>
+
+      <div class="to-card-body">
+        <div class="to-health-bars">
+          <div>
+            <span>Healthy</span>
+            <strong>{{ summary().healthy }}</strong>
+          </div>
+          <div class="bar">
+            <i style="width: 70%"></i>
+          </div>
+
+          <div>
+            <span>Warning</span>
+            <strong>{{ summary().warning }}</strong>
+          </div>
+          <div class="bar warning">
+            <i style="width: 20%"></i>
+          </div>
+
+          <div>
+            <span>Critical</span>
+            <strong>{{ summary().critical }}</strong>
+          </div>
+          <div class="bar critical">
+            <i style="width: 10%"></i>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="to-card">
+      <header class="to-card-header">
+        <h2 class="to-card-title">Live Sensor Snapshot</h2>
+      </header>
+
+      <div class="to-card-body">
+        <div class="to-live-snapshot">
+          <article>
+            <span>Avg Temperature</span>
+            <strong>32°C</strong>
+          </article>
+
+          <article>
+            <span>Avg Signal</span>
+            <strong>76%</strong>
+          </article>
+
+          <article>
+            <span>Avg Battery</span>
+            <strong>64%</strong>
+          </article>
+
+          <article>
+            <span>Live Connections</span>
+            <strong>{{ summary().total }}</strong>
+          </article>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="to-card">
+    <p-table
+      [value]="filteredDevices()"
+      dataKey="id"
+      [rowHover]="true"
+      styleClass="to-prime-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Device</th>
+          <th>Site</th>
+          <th>Type</th>
+          <th>Temperature</th>
+          <th>Battery</th>
+          <th>Signal</th>
+          <th>Power</th>
+          <th>Status</th>
+          <th>Last Seen</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-device>
+        <tr role="button" tabindex="0" (click)="openDevice(device)">
+          <td>
+            <strong>{{ device.name }}</strong>
+            <span>{{ device.id }}</span>
+          </td>
+          <td>{{ device.site }}</td>
+          <td>{{ device.type }}</td>
+          <td>{{ device.temperature }}°C</td>
+          <td>{{ device.battery }}%</td>
+          <td>{{ device.signal }}%</td>
+          <td>{{ device.power }}</td>
+          <td>
+            <to-status-badge
+              [label]="device.status"
+              [tone]="statusTone(device.status)"
+            />
+          </td>
+          <td>{{ device.lastSeen }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    size="compact"
+    [title]="selectedDevice()?.name || 'Live Device'"
+    [eyebrow]="selectedDevice()?.id || ''"
+    (closed)="closeDrawer()"
+  >
+    @if (selectedDevice(); as device) {
+      <div class="to-detail-grid">
+        <to-detail-field label="Site" [value]="device.site" />
+        <to-detail-field label="Type" [value]="device.type" />
+        <to-detail-field label="Status" [value]="device.status" />
+        <to-detail-field label="Power" [value]="device.power" />
+        <to-detail-field label="Latency" [value]="device.latency" />
+        <to-detail-field label="Uptime" [value]="device.uptime" />
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Telemetry</h3>
+
+        <div class="to-live-snapshot">
+          <article>
+            <span>Temperature</span>
+            <strong>{{ device.temperature }}°C</strong>
+          </article>
+
+          <article>
+            <span>Battery</span>
+            <strong>{{ device.battery }}%</strong>
+          </article>
+
+          <article>
+            <span>Signal</span>
+            <strong>{{ device.signal }}%</strong>
+          </article>
+
+          <article>
+            <span>Heartbeat</span>
+            <strong>{{ device.lastSeen }}</strong>
+          </article>
+        </div>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Timeline</h3>
+        <to-timeline [items]="timeline()" />
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button label="Maintenance" icon="pi pi-wrench" severity="secondary" />
+        <p-button label="Sync" icon="pi pi-refresh" />
+      </ng-container>
+    }
+  </to-drawer>
+</section>

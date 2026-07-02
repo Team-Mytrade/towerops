@@ -1,0 +1,220 @@
+:host {
+  display: block;
+}
+
+.to-toolbar input[pInputText] {
+  width: 320px;
+}
+
+.to-roles-layout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 16px;
+  min-height: calc(100vh - var(--to-topbar-h) - 190px);
+}
+
+.to-role-list,
+.to-permission-panel {
+  overflow: hidden;
+}
+
+.to-role-list .to-card-header span {
+  font-size: 12px;
+  color: var(--to-muted);
+}
+
+.to-role-list__body {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  max-height: calc(100vh - var(--to-topbar-h) - 250px);
+  overflow: auto;
+}
+
+.to-role-card {
+  width: 100%;
+  border: 1px solid var(--to-border);
+  border-radius: var(--to-radius-lg);
+  background: var(--to-surface);
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  gap: 12px;
+}
+
+.to-role-card:hover {
+  background: var(--to-surface-hover);
+}
+
+.to-role-card.active {
+  border-color: var(--to-primary);
+  background: var(--to-primary-soft);
+  box-shadow: var(--to-shadow-sm);
+}
+
+.to-role-card strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--to-text);
+}
+
+.to-role-card p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--to-muted);
+}
+
+.to-role-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.to-role-card__meta span {
+  font-size: 12px;
+  color: var(--to-muted);
+}
+
+.to-permission-panel .to-card-header {
+  min-height: 68px;
+}
+
+.to-permission-panel .to-card-header p {
+  margin: 5px 0 0;
+  max-width: 620px;
+  font-size: 12px;
+  color: var(--to-muted);
+  line-height: 1.45;
+}
+
+.to-role-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid var(--to-border);
+}
+
+.to-permission-matrix {
+  overflow: auto;
+}
+
+:host ::ng-deep .to-permission-matrix .p-datatable-table {
+  min-width: 760px;
+}
+
+:host ::ng-deep .to-prime-table tbody tr {
+  cursor: default;
+}
+
+:host ::ng-deep .to-prime-table td strong {
+  font-weight: 500;
+  color: var(--to-text);
+}
+
+:host ::ng-deep .to-prime-table th.center,
+:host ::ng-deep .to-prime-table td.center {
+  text-align: center;
+}
+
+.to-drawer-section {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--to-border-soft);
+}
+
+.to-drawer-section h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--to-text);
+}
+
+.to-form-grid-wide {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.to-form-grid-wide label {
+  display: grid;
+  gap: 6px;
+}
+
+.to-form-grid-wide span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--to-muted);
+}
+
+.to-form-grid-wide input[pInputText],
+.to-form-grid-wide textarea[pInputText],
+.to-form-grid-wide p-select {
+  width: 100%;
+  min-width: 0;
+}
+
+.to-col-span-2 {
+  grid-column: span 2;
+}
+.to-permission-check-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.to-permission-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid var(--to-border);
+  border-radius: 12px;
+  background: var(--to-card);
+}
+
+.to-permission-check span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.to-permission-check small {
+  color: var(--to-text-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 1000px) {
+  .to-roles-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .to-role-list__body {
+    max-height: none;
+  }
+
+  .to-role-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .to-toolbar input[pInputText] {
+    width: 100%;
+  }
+
+  .to-form-grid-wide,
+  .to-role-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .to-col-span-2 {
+    grid-column: span 1;
+  }
+}

@@ -1,0 +1,289 @@
+<section class="to-page" data-testid="notification-configs-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Notification Configs</h1>
+      <p class="to-page-description">
+        Configure email, SMS and websocket notifications for operational events.
+      </p>
+    </div>
+
+    <div class="flex gap-2">
+      <p-button
+        label="Refresh"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [loading]="loading()"
+        (click)="loadConfigs()"
+      />
+
+      <p-button
+        label="Create Config"
+        icon="pi pi-plus"
+        data-testid="create-notification-config-btn"
+        (click)="openCreate()"
+      />
+    </div>
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search notification configs..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+
+      <p-select
+        [options]="severityOptions"
+        [ngModel]="severityFilter()"
+        (ngModelChange)="severityFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Severity"
+        appendTo="body"
+      />
+
+      <p-select
+        [options]="activeOptions"
+        [ngModel]="activeFilter()"
+        (ngModelChange)="activeFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Status"
+        appendTo="body"
+      />
+    </div>
+  </div>
+
+  <div class="to-card">
+    <p-table
+      [value]="filteredConfigs()"
+      dataKey="id"
+      [rowHover]="true"
+      [loading]="loading()"
+      styleClass="to-prime-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Config</th>
+          <th>Event</th>
+          <th>Severity</th>
+          <th>Channels</th>
+          <th>Email Recipients</th>
+          <th>Phone Recipients</th>
+          <th>Status</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-config>
+        <tr role="button" tabindex="0" (click)="openConfig(config)">
+          <td>
+            <strong>{{ config.name }}</strong>
+            <span>{{ config.subject }}</span>
+          </td>
+
+          <td>{{ config.eventType }}</td>
+
+          <td>
+            <to-status-badge
+              [label]="config.severity"
+              [tone]="severityTone(config.severity)"
+            />
+          </td>
+
+          <td>{{ channels(config) }}</td>
+          <td>{{ config.emailRecipients || '-' }}</td>
+          <td>{{ config.phoneRecipients || '-' }}</td>
+
+          <td>
+            <to-status-badge
+              [label]="statusLabel(config.active)"
+              [tone]="statusTone(config.active)"
+            />
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7">No notification configs found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    [size]="drawerSize"
+    [title]="drawerTitle"
+    [eyebrow]="drawerEyebrow"
+    (closed)="closeDrawer()"
+  >
+    @if (drawerMode() === 'view' && selected(); as config) {
+      <div class="to-detail-grid">
+        <to-detail-field label="Name" [value]="config.name" />
+        <to-detail-field label="Event Type" [value]="config.eventType" />
+        <to-detail-field label="Severity" [value]="config.severity" />
+        <to-detail-field label="Channels" [value]="channels(config)" />
+        <to-detail-field label="Email Enabled" [value]="config.emailEnabled ? 'Yes' : 'No'" />
+        <to-detail-field label="SMS Enabled" [value]="config.smsEnabled ? 'Yes' : 'No'" />
+        <to-detail-field label="Websocket Enabled" [value]="config.websocketEnabled ? 'Yes' : 'No'" />
+        <to-detail-field label="Status" [value]="statusLabel(config.active)" />
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Subject</h3>
+        <p class="to-description">{{ config.subject || '-' }}</p>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Body</h3>
+        <p class="to-description">{{ config.body || '-' }}</p>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Recipients</h3>
+        <to-detail-field label="Email Recipients" [value]="config.emailRecipients || '-'" />
+        <to-detail-field label="Phone Recipients" [value]="config.phoneRecipients || '-'" />
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button
+          label="Edit"
+          icon="pi pi-pencil"
+          severity="secondary"
+          (click)="editConfig()"
+        />
+
+        <p-button
+          label="Delete"
+          icon="pi pi-trash"
+          severity="danger"
+          [loading]="saving()"
+          (click)="deleteConfig()"
+        />
+      </ng-container>
+    }
+
+    @if (drawerMode() === 'create' || drawerMode() === 'edit') {
+      <div class="to-drawer-section">
+        <h3>Config Details</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Name</span>
+            <input pInputText [(ngModel)]="form.name" placeholder="Critical Alert Email" />
+          </label>
+
+          <label>
+            <span>Event Type</span>
+            <p-select
+              [options]="eventTypeOptions"
+              [(ngModel)]="form.eventType"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+              appendTo="body"
+            />
+          </label>
+
+          <label>
+            <span>Severity</span>
+            <p-select
+              [options]="configSeverityOptions"
+              [(ngModel)]="form.severity"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+            />
+          </label>
+
+          <label>
+            <span>Status</span>
+            <p-select
+              [options]="statusOptions"
+              [(ngModel)]="form.active"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+            />
+          </label>
+
+          <label class="to-col-span-2">
+            <span>Subject</span>
+            <input pInputText [(ngModel)]="form.subject" placeholder="Alert raised: siteCode" />
+          </label>
+
+          <label class="to-col-span-2">
+            <span>Body</span>
+            <textarea
+              pInputText
+              rows="5"
+              [(ngModel)]="form.body"
+              placeholder="Write notification body..."
+            ></textarea>
+          </label>
+        </div>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Channels</h3>
+
+        <div class="to-channel-grid">
+          <label>
+            <p-checkbox [(ngModel)]="form.emailEnabled" [binary]="true" />
+            <span>Email</span>
+          </label>
+
+          <label>
+            <p-checkbox [(ngModel)]="form.smsEnabled" [binary]="true" />
+            <span>SMS</span>
+          </label>
+
+          <label>
+            <p-checkbox [(ngModel)]="form.websocketEnabled" [binary]="true" />
+            <span>Websocket</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Recipients</h3>
+
+        <div class="to-form-grid-wide">
+          <label class="to-col-span-2">
+            <span>Email Recipients</span>
+            <input
+              pInputText
+              [(ngModel)]="form.emailRecipients"
+              placeholder="admin@example.com,noc@example.com"
+            />
+          </label>
+
+          <label class="to-col-span-2">
+            <span>Phone Recipients</span>
+            <input
+              pInputText
+              [(ngModel)]="form.phoneRecipients"
+              placeholder="+971500001111,+971500002222"
+            />
+          </label>
+        </div>
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button label="Cancel" severity="secondary" (click)="closeDrawer()" />
+
+        <p-button
+          [label]="drawerMode() === 'edit' ? 'Save Changes' : 'Save Config'"
+          icon="pi pi-check"
+          [loading]="saving()"
+          (click)="saveConfig()"
+        />
+      </ng-container>
+    }
+  </to-drawer>
+</section>

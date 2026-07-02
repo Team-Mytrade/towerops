@@ -1,0 +1,291 @@
+<section class="to-page" data-testid="alerts-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Alerts</h1>
+      <p class="to-page-description">
+        Review raised sensor alerts, acknowledge issues and resolve incidents.
+      </p>
+    </div>
+
+    <div class="flex gap-2">
+      <p-button
+        label="Create Alert"
+        icon="pi pi-plus"
+        data-testid="create-alert-btn"
+        (click)="openCreateAlert()"
+      />
+
+      <p-button
+        label="Open Alerts"
+        icon="pi pi-bell"
+        severity="secondary"
+        [loading]="loading()"
+        data-testid="open-alerts-btn"
+        (click)="loadOpenAlerts()"
+      />
+
+      <p-button
+        label="Refresh"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [loading]="loading()"
+        data-testid="refresh-alerts-btn"
+        (click)="loadPageData()"
+      />
+    </div>
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search alerts..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        data-testid="alert-search-input"
+      />
+
+      <p-select
+        [options]="severityOptions"
+        [ngModel]="severityFilter()"
+        (ngModelChange)="severityFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Severity"
+        appendTo="body"
+        data-testid="alert-severity-filter"
+      />
+
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Status"
+        appendTo="body"
+        data-testid="alert-status-filter"
+      />
+    </div>
+  </div>
+
+  <div class="to-card">
+    <p-table
+      [value]="filteredAlerts()"
+      dataKey="id"
+      [rowHover]="true"
+      [loading]="loading()"
+      styleClass="to-prime-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Alert</th>
+          <th>Device</th>
+          <th>Type</th>
+          <th>Severity</th>
+          <th>Status</th>
+          <th>Acknowledged</th>
+          <th>Rule</th>
+          <th>Triggered</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-alert>
+        <tr
+          role="button"
+          tabindex="0"
+          [attr.data-testid]="'alert-row-' + alert.id"
+          (click)="openAlert(alert)"
+        >
+          <td>
+            <strong>{{ alert.message }}</strong>
+            <span>ALT-{{ alert.id }}</span>
+          </td>
+
+          <td>{{ deviceLabel(alert.deviceId) }}</td>
+          <td>{{ alert.alertType || '-' }}</td>
+
+          <td>
+            <to-status-badge
+              [label]="alert.severity"
+              [tone]="severityTone(alert.severity)"
+            />
+          </td>
+
+          <td>
+            <to-status-badge
+              [label]="alert.status"
+              [tone]="statusTone(alert.status)"
+            />
+          </td>
+
+          <td>{{ alert.acknowledged ? 'Yes' : 'No' }}</td>
+          <td>{{ alert.ruleName || '-' }}</td>
+          <td>{{ formatDate(alert.timestamp) }}</td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8">No alerts found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    [size]="drawerSize"
+    [title]="drawerTitle"
+    [eyebrow]="drawerEyebrow"
+    (closed)="closeDrawer()"
+  >
+    @if (drawerMode() === 'view' && selectedAlert(); as alert) {
+      <div class="to-detail-grid">
+        <to-detail-field label="Alert ID" [value]="'ALT-' + alert.id" />
+        <to-detail-field label="Device" [value]="deviceLabel(alert.deviceId)" />
+        <to-detail-field label="Rule ID" [value]="alert.ruleId" />
+        <to-detail-field label="Rule" [value]="alert.ruleName || '-'" />
+        <to-detail-field label="Type" [value]="alert.alertType || '-'" />
+        <to-detail-field label="Severity" [value]="alert.severity" />
+        <to-detail-field label="Status" [value]="alert.status" />
+        <to-detail-field label="Acknowledged" [value]="alert.acknowledged ? 'Yes' : 'No'" />
+        <to-detail-field label="Triggered At" [value]="formatDate(alert.timestamp)" />
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Message</h3>
+        <p>{{ alert.message }}</p>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Timeline</h3>
+        <to-timeline [items]="timeline()" />
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button
+          label="Acknowledge"
+          severity="secondary"
+          icon="pi pi-check"
+          [disabled]="alert.acknowledged"
+          [loading]="saving()"
+          data-testid="acknowledge-alert-btn"
+          (click)="acknowledgeAlert()"
+        />
+
+        <p-button
+          label="Resolve"
+          icon="pi pi-check-circle"
+          severity="success"
+          [loading]="saving()"
+          data-testid="resolve-alert-btn"
+          (click)="resolveAlert()"
+        />
+
+        <p-button
+          label="Delete"
+          icon="pi pi-trash"
+          severity="danger"
+          [loading]="saving()"
+          data-testid="delete-alert-btn"
+          (click)="deleteAlert()"
+        />
+      </ng-container>
+    }
+
+    @if (drawerMode() === 'create') {
+      <div class="to-drawer-section">
+        <h3>Alert Details</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Device</span>
+            <p-select
+              [options]="deviceOptions()"
+              [(ngModel)]="alertForm.deviceId"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+              appendTo="body"
+              placeholder="Search and select device"
+              data-testid="alert-device-select"
+            />
+          </label>
+
+          <label>
+            <span>Rule ID</span>
+            <input
+              pInputText
+              type="number"
+              [(ngModel)]="alertForm.ruleId"
+              data-testid="alert-rule-id-input"
+            />
+          </label>
+
+          <label>
+            <span>Rule Name</span>
+            <input
+              pInputText
+              [(ngModel)]="alertForm.ruleName"
+              placeholder="Signal Drop Rule"
+              data-testid="alert-rule-name-input"
+            />
+          </label>
+
+          <label>
+            <span>Alert Type</span>
+            <input
+              pInputText
+              [(ngModel)]="alertForm.alertType"
+              placeholder="SIGNAL_DROP"
+              data-testid="alert-type-input"
+            />
+          </label>
+
+          <label>
+            <span>Severity</span>
+            <p-select
+              [options]="alertSeverityOptions"
+              [(ngModel)]="alertForm.severity"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              data-testid="alert-severity-select"
+            />
+          </label>
+
+          <label class="to-col-span-2">
+            <span>Message</span>
+            <textarea
+              pInputText
+              rows="4"
+              [(ngModel)]="alertForm.message"
+              placeholder="Describe the alert"
+              data-testid="alert-message-input"
+            ></textarea>
+          </label>
+        </div>
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button
+          label="Cancel"
+          severity="secondary"
+          data-testid="cancel-alert-btn"
+          (click)="closeDrawer()"
+        />
+
+        <p-button
+          label="Save Alert"
+          icon="pi pi-check"
+          [loading]="saving()"
+          data-testid="save-alert-btn"
+          (click)="createAlert()"
+        />
+      </ng-container>
+    }
+  </to-drawer>
+</section>

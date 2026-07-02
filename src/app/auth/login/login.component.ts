@@ -4,17 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 
-import { AuthUser, LoginResponse } from '../../core/models/auth.models';
 import { AuthService } from '../../core/services/auth.service';
+import { Site, SiteCategory, SiteService } from '../../core/services/site.service';
+import { firstValueFrom } from 'rxjs';
 
-type DemoAccount = {
-  role: string;
-  name: string;
-  email: string;
-  password: string;
-  permissions: string[];
-  testId: string;
-};
+type SiteCategoryKey = 'tower' | 'building' | 'warehouse';
 
 @Component({
   selector: 'to-login',
@@ -25,11 +19,12 @@ type DemoAccount = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent {
-  email = 'noc@towerops.io';
-  password = 'Noc@123';
+  username = 'admin_user';
+  password = 'StrongPass@123';
 
   loading = signal(false);
   showPassword = signal(false);
+  errorMessage = signal('');
 
   currentYear = new Date().getFullYear();
 
@@ -39,96 +34,97 @@ export class LoginComponent {
     { value: '5', label: 'Roles' },
   ];
 
-  demoAccounts: DemoAccount[] = [
-    {
-      role: 'Super Admin',
-      name: 'Aarav Sharma',
-      email: 'admin@towerops.io',
-      password: 'Admin@123',
-      permissions: ['*'],
-      testId: 'demo-super-admin',
-    },
-    {
-      role: 'NOC Operator',
-      name: 'Nisha Rao',
-      email: 'noc@towerops.io',
-      password: 'Noc@123',
-      permissions: ['dashboard:view', 'alarms:view', 'work-orders:view'],
-      testId: 'demo-noc-operator',
-    },
-    {
-      role: 'Maintenance Eng.',
-      name: 'Kiran Kumar',
-      email: 'kiran@towerops.io',
-      password: 'Kiran@123',
-      permissions: ['maintenance:view', 'work-orders:update'],
-      testId: 'demo-maintenance-eng',
-    },
-    {
-      role: 'Field Engineer',
-      name: 'Ravi Menon',
-      email: 'ravi@towerops.io',
-      password: 'Ravi@123',
-      permissions: ['work-orders:view', 'work-orders:update'],
-      testId: 'demo-field-engineer',
-    },
-  ];
-
   constructor(
     private router: Router,
     private authService: AuthService,
-  ) {}
+    private sitesService: SiteService,
+  ) {
+  }
 
   togglePassword(): void {
     this.showPassword.update((value) => !value);
   }
 
-  fillDemo(account: DemoAccount): void {
-    this.email = account.email;
-    this.password = account.password;
-  }
+  async submit(): Promise<void> {
+    if (this.loading()) return;
 
-  demoLogin(account: DemoAccount): void {
-    this.fillDemo(account);
-    this.signInDemoAccount(account);
-  }
+    this.errorMessage.set('');
 
-  submit(): void {
-    const account = this.demoAccounts.find(
-      (demoAccount) =>
-        demoAccount.email.toLowerCase() === this.email.trim().toLowerCase() &&
-        demoAccount.password === this.password,
-    );
+    const username = this.username.trim();
 
-    this.signInDemoAccount(account ?? this.demoAccounts[1]);
-  }
-
-  private signInDemoAccount(account: DemoAccount): void {
-    if (this.loading()) {
+    if (!username || !this.password) {
+      this.errorMessage.set('Please enter username and password.');
       return;
     }
 
-    this.loading.set(true);
-    setTimeout(() => {
-      this.authService.setSession(this.createDemoSession(account));
+    try {
+      this.loading.set(true);
+
+      const response = await this.authService.login({
+        username,
+        password: this.password,
+      });
+
+      if (!response.success || !response.data) {
+        this.errorMessage.set(response.message || 'Login failed.');
+        return;
+      }
+
+      const tenantId = response.data.tenantId;
+
+      if (tenantId === 'DEFAULT') {
+        this.router.navigateByUrl('/platform-dashboard', { replaceUrl: true });
+        return;
+      }
+
+      await this.handleTenantAdminNavigation();
+    } catch (error) {
+      console.error('Login failed:', error);
+      this.errorMessage.set('Invalid username or password.');
+    } finally {
       this.loading.set(false);
-      this.router.navigate(['/sites']);
-    }, 600);
+    }
   }
 
-  private createDemoSession(account: DemoAccount): LoginResponse {
-    const user: AuthUser = {
-      id: account.email,
-      name: account.name,
-      email: account.email,
-      role: account.role,
-      permissions: account.permissions,
-    };
+private async handleTenantAdminNavigation(): Promise<void> {
+  const response = await firstValueFrom(this.sitesService.getAll());
 
-    return {
-      accessToken: `demo-access-token:${account.email}`,
-      refreshToken: `demo-refresh-token:${account.email}`,
-      user,
-    };
+  if (!response.success) {
+    this.errorMessage.set(response.message || 'Unable to load sites.');
+    return;
+  }
+
+  const categoryCounts = this.getCategoryCounts(response.data ?? []);
+  const categories = Object.keys(categoryCounts) as SiteCategory[];
+
+  sessionStorage.setItem('siteCategoryCounts', JSON.stringify(categoryCounts));
+
+  if (categories.length === 1) {
+    this.router.navigate(['/dashboard/site-category', categories[0].toLowerCase()], {
+      replaceUrl: true,
+    });
+    return;
+  }
+
+  this.router.navigateByUrl('/site-category-selection', { replaceUrl: true });
+}
+
+private getCategoryCounts(sites: Site[]): Partial<Record<SiteCategory, number>> {
+  return sites.reduce((acc, site) => {
+    if (!site.category) return acc;
+
+    acc[site.category] = (acc[site.category] ?? 0) + 1;
+    return acc;
+  }, {} as Partial<Record<SiteCategory, number>>);
+}
+
+  private normalizeCategory(category: string | null | undefined): SiteCategoryKey | null {
+    const value = category?.trim().toLowerCase();
+
+    if (value === 'tower' || value === 'towers') return 'tower';
+    if (value === 'building' || value === 'buildings') return 'building';
+    if (value === 'warehouse' || value === 'warehouses') return 'warehouse';
+
+    return null;
   }
 }

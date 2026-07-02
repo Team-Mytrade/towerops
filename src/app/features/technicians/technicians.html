@@ -1,0 +1,362 @@
+<section class="to-page" data-testid="technicians-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Technicians</h1>
+      <p class="to-page-description">
+        Manage field technicians, user mapping, skill sets, availability and assigned sites.
+      </p>
+    </div>
+
+    <p-button
+      label="Create Technician"
+      icon="pi pi-plus"
+      data-testid="create-technician-btn"
+      (click)="openCreate()"
+    />
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search technicians..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        data-testid="technician-search-input"
+      />
+
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Status"
+        appendTo="body"
+        data-testid="technician-status-filter"
+      />
+    </div>
+  </div>
+
+  <div class="to-card">
+    <p-table
+      [value]="filteredTechnicians()"
+      dataKey="id"
+      [rowHover]="true"
+      [loading]="loading()"
+      styleClass="to-prime-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Technician</th>
+          <th>User</th>
+          <th>Tenant</th>
+          <th>Site</th>
+          <th>Designation</th>
+          <th>Department</th>
+          <th>Skills</th>
+          <th>Status</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-technician>
+        <tr
+          role="button"
+          tabindex="0"
+          [attr.data-testid]="'technician-row-' + technician.id"
+          (click)="openTechnician(technician)"
+        >
+          <td>
+            <strong>{{ fullName(technician) }}</strong>
+            <span>{{ technician.technicianCode }}</span>
+          </td>
+          <td>{{ userLabel(technician.userId) }}</td>
+          <td>{{ technician.tenantId || '-' }}</td>
+          <td>{{ siteLabel(technician.siteCode) }}</td>
+          <td>{{ technician.designation || '-' }}</td>
+          <td>{{ technician.department || '-' }}</td>
+          <td>{{ technician.skillSet || '-' }}</td>
+          <td>
+            <to-status-badge
+              [label]="statusLabel(technician.status)"
+              [tone]="statusTone(technician.status)"
+            />
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8">No technicians found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    [size]="drawerSize"
+    [title]="drawerTitle"
+    [eyebrow]="drawerEyebrow"
+    (closed)="closeDrawer()"
+  >
+    @if (drawerMode() === 'view' && selected(); as technician) {
+      <div class="to-detail-grid">
+        <to-detail-field label="Technician Code" [value]="technician.technicianCode" />
+        <to-detail-field label="Name" [value]="fullName(technician)" />
+        <to-detail-field label="Email" [value]="technician.email" />
+        <to-detail-field label="Phone" [value]="technician.phoneNumber" />
+        <to-detail-field label="Tenant" [value]="technician.tenantId || '-'" />
+        <to-detail-field label="Site" [value]="siteLabel(technician.siteCode)" />
+        <to-detail-field label="User" [value]="userLabel(technician.userId)" />
+        <to-detail-field label="Username" [value]="technician.username || '-'" />
+        <to-detail-field label="Designation" [value]="technician.designation || '-'" />
+        <to-detail-field label="Department" [value]="technician.department || '-'" />
+        <to-detail-field label="Skills" [value]="technician.skillSet || '-'" />
+        <to-detail-field label="Remarks" [value]="technician.remarks || '-'" />
+        <to-detail-field label="Status" [value]="statusLabel(technician.status)" />
+        <to-detail-field label="Enabled" [value]="technician.enabled ? 'Yes' : 'No'" />
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Activity</h3>
+        <to-timeline [items]="timeline()" />
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button
+          label="Edit"
+          icon="pi pi-pencil"
+          severity="secondary"
+          data-testid="edit-technician-btn"
+          (click)="editTechnician()"
+        />
+
+        <p-button
+          label="Assign User ID"
+          icon="pi pi-user-plus"
+          data-testid="assign-technician-user-btn"
+          (click)="assignUser()"
+        />
+
+        <p-button
+          label="Delete"
+          icon="pi pi-trash"
+          severity="danger"
+          [loading]="saving()"
+          data-testid="delete-technician-btn"
+          (click)="deleteTechnician()"
+        />
+      </ng-container>
+    }
+
+    @if (drawerMode() === 'create' || drawerMode() === 'edit') {
+      <div class="to-drawer-section">
+        <h3>Technician Details</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Technician Code</span>
+            <input
+              pInputText
+              [(ngModel)]="technicianForm.technicianCode"
+              placeholder="TEC-001"
+              data-testid="technician-code-input"
+            />
+          </label>
+
+          <label>
+            <span>User Mapping</span>
+            <p-select
+              [options]="userOptions()"
+              [(ngModel)]="technicianForm.userId"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              placeholder="Select user"
+              data-testid="technician-user-select"
+            />
+          </label>
+
+          <label>
+            <span>First Name</span>
+            <input
+              pInputText
+              [(ngModel)]="technicianForm.firstName"
+              placeholder="Rashid"
+              data-testid="technician-first-name-input"
+            />
+          </label>
+
+          <label>
+            <span>Last Name</span>
+            <input
+              pInputText
+              [(ngModel)]="technicianForm.lastName"
+              placeholder="Ali"
+              data-testid="technician-last-name-input"
+            />
+          </label>
+
+          <label>
+            <span>Email</span>
+            <input
+              pInputText
+              type="email"
+              [(ngModel)]="technicianForm.email"
+              placeholder="technician@tenant.com"
+              data-testid="technician-email-input"
+            />
+          </label>
+
+          <label>
+            <span>Phone</span>
+            <input
+              pInputText
+              [(ngModel)]="technicianForm.phoneNumber"
+              placeholder="+971 50 000 0000"
+              data-testid="technician-phone-input"
+            />
+          </label>
+
+          <label>
+            <span>Tenant ID</span>
+            <input
+              pInputText
+              [(ngModel)]="technicianForm.tenantId"
+              placeholder="DEFAULT"
+              data-testid="technician-tenant-input"
+            />
+          </label>
+
+          <label>
+            <span>Site</span>
+            <p-select
+              [options]="siteOptions()"
+              [(ngModel)]="technicianForm.siteCode"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+              appendTo="body"
+              placeholder="Search and select site"
+              data-testid="technician-site-select"
+            />
+          </label>
+
+          <label>
+            <span>Designation</span>
+            <input
+              pInputText
+              [(ngModel)]="technicianForm.designation"
+              placeholder="Field Engineer"
+              data-testid="technician-designation-input"
+            />
+          </label>
+
+          <label>
+            <span>Department</span>
+            <input
+              pInputText
+              [(ngModel)]="technicianForm.department"
+              placeholder="Maintenance"
+              data-testid="technician-department-input"
+            />
+          </label>
+
+          <label>
+            <span>Skill Set</span>
+            <input
+              pInputText
+              [(ngModel)]="technicianForm.skillSet"
+              placeholder="Tower, Fuel, Gateway"
+              data-testid="technician-skillset-input"
+            />
+          </label>
+
+          <label>
+            <span>Status</span>
+            <p-select
+              [options]="technicianStatusOptions"
+              [(ngModel)]="technicianForm.status"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              data-testid="technician-status-select"
+            />
+          </label>
+
+          <label class="to-col-span-2">
+            <span>Remarks</span>
+            <textarea
+              pInputText
+              rows="3"
+              [(ngModel)]="technicianForm.remarks"
+              placeholder="Internal remarks"
+              data-testid="technician-remarks-input"
+            ></textarea>
+          </label>
+        </div>
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button label="Cancel" severity="secondary" (click)="closeDrawer()" />
+
+        <p-button
+          [label]="drawerMode() === 'edit' ? 'Save Changes' : 'Save Technician'"
+          icon="pi pi-check"
+          [loading]="saving()"
+          data-testid="save-technician-btn"
+          (click)="saveTechnician()"
+        />
+      </ng-container>
+    }
+
+    @if (drawerMode() === 'assignUser' && selected(); as technician) {
+      <ng-container>
+        <div class="to-drawer-section">
+          <h3>Technician</h3>
+
+          <to-detail-field label="Technician" [value]="fullName(technician)" />
+          <to-detail-field label="Current User" [value]="userLabel(technician.userId)" />
+        </div>
+
+        <div class="to-drawer-section">
+          <h3>User Mapping</h3>
+
+          <div class="to-form-grid-wide">
+            <label>
+              <span>User ID</span>
+              <p-select
+                [options]="userOptions()"
+                [(ngModel)]="technicianForm.userId"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                placeholder="Select user"
+                data-testid="technician-user-mapping-select"
+              />
+            </label>
+          </div>
+        </div>
+
+        <ng-container drawer-actions>
+          <p-button
+            label="Back"
+            severity="secondary"
+            (click)="drawerMode.set('view')"
+          />
+
+          <p-button
+            label="Save Mapping"
+            icon="pi pi-check"
+            [loading]="saving()"
+            data-testid="save-technician-mapping-btn"
+            (click)="saveTechnician()"
+          />
+        </ng-container>
+      </ng-container>
+    }
+  </to-drawer>
+</section>

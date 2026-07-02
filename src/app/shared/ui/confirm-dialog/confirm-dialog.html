@@ -1,0 +1,27 @@
+@if (open()) {
+  <div class="to-confirm-backdrop" data-testid="confirm-backdrop" (click)="cancelled.emit()">
+    <section class="to-confirm" data-testid="confirm-dialog" (click)="$event.stopPropagation()">
+      <h2>{{ title() }}</h2>
+
+      @if (message()) {
+        <p>{{ message() }}</p>
+      }
+
+      <footer>
+        <button type="button" class="to-confirm__cancel" data-testid="confirm-cancel-btn" (click)="cancelled.emit()">
+          {{ cancelLabel() }}
+        </button>
+
+        <button
+          type="button"
+          class="to-confirm__submit"
+          [class.danger]="danger()"
+          data-testid="confirm-submit-btn"
+          (click)="confirmed.emit()"
+        >
+          {{ confirmLabel() }}
+        </button>
+      </footer>
+    </section>
+  </div>
+}

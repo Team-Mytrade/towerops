@@ -47,15 +47,15 @@
       <p>Access the NOC dashboard and field workflows.</p>
 
       <div class="mt-8 space-y-4">
-        <label class="label-tag block mb-2">Email</label>
-        <input
-          data-testid="login-email"
-          name="email"
-          type="email"
-          required
-          [(ngModel)]="email"
-          class="input"
-        />
+    <label class="label-tag block mb-2">Username</label>
+<input
+  data-testid="login-username"
+  name="username"
+  type="text"
+  required
+  [(ngModel)]="username"
+  class="input"
+/>
       </div>
 
       <div class="mt-6">
@@ -85,7 +85,9 @@
           Forgot password?
         </a>
       </div>
-
+<div *ngIf="errorMessage()" class="login-error" data-testid="login-error">
+  {{ errorMessage() }}
+</div>
       <button data-testid="login-submit" type="submit" class="submit-btn" [disabled]="loading()">
         <i *ngIf="loading()" class="pi pi-spin pi-spinner"></i>
         <span>{{ loading() ? 'Signing in...' : 'Sign in' }}</span>

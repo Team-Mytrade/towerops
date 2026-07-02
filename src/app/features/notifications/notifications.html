@@ -1,0 +1,295 @@
+<section class="to-page" data-testid="notifications-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Notifications</h1>
+      <p class="to-page-description">
+        Review system events, alarm notifications and delivery status across channels.
+      </p>
+    </div>
+
+    <div class="to-header-actions">
+      <p-button
+        label="Mark All Read"
+        icon="pi pi-check"
+        severity="secondary"
+        (click)="markAllRead()"
+      />
+
+      <p-button
+        label="Settings"
+        icon="pi pi-cog"
+        (click)="openSettings()"
+      />
+    </div>
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search notifications..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+
+      <p-select
+        [options]="severityOptions"
+        [ngModel]="severityFilter()"
+        (ngModelChange)="severityFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Severity"
+      />
+
+      <p-select
+        [options]="categoryOptions"
+        [ngModel]="categoryFilter()"
+        (ngModelChange)="categoryFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Category"
+      />
+
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Status"
+      />
+
+      <p-select
+        [options]="channelOptions"
+        [ngModel]="channelFilter()"
+        (ngModelChange)="channelFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Channel"
+      />
+    </div>
+  </div>
+
+  <div class="to-kpi-grid">
+    <article class="to-notification-kpi">
+      <span>Total</span>
+      <strong>{{ summary().total }}</strong>
+    </article>
+
+    <article class="to-notification-kpi unread">
+      <span>Unread</span>
+      <strong>{{ summary().unread }}</strong>
+    </article>
+
+    <article class="to-notification-kpi critical">
+      <span>Critical</span>
+      <strong>{{ summary().critical }}</strong>
+    </article>
+
+    <article class="to-notification-kpi acknowledged">
+      <span>Acknowledged</span>
+      <strong>{{ summary().acknowledged }}</strong>
+    </article>
+  </div>
+
+  <div class="to-notification-layout">
+    <section class="to-card to-feed">
+      <header class="to-card-header">
+        <h2 class="to-card-title">Notification Feed</h2>
+        <span>{{ filteredNotifications().length }}</span>
+      </header>
+
+      <div class="to-feed__body">
+        @for (item of filteredNotifications(); track item.id) {
+          <button
+            type="button"
+            class="to-notification-card"
+            [class.active]="selectedNotification()?.id === item.id"
+            [class.unread]="item.status === 'Unread'"
+            [class]="item.severity.toLowerCase()"
+            (click)="selectNotification(item)"
+          >
+            <div class="to-notification-card__top">
+              <to-status-badge
+                [label]="item.severity"
+                [tone]="severityTone(item.severity)"
+              />
+
+              <small>{{ item.createdAt }}</small>
+            </div>
+
+            <strong>{{ item.title }}</strong>
+            <p>{{ item.message }}</p>
+
+            <div class="to-notification-card__meta">
+              <span>{{ item.site }}</span>
+              <span>{{ item.channel }}</span>
+            </div>
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="to-card to-detail-panel">
+      @if (selectedNotification(); as item) {
+        <header class="to-card-header">
+          <div>
+            <h2 class="to-card-title">{{ item.title }}</h2>
+            <p>{{ item.message }}</p>
+          </div>
+
+          <to-status-badge
+            [label]="item.status"
+            [tone]="statusTone(item.status)"
+          />
+        </header>
+
+        <div class="to-detail-panel__body">
+          <div class="to-detail-grid">
+            <to-detail-field label="Notification ID" [value]="item.id" />
+            <to-detail-field label="Severity" [value]="item.severity" />
+            <to-detail-field label="Category" [value]="item.category" />
+            <to-detail-field label="Channel" [value]="item.channel" />
+            <to-detail-field label="Site" [value]="item.site" />
+            <to-detail-field label="Device" [value]="item.device" />
+            <to-detail-field label="Rule" [value]="item.rule" />
+            <to-detail-field label="Current Value" [value]="item.currentValue" />
+            <to-detail-field label="Previous Value" [value]="item.previousValue" />
+            <to-detail-field label="Triggered" [value]="item.createdAt" />
+          </div>
+
+          <div class="to-drawer-section">
+            <h3>Related Objects</h3>
+
+            <div class="to-related-grid">
+              <article>
+                <span>Ticket</span>
+                <strong>{{ item.relatedTicket }}</strong>
+              </article>
+
+              <article>
+                <span>Work Order</span>
+                <strong>{{ item.relatedWorkOrder }}</strong>
+              </article>
+
+              <article>
+                <span>Site</span>
+                <strong>{{ item.site }}</strong>
+              </article>
+
+              <article>
+                <span>Rule</span>
+                <strong>{{ item.rule }}</strong>
+              </article>
+            </div>
+          </div>
+
+          <div class="to-drawer-section">
+            <h3>Timeline</h3>
+            <to-timeline [items]="timeline()" />
+          </div>
+        </div>
+
+        <footer class="to-detail-actions">
+          <p-button
+            label="Acknowledge"
+            icon="pi pi-check"
+            severity="secondary"
+            (click)="acknowledgeSelected()"
+          />
+
+          <p-button label="Create Ticket" icon="pi pi-ticket" />
+
+          <p-button label="Open Site" icon="pi pi-map-marker" severity="secondary" />
+        </footer>
+      }
+    </section>
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    size="wide"
+    title="Notification Settings"
+    eyebrow="Channels & Escalation"
+    (closed)="closeDrawer()"
+  >
+    <div class="to-drawer-section">
+      <h3>Delivery Channels</h3>
+
+      <div class="to-check-grid">
+        <label>
+          <p-checkbox [(ngModel)]="settings.app" [binary]="true" />
+          <span>App</span>
+        </label>
+
+        <label>
+          <p-checkbox [(ngModel)]="settings.email" [binary]="true" />
+          <span>Email</span>
+        </label>
+
+        <label>
+          <p-checkbox [(ngModel)]="settings.sms" [binary]="true" />
+          <span>SMS</span>
+        </label>
+
+        <label>
+          <p-checkbox [(ngModel)]="settings.whatsapp" [binary]="true" />
+          <span>WhatsApp</span>
+        </label>
+
+        <label>
+          <p-checkbox [(ngModel)]="settings.teams" [binary]="true" />
+          <span>Microsoft Teams</span>
+        </label>
+
+        <label>
+          <p-checkbox [(ngModel)]="settings.slack" [binary]="true" />
+          <span>Slack</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="to-drawer-section">
+      <h3>Quiet Hours</h3>
+
+      <div class="to-form-grid-wide">
+        <label>
+          <span>Start</span>
+          <input pInputText [(ngModel)]="settings.quietStart" />
+        </label>
+
+        <label>
+          <span>End</span>
+          <input pInputText [(ngModel)]="settings.quietEnd" />
+        </label>
+      </div>
+    </div>
+
+    <div class="to-drawer-section">
+      <h3>Escalation Rules</h3>
+
+      <div class="to-form-grid-wide">
+        <label>
+          <span>Supervisor Escalation</span>
+          <input pInputText [(ngModel)]="settings.escalationOne" />
+        </label>
+
+        <label>
+          <span>Manager Escalation</span>
+          <input pInputText [(ngModel)]="settings.escalationTwo" />
+        </label>
+
+        <label>
+          <span>Admin Escalation</span>
+          <input pInputText [(ngModel)]="settings.escalationThree" />
+        </label>
+      </div>
+    </div>
+
+    <ng-container drawer-actions>
+      <p-button label="Cancel" severity="secondary" (click)="closeDrawer()" />
+      <p-button label="Save Settings" icon="pi pi-check" (click)="closeDrawer()" />
+    </ng-container>
+  </to-drawer>
+</section>

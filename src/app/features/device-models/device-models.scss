@@ -1,0 +1,159 @@
+:host {
+  display: block;
+  padding: 1.5rem;
+}
+
+.to-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.to-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.to-page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--to-text);
+  margin: 0;
+}
+
+.to-page-description {
+  margin-top: .35rem;
+  color: var(--to-text-muted);
+  font-size: .92rem;
+}
+
+.to-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.to-toolbar-left {
+  display: flex;
+  gap: .75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.to-toolbar-left input {
+  width: 280px;
+}
+
+.to-card {
+  background: var(--to-surface);
+  border: 1px solid var(--to-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.to-card-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--to-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.to-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.to-card-header p {
+  margin-top: .25rem;
+  font-size: .82rem;
+  color: var(--to-text-muted);
+}
+
+.mt-6 {
+  margin-top: 1.5rem;
+}
+
+:host ::ng-deep .to-prime-table {
+  .p-datatable-table {
+    width: 100%;
+  }
+
+  th {
+    font-size: .82rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  td {
+    vertical-align: middle;
+    font-size: .9rem;
+  }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background .2s ease;
+  }
+
+  tbody tr:hover {
+    background: var(--to-surface-hover);
+  }
+
+  strong {
+    display: block;
+    font-weight: 600;
+  }
+
+  span {
+    display: block;
+    margin-top: 2px;
+    font-size: .76rem;
+    color: var(--to-text-muted);
+  }
+}
+
+.to-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .to-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .to-toolbar-left {
+    width: 100%;
+  }
+
+  .to-toolbar-left>* {
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .to-toolbar-left input {
+    width: 100%;
+  }
+}
+
+:host ::ng-deep {
+
+  .p-inputtext,
+  .p-select {
+    width: 100%;
+  }
+
+  .p-drawer-content {
+    padding: 1.25rem;
+  }
+
+  .p-button {
+    border-radius: 6px;
+  }
+}

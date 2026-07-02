@@ -2,6 +2,8 @@
 @use "./styles/primeng";
 @use "./styles/dark-theme";
 @use "./styles/utilities";
+@use "./styles/primeng-overrides";
+@use "./styles/layout";
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600;700&display=swap');
 
@@ -9,32 +11,29 @@
 @import "leaflet/dist/leaflet.css";
 @import "./tailwind.css";
 
-/* Chrome, Edge, Safari */
 ::-webkit-scrollbar {
   width: 0;
   height: 0;
   display: none;
 }
 
-/* Firefox */
 * {
   scrollbar-width: none;
-}
-
-/* IE/Legacy */
-* {
   -ms-overflow-style: none;
 }
+
 html,
-body,
-* {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+body {
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  font-family: var(--to-font-body);
 }
 
-html::-webkit-scrollbar,
-body::-webkit-scrollbar,
-*::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+body {
+  color: var(--to-text);
+  background:
+    radial-gradient(circle at top left, rgba(0, 82, 255, 0.1), transparent 32%),
+    radial-gradient(circle at top right, rgba(0, 178, 255, 0.1), transparent 28%),
+    var(--to-bg);
 }

@@ -1,101 +1,26 @@
-<header class="to-topbar" data-testid="app-topbar">
-  <div class="to-topbar__left">
-    <button
-      type="button"
-      class="to-mobile-menu-btn"
-      data-testid="mobile-menu-btn"
-      pTooltip="Open navigation"
-      tooltipPosition="bottom"
-      (click)="mobileMenuClick.emit()"
-    >
-      <i class="pi pi-bars"></i>
-    </button>
+<header class="to-topbar">
+  <button type="button" class="to-topbar__btn">
+    <i class="pi pi-bars"></i>
+  </button>
 
-    @if (isSiteSelector()) {
-      <div class="to-workspace-brand">
-        <div class="to-workspace-brand__logo">
-          <i class="fa-solid fa-tower-broadcast"></i>
-        </div>
+  <button type="button" class="to-topbar__search">
+    <i class="pi pi-search"></i>
+    <span>Search...</span>
+  </button>
 
-        <div class="to-workspace-brand__copy">
-          <div class="to-workspace-brand__title">TowerOps</div>
-          <div class="to-workspace-brand__subtitle">NOC Platform</div>
-        </div>
-      </div>
-    } @else {
-      <div class="to-overview">
-        <to-page-header [title]="pageTitle" [subtitle]="subtitle" />
-      </div>
-    }
-  </div>
+  <div class="to-topbar__spacer"></div>
 
-  <div class="to-topbar__right">
-    @if (!isSiteSelector()) {
-      <p-button
-        icon="pi pi-bell"
-        [text]="true"
-        pTooltip="Alarms"
-        tooltipPosition="bottom"
-        severity="secondary"
-      />
+  <button type="button" class="to-topbar__btn">
+    <i class="pi pi-bell"></i>
+    <span class="to-dot"></span>
+  </button>
 
-      <p-button
-        [icon]="themeService.isDark() ? 'pi pi-sun' : 'pi pi-moon'"
-        [text]="true"
-        [pTooltip]="themeService.isDark() ? 'Light mode' : 'Dark mode'"
-        tooltipPosition="bottom"
-        severity="secondary"
-        (click)="toggleTheme()"
-      />
+  <button type="button" class="to-topbar__tenant">
+    <span>du Telecom</span>
+    <i class="pi pi-chevron-down"></i>
+  </button>
 
-      <p-button
-        icon="pi pi-arrow-up-right-and-arrow-down-left-from-center"
-        [text]="true"
-        pTooltip="Full Screen"
-        tooltipPosition="bottom"
-        severity="secondary"
-        (click)="toggleFullscreen()"
-      />
-    }
-
-    <p-menu
-      #tenantMenu
-      [model]="tenantMenuItems"
-      [popup]="true"
-      appendTo="body"
-      styleClass="to-tenant-menu"
-    />
-
-    <button
-      type="button"
-      class="to-tenant-switcher"
-      data-testid="tenant-switcher"
-      (click)="tenantMenu.toggle($event)"
-    >
-      <span class="to-tenant-switcher__dot"></span>
-
-      <span class="to-tenant-switcher__label">
-        {{ selectedTenant }}
-      </span>
-
-      <i class="pi pi-chevron-down"></i>
-    </button>
-
-    <div class="to-user">
-      <div class="to-user__info">
-        <div>Vikram Singh</div>
-        <span>NOC Operator</span>
-      </div>
-
-      <div class="to-user__avatar">VS</div>
-
-      <p-button
-        severity="secondary"
-        [text]="true"
-        icon="pi pi-sign-out"
-        pTooltip="Logout"
-        tooltipPosition="bottom"
-      />
-    </div>
-  </div>
+  <button type="button" class="to-avatar">
+    {{ 'AB' }}
+  </button>
 </header>

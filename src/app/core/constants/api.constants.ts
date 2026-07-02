@@ -1,26 +1,19 @@
+export const API_BASE_URL = '/api';
+
 export const API_ENDPOINTS = {
   auth: {
-    login: '/auth/login',
-    logout: '/auth/logout',
-    refresh: '/auth/refresh',
-    me: '/auth/me',
+    login: '/v1/login',
   },
 
-  towers: {
-    list: '/towers',
-    detail: (id: string | number) => `/towers/${id}`,
-    create: '/towers',
-    update: (id: string | number) => `/towers/${id}`,
-    delete: (id: string | number) => `/towers/${id}`,
-  },
+  tenants: '/v1/tenants',
+  permissions: '/v1/permissions',
+  roles: '/v1/roles',
+  users: '/v1/users',
 
-  alarms: {
-    list: '/alarms',
-    detail: (id: string | number) => `/alarms/${id}`,
-  },
+  sites: '/sites',
+  deviceModels: '/V1/device-models',
+  devices: '/v1/devices',
 
-  workOrders: {
-    list: '/work-orders',
-    detail: (id: string | number) => `/work-orders/${id}`,
-  },
+  alerts: '/v1/alerts',
+  tickets: '/v1/tickets',
 };

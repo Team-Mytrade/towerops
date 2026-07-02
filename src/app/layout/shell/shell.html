@@ -1,32 +1,114 @@
-<div class="to-shell" [class.to-shell--mobile-open]="mobileSidebarOpen()">
-  <div
-    class="to-shell__backdrop"
-    data-testid="sidebar-backdrop"
-    (click)="closeMobileSidebar()"
-  ></div>
+<div
+  class="to-shell"
+  [class.to-shell--collapsed]="collapsed()"
+  [class.to-shell--mobile-open]="mobileOpen()"
+>
+  <div class="to-mobile-backdrop" (click)="mobileOpen.set(false)"></div>
 
-  <to-sidebar
-    class="to-shell__sidebar"
-    (navigated)="closeMobileSidebar()"
-  />
+  <aside class="to-sidebar">
+    <div class="to-sidebar__brand">
+      <div class="to-brand-mark">T</div>
 
-  <div class="to-shell__body">
-    <to-topbar
-      class="to-shell__topbar"
-      (mobileMenuClick)="openMobileSidebar()"
-    />
+      @if (!collapsed()) {
+        <div>
+          <strong>TowerOps</strong>
+          <span>NOC Platform</span>
+        </div>
+      }
+    </div>
 
-    @if (loader.loading()) {
-      <div class="to-loading-bar">
-        <div class="to-loading-bar__indicator"></div>
-      </div>
-    }
-
-    <main
-      class="to-shell__content"
-      [class.to-shell-content--loading]="loader.loading()"
+    <button
+      type="button"
+      class="to-sidebar__collapse"
+      (click)="toggleCollapsed()"
+      aria-label="Toggle sidebar"
     >
+      <i [class]="collapsed() ? 'pi pi-angle-right' : 'pi pi-angle-left'"></i>
+    </button>
+
+    <nav class="to-sidebar__nav">
+      @for (group of visibleGroups(); track group.title) {
+        <div class="to-nav-section">
+          @if (!collapsed()) {
+            <p>{{ group.title }}</p>
+          }
+
+          @for (item of group.items; track item.route) {
+            <a
+              [routerLink]="item.route"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+              class="to-nav-item"
+              [title]="collapsed() ? item.label : null"
+            >
+              <span class="to-nav-icon">
+                <i [class]="item.icon"></i>
+              </span>
+
+              @if (!collapsed()) {
+                <span class="to-nav-label">{{ item.label }}</span>
+              }
+            </a>
+          }
+        </div>
+      }
+    </nav>
+
+    <div class="to-sidebar__footer">
+      <div class="to-user-mini">
+        <div class="to-avatar">
+          {{ (username() || 'U').charAt(0).toUpperCase() }}
+        </div>
+
+        @if (!collapsed()) {
+          <div>
+            <strong>{{ username() || 'User' }}</strong>
+            <span>{{ tenantId() || 'DEFAULT' }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </aside>
+
+  <main class="to-main">
+    <header class="to-topbar">
+      <button type="button" class="to-icon-btn mobile-only" (click)="toggleMobile()">
+        <i class="pi pi-bars"></i>
+      </button>
+
+      <button type="button" class="to-search-btn">
+        <i class="pi pi-search"></i>
+        <span>Search...</span>
+      </button>
+
+      <div class="to-topbar__spacer"></div>
+
+      <button type="button" class="to-create-btn" (click)="createTenant()">
+        <i class="pi pi-plus"></i>
+        <span>Create</span>
+      </button>
+
+      <button type="button" class="to-icon-btn">
+        <i class="pi pi-bell"></i>
+        <span class="to-dot"></span>
+      </button>
+
+      <button type="button" class="to-tenant-btn">
+        <span>{{ tenantId() || 'DEFAULT' }}</span>
+        <i class="pi pi-chevron-down"></i>
+      </button>
+
+      <button type="button" class="to-avatar-btn">
+        {{ (username() || 'U').charAt(0).toUpperCase() }}
+      </button>
+
+      <button type="button" class="to-icon-btn danger" (click)="logout()">
+        <i class="pi pi-sign-out"></i>
+      </button>
+    </header>
+
+    <section class="to-content">
       <router-outlet />
-    </main>
-  </div>
+    </section>
+  </main>
 </div>
