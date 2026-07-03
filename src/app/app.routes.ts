@@ -27,7 +27,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/dashboard/dashboard').then((m) => m.Dashboard),
       },
-
+      {
+        path: 'platform-dashboard',
+        loadComponent: () =>
+          import('./features/platform-dashboard/platform-dashboard.component').then(
+            (m) => m.PlatformDashboardComponent,
+          ),
+      },
       {
         path: 'dashboard/site-category/:category',
         loadComponent: () =>
@@ -45,7 +51,13 @@ export const routes: Routes = [
       { path: 'home', loadComponent: () => import('./features/home/home').then(m => m.Home) },
 
       { path: 'tenants', loadComponent: () => import('./features/tenants/tenants').then(m => m.Tenants) },
-      { path: 'sites', loadComponent: () => import('./features/sites/sites').then(m => m.Sites) },
+      {
+        path: 'sites/:id',
+        loadComponent: () =>
+          import('./features/site-details/site-details.component').then(
+            (m) => m.SiteDetailsComponent,
+          ),
+      },
       { path: 'devices', loadComponent: () => import('./features/devices/devices').then(m => m.Devices) },
       { path: 'device-models', loadComponent: () => import('./features/device-models/device-models').then(m => m.DeviceModels) },
       { path: 'map', loadComponent: () => import('./features/network-map/network-map').then(m => m.NetworkMap) },

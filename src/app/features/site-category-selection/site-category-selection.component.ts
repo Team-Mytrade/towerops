@@ -2,16 +2,76 @@ import { CommonModule, TitleCasePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-
-type SiteCategoryKey = 'tower' | 'building' | 'warehouse';
+import { SiteCategory } from '../../core/enums/site-category.enum';
 
 type SiteCategoryCard = {
-  key: SiteCategoryKey;
+  key: SiteCategory;
   label: string;
   subtitle: string;
   count: number;
   icon: string;
   testId: string;
+};
+
+const CATEGORY_META: Record<
+  SiteCategory,
+  Omit<SiteCategoryCard, 'key' | 'count' | 'testId'>
+> = {
+  [SiteCategory.TOWER]: {
+    label: 'Towers',
+    subtitle: 'Telecom tower sites, devices, alarms and maintenance.',
+    icon: 'pi pi-wifi',
+  },
+  [SiteCategory.BUILDING]: {
+    label: 'Buildings',
+    subtitle: 'Building infrastructure, devices and service health.',
+    icon: 'pi pi-building',
+  },
+  [SiteCategory.WAREHOUSE]: {
+    label: 'Warehouses',
+    subtitle: 'Warehouse assets, alerts and work orders.',
+    icon: 'pi pi-warehouse',
+  },
+  [SiteCategory.TELECOM]: {
+    label: 'Telecom',
+    subtitle: 'Telecom network sites and operational monitoring.',
+    icon: 'pi pi-sitemap',
+  },
+  [SiteCategory.POWER]: {
+    label: 'Power',
+    subtitle: 'Power systems, uptime and energy monitoring.',
+    icon: 'pi pi-bolt',
+  },
+  [SiteCategory.GENERATOR]: {
+    label: 'Generators',
+    subtitle: 'Generator status, fuel and maintenance tracking.',
+    icon: 'pi pi-cog',
+  },
+  [SiteCategory.FACILITY]: {
+    label: 'Facilities',
+    subtitle: 'Facility assets, devices and service operations.',
+    icon: 'pi pi-building-columns',
+  },
+  [SiteCategory.MARINE]: {
+    label: 'Marine',
+    subtitle: 'Marine sites, vessels and remote infrastructure.',
+    icon: 'pi pi-compass',
+  },
+  [SiteCategory.AVIATION]: {
+    label: 'Aviation',
+    subtitle: 'Airport and aviation infrastructure monitoring.',
+    icon: 'pi pi-send',
+  },
+  [SiteCategory.DEFENSE]: {
+    label: 'Defense',
+    subtitle: 'Defense infrastructure and secured operations.',
+    icon: 'pi pi-shield',
+  },
+  [SiteCategory.AI_OPS_CENTER]: {
+    label: 'AI Ops Center',
+    subtitle: 'AI-driven operation centers and command monitoring.',
+    icon: 'pi pi-server',
+  },
 };
 
 @Component({
@@ -25,46 +85,41 @@ export class SiteCategorySelectionComponent {
   private readonly router = inject(Router);
 
   readonly tenantName = signal('Algotricz Telecom');
-  readonly categories = signal<Record<SiteCategoryKey, number>>({
-    tower: 12,
-    building: 5,
-    warehouse: 3,
+
+  readonly categories = signal<Partial<Record<SiteCategory, number>>>({
+    [SiteCategory.TOWER]: 12,
+    [SiteCategory.BUILDING]: 5,
+    [SiteCategory.WAREHOUSE]: 3,
+    [SiteCategory.TELECOM]: 4,
+    [SiteCategory.POWER]: 2,
+    [SiteCategory.GENERATOR]: 6,
+    [SiteCategory.FACILITY]: 3,
+    [SiteCategory.MARINE]: 1,
+    [SiteCategory.AVIATION]: 1,
+    [SiteCategory.DEFENSE]: 1,
+    [SiteCategory.AI_OPS_CENTER]: 1,
   });
 
   readonly cards = computed<SiteCategoryCard[]>(() => {
-  const data = this.categories();
+    const data = this.categories();
 
-  const cards: SiteCategoryCard[] = [
-    {
-      key: 'tower',
-      label: 'Towers',
-      subtitle: 'Monitor telecom towers, devices, alarms and maintenance.',
-      count: data.tower ?? 0,
-      icon: 'pi pi-broadcast-tower',
-      testId: 'site-category-tower-card',
-    },
-    {
-      key: 'building',
-      label: 'Buildings',
-      subtitle: 'Track building infrastructure, IoT devices and service health.',
-      count: data.building ?? 0,
-      icon: 'pi pi-building',
-      testId: 'site-category-building-card',
-    },
-    {
-      key: 'warehouse',
-      label: 'Warehouses',
-      subtitle: 'Manage warehouse assets, devices, alerts and work orders.',
-      count: data.warehouse ?? 0,
-      icon: 'pi pi-warehouse',
-      testId: 'site-category-warehouse-card',
-    },
-  ];
+    return Object.values(SiteCategory)
+      .map((category) => ({
+        key: category,
+        label: CATEGORY_META[category].label,
+        subtitle: CATEGORY_META[category].subtitle,
+        icon: CATEGORY_META[category].icon,
+        count: data[category] ?? 0,
+        testId: `site-category-${category.toLowerCase().replaceAll('_', '-')}-card`,
+      }))
+      .filter((card) => card.count > 0);
+  });
 
-  return cards.filter((card) => card.count > 0);
-});
+  readonly totalSites = computed(() =>
+    this.cards().reduce((total, card) => total + card.count, 0),
+  );
 
-  selectCategory(category: SiteCategoryKey): void {
-    this.router.navigate(['/dashboard/site-category', category]);
+  selectCategory(category: SiteCategory): void {
+    this.router.navigate(['/dashboard/site-category', category.toLowerCase()]);
   }
 }

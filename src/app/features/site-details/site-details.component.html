@@ -1,0 +1,139 @@
+<section class="to-site-details" data-testid="site-details-page">
+  @if (site(); as site) {
+    <header class="to-site-header">
+      <div>
+        <button type="button" class="to-back-btn" (click)="goBack()" data-testid="site-details-back-btn">
+          <i class="pi pi-arrow-left"></i>
+          Back
+        </button>
+
+        <p class="to-eyebrow">{{ site.category }} Site</p>
+        <h1>{{ site.siteName }}</h1>
+        <span>{{ site.siteCode }} · {{ site.address.city }}, {{ site.address.country }}</span>
+      </div>
+
+      <p-tag
+        [value]="status()"
+        [severity]="status() === 'Healthy' ? 'success' : 'danger'"
+      />
+    </header>
+
+    <div class="to-kpi-grid">
+      <article>
+        <span>Devices</span>
+        <strong>{{ devices.length }}</strong>
+      </article>
+
+      <article>
+        <span>Active Alerts</span>
+        <strong>{{ alerts.length }}</strong>
+      </article>
+
+      <article>
+        <span>Work Orders</span>
+        <strong>{{ workOrders.length }}</strong>
+      </article>
+
+      <article>
+        <span>Maintenance</span>
+        <strong>{{ maintenance.length }}</strong>
+      </article>
+    </div>
+
+    <div class="to-details-grid">
+      <article class="to-card to-info-card">
+        <h2>Site Information</h2>
+
+        <div class="to-info-grid">
+          <div>
+            <span>Address</span>
+            <strong>
+              {{ site.address.street }},
+              {{ site.address.city }},
+              {{ site.address.state }},
+              {{ site.address.country }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Postal Code</span>
+            <strong>{{ site.address.postalCode }}</strong>
+          </div>
+
+          <div>
+            <span>Latitude</span>
+            <strong>{{ site.latitude }}</strong>
+          </div>
+
+          <div>
+            <span>Longitude</span>
+            <strong>{{ site.longitude }}</strong>
+          </div>
+        </div>
+
+        <p>{{ site.description || 'No description available.' }}</p>
+      </article>
+
+      <article class="to-card">
+        <div class="to-card-header">
+          <h2>Devices</h2>
+          <button type="button" (click)="goTo('/devices')">View all</button>
+        </div>
+
+        @for (device of devices; track device.code) {
+          <div class="to-list-item">
+            <div>
+              <strong>{{ device.name }}</strong>
+              <span>{{ device.code }}</span>
+            </div>
+            <p-tag
+              [value]="device.status"
+              [severity]="device.status === 'Online' ? 'success' : 'warn'"
+            />
+          </div>
+        }
+      </article>
+
+      <article class="to-card">
+        <div class="to-card-header">
+          <h2>Alerts</h2>
+          <button type="button" (click)="goTo('/alerts')">View all</button>
+        </div>
+
+        @for (alert of alerts; track alert.title) {
+          <div class="to-list-item danger">
+            <div>
+              <strong>{{ alert.title }}</strong>
+              <span>{{ alert.time }}</span>
+            </div>
+            <p-tag
+              [value]="alert.severity"
+              [severity]="alert.severity === 'Critical' ? 'danger' : 'warn'"
+            />
+          </div>
+        }
+      </article>
+
+      <article class="to-card">
+        <div class="to-card-header">
+          <h2>Work Orders</h2>
+          <button type="button" (click)="goTo('/work-orders')">View all</button>
+        </div>
+
+        @for (wo of workOrders; track wo.id) {
+          <div class="to-list-item">
+            <div>
+              <strong>{{ wo.id }}</strong>
+              <span>{{ wo.title }}</span>
+            </div>
+            <p-tag [value]="wo.status" severity="info" />
+          </div>
+        }
+      </article>
+    </div>
+  } @else {
+    <div class="to-loading">
+      Loading site details...
+    </div>
+  }
+</section>

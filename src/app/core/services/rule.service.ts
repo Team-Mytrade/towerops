@@ -45,7 +45,7 @@ export class RuleService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
 
-  private readonly endpoint = 'rules';
+  private readonly endpoint = '/v1/rules';
 
   create(payload: RulePayload) {
     return this.api.post<Rule>(this.endpoint, payload);

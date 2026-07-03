@@ -30,7 +30,7 @@ export class AlertService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
 
-  private readonly endpoint = 'alerts';
+  private readonly endpoint = '/v1/alerts';
 
   getAll() {
     return this.api.get<Alert[]>(this.endpoint, {

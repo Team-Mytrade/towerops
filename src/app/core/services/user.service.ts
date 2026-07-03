@@ -48,7 +48,7 @@ export class UserService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
 
-  private readonly endpoint = 'users';
+  private readonly endpoint = '/v1/users';
 
   getAll() {
     return this.api.get<ApiResponse<User[]>>(this.endpoint);

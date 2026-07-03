@@ -33,7 +33,7 @@ export class AuthService {
     return new Promise((resolve, reject) => {
       this.http
         .post<ApiResponse<LoginResponseData>>(
-          `${environment.apiUrl}/auth/login`,
+          `${environment.apiUrl}/v1/auth/login`,
           payload,
         )
         .subscribe({

@@ -28,7 +28,7 @@ export type ApiResponse<T> = {
 export class DeviceModelService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
-  private readonly endpoint = 'api/V1/device-models';
+  private readonly endpoint = '/api/V1/device-models';
 
   getAll() {
     return this.api.getRoot<ApiResponse<DeviceModel[]>>(this.endpoint, {

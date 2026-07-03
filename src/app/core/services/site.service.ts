@@ -36,32 +36,31 @@ export type ApiResponse<T> = {
 };
 
 @Injectable({ providedIn: 'root' })
-export class SiteService {
-  private readonly api = inject(ApiService);
+export class SiteService extends ApiService {
   private readonly auth = inject(AuthService);
 
-  private readonly endpoint = 'api/sites';
+  private readonly endpoint = '/api/sites';
 
   getAll() {
-    return this.api.getRoot<ApiResponse<Site[]>>(this.endpoint, {
+    return this.getRoot<ApiResponse<Site[]>>(this.endpoint, {
       headers: this.tenantHeaders(),
     });
   }
 
   getByCategory(category: SiteCategory) {
-    return this.api.getRoot<ApiResponse<Site[]>>(`${this.endpoint}/category/${category}`, {
+    return this.getRoot<ApiResponse<Site[]>>(`${this.endpoint}/category/${category}`, {
       headers: this.tenantHeaders(),
     });
   }
 
   getById(id: number | string) {
-    return this.api.getRoot<ApiResponse<Site>>(`${this.endpoint}/${id}`, {
+    return this.getRoot<ApiResponse<Site>>(`${this.endpoint}/${id}`, {
       headers: this.tenantHeaders(),
     });
   }
 
   create(payload: SitePayload) {
-    return this.api.postRoot<ApiResponse<Site>>(
+    return this.postRoot<ApiResponse<Site>>(
       this.endpoint,
       payload,
       this.userHeaders(),

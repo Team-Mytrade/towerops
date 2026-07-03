@@ -28,7 +28,7 @@ export class NotificationConfigService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
 
-  private readonly endpoint = 'notification-configs';
+  private readonly endpoint = '/v1/notification-configs';
 
   getAll() {
     return this.api.get<NotificationConfig[]>(this.endpoint, {

@@ -32,7 +32,7 @@ export class RoleService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
 
-  private readonly endpoint = 'roles';
+  private readonly endpoint = '/v1/roles';
 
   getAll() {
     return this.api.get<ApiResponse<Role[]>>(this.endpoint);

@@ -39,7 +39,7 @@ export class WorkOrderService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
 
-  private readonly endpoint = 'work-orders';
+  private readonly endpoint = '/v1/work-orders';
 
   getAll() {
     return this.api.get<WorkOrder[]>(this.endpoint, {

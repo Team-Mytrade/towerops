@@ -1,0 +1,13 @@
+export enum SiteCategory {
+    TOWER = 'TOWER',
+    BUILDING = 'BUILDING',
+    WAREHOUSE = 'WAREHOUSE',
+    TELECOM = 'TELECOM',
+    POWER = 'POWER',
+    GENERATOR = 'GENERATOR',
+    FACILITY = 'FACILITY',
+    MARINE = 'MARINE',
+    AVIATION = 'AVIATION',
+    DEFENSE = 'DEFENSE',
+    AI_OPS_CENTER = 'AI_OPS_CENTER'
+}

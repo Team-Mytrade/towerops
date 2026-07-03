@@ -49,7 +49,7 @@ export class TicketService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
 
-  private readonly endpoint = 'tickets';
+  private readonly endpoint = '/v1/tickets';
 
   getAll() {
     return this.api.get<ApiResponse<Ticket[]>>(this.endpoint, {

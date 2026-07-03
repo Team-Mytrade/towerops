@@ -39,7 +39,7 @@ export class TechnicianService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
 
-  private readonly endpoint = 'technicians';
+  private readonly endpoint = '/v1/technicians';
 
   getAll() {
     return this.api.get<Technician[]>(this.endpoint);

@@ -39,117 +39,117 @@ export class Shell {
   readonly username = this.auth.username;
   readonly tenantId = this.auth.tenantId;
 
-  readonly navGroups: NavGroup[] = [
+ readonly isSuperAdmin = computed(() => this.tenantId() === 'DEFAULT');
+
+readonly navGroups = computed<NavGroup[]>(() => {
+  const isSuperAdmin = this.isSuperAdmin();
+
+  if (isSuperAdmin) {
+    return [
+      {
+        title: 'Overview',
+        items: [
+          { label: 'Platform Dashboard', route: '/platform-dashboard', icon: 'pi pi-th-large' },
+          { label: 'Global Map', route: '/map', icon: 'pi pi-map' },
+          { label: 'Global Monitoring', route: '/monitoring', icon: 'pi pi-chart-line' },
+        ],
+      },
+      {
+        title: 'Tenant Management',
+        items: [
+          { label: 'Tenants', route: '/tenants', icon: 'pi pi-briefcase' },
+        ],
+      },
+      {
+        title: 'Operations',
+        items: [
+          { label: 'Work Orders', route: '/work-orders', icon: 'pi pi-wrench' },
+        ],
+      },
+      {
+        title: 'People & Access',
+        items: [
+          { label: 'Users', route: '/users', icon: 'pi pi-user' },
+          { label: 'Roles', route: '/roles', icon: 'pi pi-lock' },
+          { label: 'Permissions', route: '/permissions', icon: 'pi pi-key' },
+        ],
+      },
+      {
+        title: 'System',
+        items: [
+          { label: 'Notification Configs', route: '/notifications', icon: 'pi pi-send' },
+        ],
+      },
+    ];
+  }
+
+  return [
     {
-      title: 'Command',
+      title: 'Overview',
       items: [
-        { label: 'Dashboard', route: '/dashboard', icon: 'pi pi-home' },
-        { label: 'Network Map', route: '/map', icon: 'pi pi-map', permission: 'map:view' },
+        { label: 'Site Categories', route: '/site-category-selection', icon: 'pi pi-th-large' },
+        { label: 'Network Map', route: '/map', icon: 'pi pi-map' },
+        { label: 'Monitoring', route: '/monitoring', icon: 'pi pi-chart-line' },
       ],
     },
     {
-      title: 'Infrastructure',
+      title: 'Site Management',
       items: [
-        { label: 'Sites', route: '/sites', icon: 'pi pi-building', permission: 'sites:view' },
-        { label: 'Devices', route: '/devices', icon: 'pi pi-microchip', permission: 'devices:view' },
-        {
-          label: 'Device Models',
-          route: '/device-models',
-          icon: 'pi pi-box',
-          permission: 'device-models:view',
-        },
+        { label: 'Sites', route: '/sites', icon: 'pi pi-building' },
+        { label: 'Devices', route: '/devices', icon: 'pi pi-microchip' },
+        { label: 'Device Models', route: '/device-models', icon: 'pi pi-box' },
+        { label: 'Device Credentials', route: '/device-credentials', icon: 'pi pi-shield' },
       ],
     },
     {
       title: 'Monitoring',
       items: [
-        { label: 'Monitoring', route: '/monitoring', icon: 'pi pi-chart-line', permission: 'monitoring:view' },
-        { label: 'Alerts', route: '/alerts', icon: 'pi pi-bell', permission: 'alerts:view' },
-        { label: 'Rules', route: '/rules', icon: 'pi pi-sitemap', permission: 'rules:view' },
+        { label: 'Alerts', route: '/alerts', icon: 'pi pi-bell' },
+        { label: 'Rules', route: '/rules', icon: 'pi pi-sitemap' },
       ],
     },
     {
       title: 'Operations',
       items: [
-        { label: 'Tickets', route: '/tickets', icon: 'pi pi-ticket', permission: 'tickets:view' },
-        {
-          label: 'Work Orders',
-          route: '/work-orders',
-          icon: 'pi pi-wrench',
-          permission: 'work-orders:view',
-        },
-        {
-          label: 'Maintenance',
-          route: '/maintenance',
-          icon: 'pi pi-cog',
-          permission: 'maintenance:view',
-        },
-        {
-          label: 'Approvals',
-          route: '/approvals',
-          icon: 'pi pi-check-circle',
-          permission: 'approvals:view',
-        },
+        { label: 'Work Orders', route: '/work-orders', icon: 'pi pi-wrench' },
+        { label: 'Maintenance', route: '/maintenance', icon: 'pi pi-cog' },
       ],
     },
     {
-      title: 'Workforce',
+      title: 'People & Access',
       items: [
-        { label: 'Technicians', route: '/technicians', icon: 'pi pi-users', permission: 'technicians:view' },
-        { label: 'Users', route: '/users', icon: 'pi pi-user', permission: 'users:view' },
-        { label: 'Roles', route: '/roles', icon: 'pi pi-lock', permission: 'roles:view' },
+        { label: 'Users', route: '/users', icon: 'pi pi-user' },
+        { label: 'Roles', route: '/roles', icon: 'pi pi-lock' },
+        { label: 'Permissions', route: '/permissions', icon: 'pi pi-key' },
+        { label: 'Technicians', route: '/technicians', icon: 'pi pi-users' },
       ],
     },
     {
-      title: 'Administration',
+      title: 'System',
       items: [
-        { label: 'Tenants', route: '/tenants', icon: 'pi pi-briefcase', permission: 'tenants:view' },
-        {
-          label: 'Notifications',
-          route: '/notifications',
-          icon: 'pi pi-send',
-          permission: 'notifications:view',
-        },
-        {
-          label: 'Configurations',
-          route: '/configurations',
-          icon: 'pi pi-sliders-h',
-          permission: 'configurations:view',
-        },
-        {
-          label: 'Audit Logs',
-          route: '/audit-logs',
-          icon: 'pi pi-history',
-          permission: 'audit-logs:view',
-        },
+        { label: 'Notification Configs', route: '/notifications', icon: 'pi pi-send' },
       ],
     },
   ];
+});
+readonly visibleGroups = computed(() =>
+  this.navGroups().filter((group) => group.items.length),
+);
+
+readonly pageTitle = computed(() => {
+  const url = this.currentUrl().split('?')[0];
+
+  const item = this.navGroups()
+    .flatMap((group) => group.items)
+    .find((nav) => nav.route === url);
+
+  return item?.label ?? 'Dashboard';
+});
 createTenant(): void {
   this.router.navigate(['/tenants'], {
     queryParams: { action: 'create' },
   });
 }
-  readonly visibleGroups = computed(() =>
-    this.navGroups
-      .map((group) => ({
-        ...group,
-        items: group.items.filter(
-          (item) => !item.permission || this.permission.hasPermission(item.permission),
-        ),
-      }))
-      .filter((group) => group.items.length),
-  );
-
-  readonly pageTitle = computed(() => {
-    const url = this.currentUrl().split('?')[0];
-
-    const item = this.navGroups
-      .flatMap((group) => group.items)
-      .find((nav) => nav.route === url);
-
-    return item?.label ?? 'Dashboard';
-  });
 
   constructor() {
     this.router.events

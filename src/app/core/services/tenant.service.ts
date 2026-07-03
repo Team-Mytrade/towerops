@@ -37,7 +37,7 @@ export class TenantService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
 
-  private readonly endpoint = 'tenants';
+  private readonly endpoint = '/api/v1/tenants';
 
   getAll() {
     return this.api.get<ApiResponse<Tenant[]>>(this.endpoint);

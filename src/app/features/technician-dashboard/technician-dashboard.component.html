@@ -1,0 +1,159 @@
+<section class="to-tech-dashboard" data-testid="technician-dashboard-page">
+  <header class="to-tech-header">
+    <div>
+      <p class="to-eyebrow">Technician</p>
+      <h1>My Dashboard</h1>
+      <span>Track assigned work orders and update progress.</span>
+    </div>
+
+    <button
+      type="button"
+      class="to-notification-btn"
+      data-testid="technician-notification-btn"
+    >
+      <i class="pi pi-bell"></i>
+      <b>3</b>
+    </button>
+  </header>
+
+  <div class="to-tech-kpis">
+    @for (stat of stats(); track stat.label) {
+      <article class="to-tech-kpi" [class]="'to-tech-kpi--' + stat.tone">
+        <div>
+          <span>{{ stat.label }}</span>
+          <strong>{{ stat.value }}</strong>
+        </div>
+
+        <i [class]="stat.icon"></i>
+      </article>
+    }
+  </div>
+
+  <article class="to-card">
+    <div class="to-card-header">
+      <div>
+        <p class="to-eyebrow">Assigned Jobs</p>
+        <h2>Work Orders</h2>
+      </div>
+    </div>
+
+    <div class="to-workorder-list">
+      @for (order of workOrders(); track order.id) {
+        <button
+          type="button"
+          class="to-workorder-row"
+          [attr.data-testid]="'technician-workorder-' + order.id"
+          (click)="openWorkOrder(order)"
+        >
+          <div class="to-workorder-main">
+            <strong>{{ order.title }}</strong>
+            <span>{{ order.id }} · {{ order.siteCode }} · {{ order.siteName }}</span>
+          </div>
+
+          <div class="to-workorder-meta">
+            <p-tag
+              [value]="order.priority"
+              [severity]="prioritySeverity(order.priority)"
+            />
+
+            <p-tag
+              [value]="order.status"
+              [severity]="statusSeverity(order.status)"
+            />
+          </div>
+
+          <i class="pi pi-arrow-right"></i>
+        </button>
+      }
+    </div>
+  </article>
+
+  @if (selectedWorkOrder(); as order) {
+    <div class="to-drawer-backdrop" (click)="closeDrawer()"></div>
+
+    <aside class="to-workorder-drawer" data-testid="technician-workorder-detail-drawer">
+      <header>
+        <div>
+          <p class="to-eyebrow">Work Order Details</p>
+          <h2>{{ order.id }}</h2>
+          <span>{{ order.siteCode }} · {{ order.siteName }}</span>
+        </div>
+
+        <button
+          type="button"
+          (click)="closeDrawer()"
+          data-testid="close-technician-workorder-drawer-btn"
+        >
+          <i class="pi pi-times"></i>
+        </button>
+      </header>
+
+      <div class="to-status-strip">
+        <p-tag
+          [value]="order.priority"
+          [severity]="prioritySeverity(order.priority)"
+        />
+
+        <p-tag
+          [value]="order.status"
+          [severity]="statusSeverity(order.status)"
+        />
+      </div>
+
+      <section class="to-drawer-section">
+        <h3>{{ order.title }}</h3>
+        <p>{{ order.description }}</p>
+      </section>
+
+      <div class="to-detail-grid">
+        <div>
+          <span>Site</span>
+          <strong>{{ order.siteName }}</strong>
+        </div>
+
+        <div>
+          <span>Site Code</span>
+          <strong>{{ order.siteCode }}</strong>
+        </div>
+
+        <div>
+          <span>Assigned At</span>
+          <strong>{{ order.assignedAt }}</strong>
+        </div>
+
+        <div>
+          <span>Current Status</span>
+          <strong>{{ order.status }}</strong>
+        </div>
+      </div>
+
+      <div class="to-drawer-actions">
+        @if (order.status === 'Pending') {
+          <p-button
+            label="Start Work"
+            icon="pi pi-play"
+            data-testid="mark-workorder-in-progress-btn"
+            (onClick)="markInProgress(order)"
+          />
+        }
+
+        @if (order.status !== 'Completed') {
+          <p-button
+            label="Mark Completed"
+            icon="pi pi-check"
+            severity="success"
+            data-testid="mark-workorder-completed-btn"
+            (onClick)="markCompleted(order)"
+          />
+        }
+
+        <p-button
+          label="Close"
+          severity="secondary"
+          outlined
+          (onClick)="closeDrawer()"
+        />
+      </div>
+    </aside>
+  }
+</section>

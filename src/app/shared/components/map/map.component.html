@@ -1,0 +1,24 @@
+<div class="to-map-shell" [style.height]="height">
+  <div class="to-map-search">
+    <input
+      type="search"
+      placeholder="Search location in English..."
+      [(ngModel)]="searchText"
+      (keyup.enter)="searchLocation()"
+    />
+
+    <button type="button" (click)="searchLocation()">
+      Search
+    </button>
+
+    <button type="button" (click)="useMyLocation()">
+      My Location
+    </button>
+
+    <button type="button" (click)="shareCurrentView()">
+      Share
+    </button>
+  </div>
+
+  <div #mapContainer class="to-map-container"></div>
+</div>

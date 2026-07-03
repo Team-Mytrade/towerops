@@ -8,7 +8,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const storage = inject(StorageService);
 
   const token = storage.get(STORAGE_KEYS.token);
-  const username = storage.get(STORAGE_KEYS.username);
   const tenantId = storage.get(STORAGE_KEYS.tenantId);
 
   let headers = req.headers;
@@ -19,11 +18,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (tenantId) {
     headers = headers.set('X-Tenant-Id', tenantId);
-    headers = headers.set('tenantId', tenantId);
-  }
-
-  if (username) {
-    headers = headers.set('username', username);
   }
 
   return next(req.clone({ headers }));

@@ -32,7 +32,7 @@ export type ApiResponse<T> = {
 export class DeviceService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
-  private readonly endpoint = 'devices';
+  private readonly endpoint = '/v1/devices';
 
   getAll() {
     return this.api.get<ApiResponse<Device[]>>(this.endpoint);

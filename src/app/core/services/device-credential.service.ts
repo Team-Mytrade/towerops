@@ -25,7 +25,7 @@ export type DeviceCredential = {
 export class DeviceCredentialService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
-  private readonly endpoint = 'api/device-credentials';
+  private readonly endpoint = '/api/device-credentials';
 
   getAll() {
     return this.api.getRoot<DeviceCredential[]>(this.endpoint, {

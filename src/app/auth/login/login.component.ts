@@ -46,67 +46,75 @@ export class LoginComponent {
   }
 
   async submit(): Promise<void> {
-    if (this.loading()) return;
+  if (this.loading()) return;
 
-    this.errorMessage.set('');
+  this.errorMessage.set('');
 
-    const username = this.username.trim();
+  const username = this.username.trim();
 
-    if (!username || !this.password) {
-      this.errorMessage.set('Please enter username and password.');
+  if (!username || !this.password) {
+    this.errorMessage.set('Please enter username and password.');
+    return;
+  }
+
+  try {
+    this.loading.set(true);
+
+    const response = await this.authService.login({
+      username,
+      password: this.password,
+    });
+
+    if (!response?.success || !response.data?.token) {
+      this.errorMessage.set(response?.message || 'Login failed.');
       return;
     }
 
-    try {
-      this.loading.set(true);
+    const tenantId = response.data.tenantId;
 
-      const response = await this.authService.login({
-        username,
-        password: this.password,
-      });
-
-      if (!response.success || !response.data) {
-        this.errorMessage.set(response.message || 'Login failed.');
-        return;
-      }
-
-      const tenantId = response.data.tenantId;
-
-      if (tenantId === 'DEFAULT') {
-        this.router.navigateByUrl('/platform-dashboard', { replaceUrl: true });
-        return;
-      }
-
-      await this.handleTenantAdminNavigation();
-    } catch (error) {
-      console.error('Login failed:', error);
-      this.errorMessage.set('Invalid username or password.');
-    } finally {
-      this.loading.set(false);
+    if (tenantId === 'DEFAULT') {
+      await this.router.navigateByUrl('/platform-dashboard', { replaceUrl: true });
+      return;
     }
+
+    await this.handleTenantAdminNavigation();
+  } catch (error) {
+    console.error('Login error:', error);
+    this.errorMessage.set('Login succeeded, but dashboard setup failed.');
+  } finally {
+    this.loading.set(false);
   }
+}
 
 private async handleTenantAdminNavigation(): Promise<void> {
-  const response = await firstValueFrom(this.sitesService.getAll());
+  try {
+    const response = await firstValueFrom(this.sitesService.getAll());
 
-  if (!response.success) {
-    this.errorMessage.set(response.message || 'Unable to load sites.');
-    return;
-  }
+    if (!response?.success) {
+      await this.router.navigateByUrl('/site-category-selection', { replaceUrl: true });
+      return;
+    }
 
-  const categoryCounts = this.getCategoryCounts(response.data ?? []);
-  const categories = Object.keys(categoryCounts) as SiteCategory[];
+    const categoryCounts = this.getCategoryCounts(response.data ?? []);
+    const categories = Object.keys(categoryCounts) as SiteCategory[];
 
-  sessionStorage.setItem('siteCategoryCounts', JSON.stringify(categoryCounts));
+    sessionStorage.setItem('siteCategoryCounts', JSON.stringify(categoryCounts));
 
-  if (categories.length === 1) {
-    this.router.navigate(['/dashboard/site-category', categories[0].toLowerCase()], {
+    if (categories.length === 1) {
+      await this.router.navigate(['/dashboard/site-category', categories[0].toLowerCase()], {
+        replaceUrl: true,
+      });
+      return;
+    }
+
+    await this.router.navigateByUrl('/site-category-selection', { replaceUrl: true });
+  } catch (error) {
+    console.error('Site loading failed after login:', error);
+
+    await this.router.navigateByUrl('/site-category-selection', {
       replaceUrl: true,
     });
-    return;
   }
-
-  this.router.navigateByUrl('/site-category-selection', { replaceUrl: true });
 }
 
 private getCategoryCounts(sites: Site[]): Partial<Record<SiteCategory, number>> {
