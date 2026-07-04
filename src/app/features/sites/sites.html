@@ -7,54 +7,24 @@
       </p>
     </div>
 
-    <p-button
-      label="Create Site"
-      icon="pi pi-plus"
-      data-testid="create-site-btn"
-      (click)="openCreateSite()"
-    />
+    <p-button label="Create Site" icon="pi pi-plus" data-testid="create-site-btn" (click)="openCreateSite()" />
   </header>
 
   <div class="to-toolbar">
     <div class="to-toolbar-left">
-      <input
-        pInputText
-        type="search"
-        placeholder="Search sites..."
-        [ngModel]="search()"
-        (ngModelChange)="search.set($event)"
-        data-testid="site-search-input"
-      />
+      <input pInputText type="search" placeholder="Search sites..." [ngModel]="search()"
+        (ngModelChange)="search.set($event)" data-testid="site-search-input" />
 
-      <p-select
-        [options]="typeOptions"
-        [ngModel]="typeFilter()"
-        (ngModelChange)="typeFilter.set($event)"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Type"
-        data-testid="site-type-filter"
-      />
+      <p-select [options]="typeOptions" [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)"
+        optionLabel="label" optionValue="value" placeholder="Type" data-testid="site-type-filter" />
 
-      <p-select
-        [options]="statusOptions"
-        [ngModel]="statusFilter()"
-        (ngModelChange)="statusFilter.set($event)"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Status"
-        data-testid="site-status-filter"
-      />
+      <p-select [options]="statusOptions" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)"
+        optionLabel="label" optionValue="value" placeholder="Status" data-testid="site-status-filter" />
     </div>
   </div>
 
   <div class="to-card">
-    <p-table
-      [value]="filteredSites()"
-      dataKey="id"
-      [rowHover]="true"
-      styleClass="to-prime-table"
-    >
+    <p-table [value]="filteredSites()" dataKey="id" [rowHover]="true" styleClass="to-prime-table">
       <ng-template pTemplate="header">
         <tr>
           <th>Site</th>
@@ -69,12 +39,7 @@
       </ng-template>
 
       <ng-template pTemplate="body" let-site>
-        <tr
-          role="button"
-          tabindex="0"
-          [attr.data-testid]="'site-row-' + site.id"
-          (click)="openSite(site)"
-        >
+        <tr role="button" tabindex="0" [attr.data-testid]="'site-row-' + site.id" (click)="openSite(site)">
           <td>
             <strong>{{ site.name }}</strong>
             <span>{{ site.code }}</span>
@@ -86,159 +51,135 @@
           <td>{{ site.openAlerts }}</td>
           <td>{{ site.openWorkOrders }}</td>
           <td>
-            <to-status-badge
-              [label]="site.status"
-              [tone]="statusTone(site.status)"
-            />
+            <to-status-badge [label]="site.status" [tone]="statusTone(site.status)" />
           </td>
         </tr>
       </ng-template>
     </p-table>
   </div>
 
-  <to-drawer
-    [open]="drawerOpen()"
-    [size]="drawerSize"
-    [title]="drawerTitle"
-    [eyebrow]="drawerEyebrow"
-    (closed)="closeDrawer()"
-  >
+  <to-drawer [open]="drawerOpen()" [size]="drawerSize" [title]="drawerTitle" [eyebrow]="drawerEyebrow"
+    (closed)="closeDrawer()">
     @if (drawerMode() === 'create' || drawerMode() === 'edit') {
-      <div class="to-drawer-section">
-        <h3>Basic Information</h3>
+    <div class="to-drawer-section">
+      <h3>Basic Information</h3>
 
-        <div class="to-form-grid-wide">
-          <label>
-            <span>Site Code</span>
-            <input pInputText [(ngModel)]="newSite.code" placeholder="TW-001" />
-          </label>
+      <div class="to-form-grid-wide">
+        <label>
+          <span>Site Code</span>
+          <input pInputText [(ngModel)]="newSite.code" placeholder="TW-001" />
+        </label>
 
-          <label>
-            <span>Site Name</span>
-            <input
-              pInputText
-              [(ngModel)]="newSite.name"
-              placeholder="Dubai Marina Tower"
-            />
-          </label>
+        <label>
+          <span>Site Name</span>
+          <input pInputText [(ngModel)]="newSite.name" placeholder="Dubai Marina Tower" />
+        </label>
 
-          <label>
-            <span>Site Type</span>
-            <p-select
-              [options]="typeOptions.slice(1)"
-              [(ngModel)]="newSite.type"
-              optionLabel="label"
-              optionValue="value"
-              appendTo="body"
-            />
-          </label>
+        <label>
+          <span>Site Type</span>
+          <p-select [options]="typeOptions.slice(1)" [(ngModel)]="newSite.type" optionLabel="label" optionValue="value"
+            appendTo="body" />
+        </label>
 
-          <label>
-            <span>Tenant</span>
-            <input pInputText [(ngModel)]="newSite.tenantName" />
-          </label>
-        </div>
+        <label>
+          <span>Tenant</span>
+          <input pInputText [(ngModel)]="newSite.tenantName" />
+        </label>
       </div>
+    </div>
 
-      <div class="to-drawer-section">
-        <h3>Location</h3>
+    <div class="to-drawer-section">
+      <h3>Location</h3>
 
-        <div class="to-form-grid-wide">
-          <label>
-            <span>Region</span>
-            <input pInputText [(ngModel)]="newSite.region" placeholder="UAE" />
-          </label>
+      <div class="to-form-grid-wide">
+        <label>
+          <span>Region</span>
+          <input pInputText [(ngModel)]="newSite.region" placeholder="UAE" />
+        </label>
 
-          <label>
-            <span>Zone</span>
-            <input pInputText [(ngModel)]="newSite.zone" placeholder="Dubai" />
-          </label>
+        <label>
+          <span>Zone</span>
+          <input pInputText [(ngModel)]="newSite.zone" placeholder="Dubai" />
+        </label>
 
-          <label>
-            <span>City</span>
-            <input pInputText [(ngModel)]="newSite.city" />
-          </label>
+        <label>
+          <span>City</span>
+          <input pInputText [(ngModel)]="newSite.city" />
+        </label>
 
-          <label>
-            <span>Address</span>
-            <input pInputText [(ngModel)]="newSite.address" />
-          </label>
+        <label>
+          <span>Address</span>
+          <input pInputText [(ngModel)]="newSite.address" />
+        </label>
 
-          <label>
-            <span>Latitude</span>
-            <input pInputText type="number" [(ngModel)]="newSite.latitude" />
-          </label>
+        <label>
+          <span>Latitude</span>
+          <input pInputText type="number" [(ngModel)]="newSite.latitude" />
+        </label>
 
-          <label>
-            <span>Longitude</span>
-            <input pInputText type="number" [(ngModel)]="newSite.longitude" />
-          </label>
-        </div>
+        <label>
+          <span>Longitude</span>
+          <input pInputText type="number" [(ngModel)]="newSite.longitude" />
+        </label>
       </div>
+    </div>
 
-      <div class="to-drawer-section">
-        <h3>Contact</h3>
+    <div class="to-drawer-section">
+      <h3>Contact</h3>
 
-        <div class="to-form-grid-wide">
-          <label>
-            <span>Contact Person</span>
-            <input pInputText [(ngModel)]="newSite.contactPerson" />
-          </label>
+      <div class="to-form-grid-wide">
+        <label>
+          <span>Contact Person</span>
+          <input pInputText [(ngModel)]="newSite.contactPerson" />
+        </label>
 
-          <label>
-            <span>Phone</span>
-            <input pInputText [(ngModel)]="newSite.contactNumber" />
-          </label>
+        <label>
+          <span>Phone</span>
+          <input pInputText [(ngModel)]="newSite.contactNumber" />
+        </label>
 
-          <label>
-            <span>Email</span>
-            <input pInputText [(ngModel)]="newSite.email" />
-          </label>
-        </div>
+        <label>
+          <span>Email</span>
+          <input pInputText [(ngModel)]="newSite.email" />
+        </label>
       </div>
+    </div>
 
     }
 
     @if (drawerMode() === 'create' || drawerMode() === 'edit') {
-      <ng-container drawer-actions>
-        <p-button
-          label="Cancel"
-          severity="secondary"
-          (click)="closeDrawer()"
-        />
+    <ng-container drawer-actions>
+      <p-button label="Cancel" severity="secondary" (click)="closeDrawer()" />
 
-        <p-button
-          [label]="drawerMode() === 'edit' ? 'Save Changes' : 'Save Site'"
-          icon="pi pi-check"
-          (click)="saveSite()"
-        />
-      </ng-container>
+      <p-button [label]="drawerMode() === 'edit' ? 'Save Changes' : 'Save Site'" icon="pi pi-check"
+        (click)="saveSite()" />
+    </ng-container>
     }
 
     @if (drawerMode() === 'view' && selectedSite(); as site) {
-      <div class="to-detail-grid">
-        <to-detail-field label="Type" [value]="site.type" />
-        <to-detail-field label="Tenant" [value]="site.tenantName" />
-        <to-detail-field label="Devices" [value]="site.devices" />
-        <to-detail-field label="Technicians" [value]="site.technicians" />
-        <to-detail-field label="Open Alerts" [value]="site.openAlerts" />
-        <to-detail-field label="Open Work Orders" [value]="site.openWorkOrders" />
-        <to-detail-field label="City" [value]="site.city" />
-        <to-detail-field label="Address" [value]="site.address" />
-        <to-detail-field label="Latitude" [value]="site.latitude" />
-        <to-detail-field label="Longitude" [value]="site.longitude" />
-        <to-detail-field label="Contact" [value]="site.contactPerson" />
-        <to-detail-field label="Phone" [value]="site.contactNumber" />
-      </div>
+    <div class="to-detail-grid">
+      <to-detail-field label="Type" [value]="site.type" />
+      <to-detail-field label="Tenant" [value]="site.tenantName" />
+      <to-detail-field label="Devices" [value]="site.devices" />
+      <to-detail-field label="Technicians" [value]="site.technicians" />
+      <to-detail-field label="Open Alerts" [value]="site.openAlerts" />
+      <to-detail-field label="Open Work Orders" [value]="site.openWorkOrders" />
+      <to-detail-field label="City" [value]="site.city" />
+      <to-detail-field label="Address" [value]="site.address" />
+      <to-detail-field label="Latitude" [value]="site.latitude" />
+      <to-detail-field label="Longitude" [value]="site.longitude" />
+      <to-detail-field label="Contact" [value]="site.contactPerson" />
+      <to-detail-field label="Phone" [value]="site.contactNumber" />
+    </div>
 
     }
 
     @if (drawerMode() === 'view' && selectedSite()) {
-      <ng-container drawer-actions>
-        <p-button label="Edit Site" icon="pi pi-pencil" (click)="editSite()" />
-        <p-button label="View Devices" icon="pi pi-microchip" severity="secondary" />
-        <p-button label="Work Orders" icon="pi pi-clipboard" severity="secondary" />
-      </ng-container>
+    <ng-container drawer-actions>
+      <p-button label="Edit Site" icon="pi pi-pencil" (click)="editSite()" />
+      <p-button label="View Devices" icon="pi pi-microchip" severity="secondary" (click)="navigateToDevices()" />
+      <p-button label="Work Orders" icon="pi pi-clipboard" severity="secondary" (click)="navigateToWorkOrders()" />
+    </ng-container>
     }
   </to-drawer>
 </section>

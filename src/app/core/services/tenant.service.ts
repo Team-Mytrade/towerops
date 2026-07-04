@@ -37,12 +37,13 @@ export class TenantService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
 
-  private readonly endpoint = '/api/v1/tenants';
+  private readonly endpoint = '/v1/tenants';
+
 
   getAll() {
     return this.api.get<ApiResponse<Tenant[]>>(this.endpoint);
   }
-
+  // , { headers: { 'X-Tenant-Id': this.auth.getTenantId() || 'DEFAULT' } }
   getById(id: number | string) {
     return this.api.get<ApiResponse<Tenant>>(`${this.endpoint}/${id}`);
   }

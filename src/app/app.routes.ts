@@ -12,7 +12,11 @@ export const routes: Routes = [
     component: Shell,
     canActivate: [authGuard],
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'site-category-selection',
+      },
 
       {
         path: 'site-category-selection',
@@ -28,6 +32,11 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard').then((m) => m.Dashboard),
       },
       {
+        path: 'dashboard/site-category/:category',
+        loadComponent: () =>
+          import('./features/dashboard/dashboard').then((m) => m.Dashboard),
+      },
+      {
         path: 'platform-dashboard',
         loadComponent: () =>
           import('./features/platform-dashboard/platform-dashboard.component').then(
@@ -35,22 +44,24 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'dashboard/site-category/:category',
+        path: 'technician-dashboard',
         loadComponent: () =>
-          import('./features/dashboard/dashboard').then((m) => m.Dashboard),
+          import('./features/technician-dashboard/technician-dashboard.component').then(
+            (m) => m.TechnicianDashboardComponent,
+          ),
       },
 
-      // {
-      //   path: 'technician-dashboard',
-      //   loadComponent: () =>
-      //     import('./features/technician-dashboard/technician-dashboard.component').then(
-      //       (m) => m.TechnicianDashboardComponent,
-      //     ),
-      // },
+      {
+        path: 'tenants',
+        loadComponent: () =>
+          import('./features/tenants/tenants').then((m) => m.Tenants),
+      },
 
-      { path: 'home', loadComponent: () => import('./features/home/home').then(m => m.Home) },
-
-      { path: 'tenants', loadComponent: () => import('./features/tenants/tenants').then(m => m.Tenants) },
+      {
+        path: 'sites',
+        loadComponent: () =>
+          import('./features/sites/sites').then((m) => m.Sites),
+      },
       {
         path: 'sites/:id',
         loadComponent: () =>
@@ -58,26 +69,109 @@ export const routes: Routes = [
             (m) => m.SiteDetailsComponent,
           ),
       },
-      { path: 'devices', loadComponent: () => import('./features/devices/devices').then(m => m.Devices) },
-      { path: 'device-models', loadComponent: () => import('./features/device-models/device-models').then(m => m.DeviceModels) },
-      { path: 'map', loadComponent: () => import('./features/network-map/network-map').then(m => m.NetworkMap) },
 
-      { path: 'alerts', loadComponent: () => import('./features/alerts/alerts').then(m => m.Alerts) },
-      { path: 'alarms', loadComponent: () => import('./features/alarms/alarms').then(m => m.Alarms) },
-      { path: 'tickets', loadComponent: () => import('./features/tickets/tickets').then(m => m.Tickets) },
-      { path: 'work-orders', loadComponent: () => import('./features/work-orders/work-orders').then(m => m.WorkOrders) },
-      { path: 'maintenance', loadComponent: () => import('./features/maintenance/maintenance').then(m => m.Maintenance) },
-      { path: 'monitoring', loadComponent: () => import('./features/monitoring/monitoring').then(m => m.Monitoring) },
-      { path: 'approvals', loadComponent: () => import('./features/approvals/approvals').then(m => m.Approvals) },
+      {
+        path: 'devices',
+        loadComponent: () =>
+          import('./features/devices/devices').then((m) => m.Devices),
+      },
+      {
+        path: 'device-models',
+        loadComponent: () =>
+          import('./features/device-models/device-models').then(
+            (m) => m.DeviceModels,
+          ),
+      },
 
-      { path: 'users', loadComponent: () => import('./features/users/users').then(m => m.Users) },
-      { path: 'technicians', loadComponent: () => import('./features/technicians/technicians').then(m => m.Technicians) },
-      { path: 'roles', loadComponent: () => import('./features/roles/roles').then(m => m.Roles) },
-      { path: 'rules', loadComponent: () => import('./features/rules/rules').then(m => m.Rules) },
+      {
+        path: 'map',
+        loadComponent: () =>
+          import('./features/network-map/network-map').then(
+            (m) => m.NetworkMap,
+          ),
+      },
+      {
+        path: 'monitoring',
+        loadComponent: () =>
+          import('./features/monitoring/monitoring').then(
+            (m) => m.Monitoring,
+          ),
+      },
 
-      { path: 'configurations', loadComponent: () => import('./features/configurations/configurations').then(m => m.Configurations) },
-      { path: 'notifications', loadComponent: () => import('./features/notification-configs/notification-configs').then(m => m.NotificationConfigs) },
-      { path: 'audit-logs', loadComponent: () => import('./features/audit-logs/audit-logs').then(m => m.AuditLogs) },
+      {
+        path: 'alerts',
+        loadComponent: () =>
+          import('./features/alerts/alerts').then((m) => m.Alerts),
+      },
+      {
+        path: 'alarms',
+        loadComponent: () =>
+          import('./features/alarms/alarms').then((m) => m.Alarms),
+      },
+      {
+        path: 'tickets',
+        loadComponent: () =>
+          import('./features/tickets/tickets').then((m) => m.Tickets),
+      },
+      {
+        path: 'work-orders',
+        loadComponent: () =>
+          import('./features/work-orders/work-orders').then(
+            (m) => m.WorkOrders,
+          ),
+      },
+      {
+        path: 'maintenance',
+        loadComponent: () =>
+          import('./features/maintenance/maintenance').then(
+            (m) => m.Maintenance,
+          ),
+      },
+
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./features/users/users').then((m) => m.Users),
+      },
+      {
+        path: 'technicians',
+        loadComponent: () =>
+          import('./features/technicians/technicians').then(
+            (m) => m.Technicians,
+          ),
+      },
+      {
+        path: 'roles',
+        loadComponent: () =>
+          import('./features/roles/roles').then((m) => m.Roles),
+      },
+      {
+        path: 'rules',
+        loadComponent: () =>
+          import('./features/rules/rules').then((m) => m.Rules),
+      },
+
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/notification-configs/notification-configs').then(
+            (m) => m.NotificationConfigs,
+          ),
+      },
+      {
+        path: 'configurations',
+        loadComponent: () =>
+          import('./features/configurations/configurations').then(
+            (m) => m.Configurations,
+          ),
+      },
+      {
+        path: 'audit-logs',
+        loadComponent: () =>
+          import('./features/audit-logs/audit-logs').then(
+            (m) => m.AuditLogs,
+          ),
+      },
     ],
   },
 

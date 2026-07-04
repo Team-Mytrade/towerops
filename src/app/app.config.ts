@@ -3,7 +3,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 
 import { provideAppRouter } from './core/providers/app-router.provider';
 import { provideHttpApi } from './core/providers/http-api.provider';
-import { providePrimeTheme  } from './core/providers/primeng.provider';
+import { providePrimeTheme } from './core/providers/primeng.provider';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -11,7 +11,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideAppRouter(),
     provideAnimationsAsync(),
-    providePrimeTheme (),
+    providePrimeTheme(),
     provideHttpApi(),
   ],
 };

@@ -61,7 +61,7 @@ export class DeviceService {
   private headers(): Record<string, string> {
     return {
       'X-Tenant-Id': this.auth.getTenantId() || 'DEFAULT',
-      'X-User': this.auth.getUsername() || 'system',
+      // 'X-User': this.auth.getUsername() || 'system',
     };
   }
 }

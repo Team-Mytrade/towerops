@@ -4,14 +4,13 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { filter } from 'rxjs';
 
 import { AuthService } from '../../core/services/auth.service';
-import { PermissionService } from '../../core/services/permission.service';
-import { AccessService } from '../../core/services/access.service';
+
+type UserType = 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'ADMIN' | 'TECHNICIAN' | 'CUSTOMER';
 
 type NavItem = {
   label: string;
   route: string;
   icon: string;
-  permission?: string;
 };
 
 type NavGroup = {
@@ -30,7 +29,6 @@ type NavGroup = {
 export class Shell {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
-  private readonly permission = inject(AccessService);
 
   readonly collapsed = signal(false);
   readonly mobileOpen = signal(false);
@@ -39,31 +37,105 @@ export class Shell {
   readonly username = this.auth.username;
   readonly tenantId = this.auth.tenantId;
 
- readonly isSuperAdmin = computed(() => this.tenantId() === 'DEFAULT');
+  // Add userType signal in AuthService.
+  readonly userType = this.auth.userType;
 
-readonly navGroups = computed<NavGroup[]>(() => {
-  const isSuperAdmin = this.isSuperAdmin();
+  readonly isSuperAdmin = computed(
+    () =>
+      this.userType() === 'SUPER_ADMIN' ||
+      this.tenantId() === 'DEFAULT' ||
+      this.auth.hasAnyRole(['SUPER_ADMIN']),
+  );
 
-  if (isSuperAdmin) {
+  readonly isTechnician = computed(() => this.userType() === 'TECHNICIAN');
+
+  readonly navGroups = computed<NavGroup[]>(() => {
+    if (this.isTechnician()) {
+      return [
+        {
+          title: 'My Work',
+          items: [
+            { label: 'My Dashboard', route: '/technician-dashboard', icon: 'pi pi-home' },
+            { label: 'My Work Orders', route: '/work-orders', icon: 'pi pi-wrench' },
+            { label: 'Notifications', route: '/notifications', icon: 'pi pi-bell' },
+          ],
+        },
+      ];
+    }
+
+    if (this.isSuperAdmin()) {
+      return [
+        {
+          title: 'Overview',
+          items: [
+            { label: 'Platform Dashboard', route: '/platform-dashboard', icon: 'pi pi-th-large' },
+            { label: 'Global Map', route: '/map', icon: 'pi pi-map' },
+            { label: 'Global Monitoring', route: '/monitoring', icon: 'pi pi-chart-line' },
+          ],
+        },
+        {
+          title: 'Tenant Management',
+          items: [
+            { label: 'Tenants', route: '/tenants', icon: 'pi pi-briefcase' },
+          ],
+        },
+        {
+          title: 'Operations',
+          items: [
+            { label: 'Work Orders', route: '/work-orders', icon: 'pi pi-wrench' },
+          ],
+        },
+        {
+          title: 'People & Access',
+          items: [
+            { label: 'Users', route: '/users', icon: 'pi pi-user' },
+            { label: 'Roles', route: '/roles', icon: 'pi pi-lock' },
+          ],
+        },
+        {
+          title: 'Monitoring',
+          items: [
+            { label: 'Alerts', route: '/alerts', icon: 'pi pi-bell' },
+            { label: 'Rules', route: '/rules', icon: 'pi pi-sitemap' },
+          ],
+        },
+        {
+          title: 'System',
+          items: [
+            { label: 'Notification Configs', route: '/notifications', icon: 'pi pi-send' },
+          ],
+        },
+      ];
+    }
+
     return [
       {
         title: 'Overview',
         items: [
-          { label: 'Platform Dashboard', route: '/platform-dashboard', icon: 'pi pi-th-large' },
-          { label: 'Global Map', route: '/map', icon: 'pi pi-map' },
-          { label: 'Global Monitoring', route: '/monitoring', icon: 'pi pi-chart-line' },
+          { label: 'Site Categories', route: '/site-category-selection', icon: 'pi pi-th-large' },
+          { label: 'Network Map', route: '/map', icon: 'pi pi-map' },
+          { label: 'Monitoring', route: '/monitoring', icon: 'pi pi-chart-line' },
         ],
       },
       {
-        title: 'Tenant Management',
+        title: 'Site Management',
         items: [
-          { label: 'Tenants', route: '/tenants', icon: 'pi pi-briefcase' },
+          { label: 'Sites', route: '/sites', icon: 'pi pi-building' },
+          { label: 'Devices', route: '/devices', icon: 'pi pi-microchip' },
+        ],
+      },
+      {
+        title: 'Monitoring',
+        items: [
+          { label: 'Alerts', route: '/alerts', icon: 'pi pi-bell' },
+          { label: 'Rules', route: '/rules', icon: 'pi pi-sitemap' },
         ],
       },
       {
         title: 'Operations',
         items: [
           { label: 'Work Orders', route: '/work-orders', icon: 'pi pi-wrench' },
+          { label: 'Maintenance', route: '/maintenance', icon: 'pi pi-cog' },
         ],
       },
       {
@@ -71,7 +143,7 @@ readonly navGroups = computed<NavGroup[]>(() => {
         items: [
           { label: 'Users', route: '/users', icon: 'pi pi-user' },
           { label: 'Roles', route: '/roles', icon: 'pi pi-lock' },
-          { label: 'Permissions', route: '/permissions', icon: 'pi pi-key' },
+          { label: 'Technicians', route: '/technicians', icon: 'pi pi-users' },
         ],
       },
       {
@@ -81,75 +153,21 @@ readonly navGroups = computed<NavGroup[]>(() => {
         ],
       },
     ];
-  }
-
-  return [
-    {
-      title: 'Overview',
-      items: [
-        { label: 'Site Categories', route: '/site-category-selection', icon: 'pi pi-th-large' },
-        { label: 'Network Map', route: '/map', icon: 'pi pi-map' },
-        { label: 'Monitoring', route: '/monitoring', icon: 'pi pi-chart-line' },
-      ],
-    },
-    {
-      title: 'Site Management',
-      items: [
-        { label: 'Sites', route: '/sites', icon: 'pi pi-building' },
-        { label: 'Devices', route: '/devices', icon: 'pi pi-microchip' },
-        { label: 'Device Models', route: '/device-models', icon: 'pi pi-box' },
-        { label: 'Device Credentials', route: '/device-credentials', icon: 'pi pi-shield' },
-      ],
-    },
-    {
-      title: 'Monitoring',
-      items: [
-        { label: 'Alerts', route: '/alerts', icon: 'pi pi-bell' },
-        { label: 'Rules', route: '/rules', icon: 'pi pi-sitemap' },
-      ],
-    },
-    {
-      title: 'Operations',
-      items: [
-        { label: 'Work Orders', route: '/work-orders', icon: 'pi pi-wrench' },
-        { label: 'Maintenance', route: '/maintenance', icon: 'pi pi-cog' },
-      ],
-    },
-    {
-      title: 'People & Access',
-      items: [
-        { label: 'Users', route: '/users', icon: 'pi pi-user' },
-        { label: 'Roles', route: '/roles', icon: 'pi pi-lock' },
-        { label: 'Permissions', route: '/permissions', icon: 'pi pi-key' },
-        { label: 'Technicians', route: '/technicians', icon: 'pi pi-users' },
-      ],
-    },
-    {
-      title: 'System',
-      items: [
-        { label: 'Notification Configs', route: '/notifications', icon: 'pi pi-send' },
-      ],
-    },
-  ];
-});
-readonly visibleGroups = computed(() =>
-  this.navGroups().filter((group) => group.items.length),
-);
-
-readonly pageTitle = computed(() => {
-  const url = this.currentUrl().split('?')[0];
-
-  const item = this.navGroups()
-    .flatMap((group) => group.items)
-    .find((nav) => nav.route === url);
-
-  return item?.label ?? 'Dashboard';
-});
-createTenant(): void {
-  this.router.navigate(['/tenants'], {
-    queryParams: { action: 'create' },
   });
-}
+
+  readonly visibleGroups = computed(() =>
+    this.navGroups().filter((group) => group.items.length),
+  );
+
+  readonly pageTitle = computed(() => {
+    const url = this.currentUrl().split('?')[0];
+
+    const item = this.navGroups()
+      .flatMap((group) => group.items)
+      .find((nav) => nav.route === url);
+
+    return item?.label ?? 'Dashboard';
+  });
 
   constructor() {
     this.router.events
@@ -158,6 +176,28 @@ createTenant(): void {
         this.currentUrl.set(event.urlAfterRedirects);
         this.mobileOpen.set(false);
       });
+  }
+
+  createAction(): void {
+    if (this.isSuperAdmin()) {
+      this.router.navigate(['/tenants'], {
+        queryParams: { action: 'create' },
+      });
+      return;
+    }
+
+    this.router.navigate(['/sites'], {
+      queryParams: { action: 'create' },
+    });
+  }
+
+  isExactRoute(route: string): boolean {
+    return [
+      '/dashboard',
+      '/platform-dashboard',
+      '/technician-dashboard',
+      '/site-category-selection',
+    ].includes(route);
   }
 
   toggleCollapsed(): void {

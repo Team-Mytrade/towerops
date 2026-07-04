@@ -6,25 +6,20 @@
       <span>Global view across tenants, sites, devices and alarms.</span>
     </div>
 
-    <p-button
-      label="Create Tenant"
-      icon="pi pi-plus"
-      size="small"
-      data-testid="platform-create-tenant-btn"
-      (onClick)="createTenant()"
-    />
+    <p-button label="Create Tenant" icon="pi pi-plus" size="small" data-testid="platform-create-tenant-btn"
+      (onClick)="createTenant()" />
   </header>
 
   <div class="to-kpi-grid">
     @for (kpi of kpis(); track kpi.label) {
-      <article class="to-kpi-card" [attr.data-testid]="kpi.testId">
-        <div>
-          <span>{{ kpi.label }}</span>
-          <strong>{{ kpi.value }}</strong>
-        </div>
+    <article class="to-kpi-card" [attr.data-testid]="kpi.testId">
+      <div>
+        <span>{{ kpi.label }}</span>
+        <strong>{{ kpi.value }}</strong>
+      </div>
 
-        <i [class]="kpi.icon"></i>
-      </article>
+      <i [class]="kpi.icon"></i>
+    </article>
     }
   </div>
 
@@ -44,16 +39,24 @@
         </div>
       </div>
 
-      <to-map
-        [sites]="sites()"
-        [height]="'420px'"
-        [center]="[24.8, 53.4]"
-        [zoom]="6"
-        (siteSelected)="openSite($event)"
-      />
+      <to-map [sites]="sites()" [height]="'420px'" [center]="[24.8, 53.4]" [zoom]="6"
+        (siteSelected)="openSite($event)" />
     </article>
 
     <aside class="to-side-stack">
+      <article class="to-card">
+        <div class="to-card-header">
+          <div>
+            <p class="to-eyebrow">Health</p>
+            <h2>Platform Status</h2>
+          </div>
+        </div>
+
+        <div class="to-chart-box">
+          <p-chart type="doughnut" [data]="siteHealthChartData()" [options]="siteHealthChartOptions" />
+        </div>
+      </article>
+
       <article class="to-card">
         <div class="to-card-header">
           <div>
@@ -63,14 +66,14 @@
         </div>
 
         @for (category of categorySummary(); track category.label) {
-          <div class="to-summary-row">
-            <div>
-              <i [class]="category.icon"></i>
-              <strong>{{ category.label }}</strong>
-            </div>
-
-            <b>{{ category.value }}</b>
+        <div class="to-summary-row">
+          <div>
+            <i [class]="category.icon"></i>
+            <strong>{{ category.label }}</strong>
           </div>
+
+          <b>{{ category.value }}</b>
+        </div>
         }
       </article>
 
@@ -84,16 +87,31 @@
           <button type="button" (click)="openAlerts()">View all</button>
         </div>
 
-        @for (alert of alerts; track alert.title) {
-          <div class="to-alert-row">
-            <strong>{{ alert.title }}</strong>
-            <span>{{ alert.tenant }} · {{ alert.site }}</span>
+        @for (alert of alerts(); track alert.title) {
+        <div class="to-alert-row">
+          <strong>{{ alert.title }}</strong>
+          <span>{{ alert.tenant }} · {{ alert.site }}</span>
 
-            <p-tag
-              [value]="alert.severity"
-              [severity]="alert.severity === 'Critical' ? 'danger' : 'warn'"
-            />
+          <p-tag [value]="alert.severity" [severity]="alertSeverity(alert.severity)" />
+        </div>
+        }
+      </article>
+
+      <article class="to-card">
+        <div class="to-card-header">
+          <div>
+            <p class="to-eyebrow">Active</p>
+            <h2>Work Orders</h2>
           </div>
+
+          <button type="button" (click)="openWorkOrders()">View all</button>
+        </div>
+
+        @for (wo of activeWorkOrders(); track wo.id) {
+        <div class="to-alert-row">
+          <strong>{{ wo.id }} · {{ wo.title }}</strong>
+          <span>{{ wo.tenant }} · {{ wo.site }} · {{ wo.status }}</span>
+        </div>
         }
       </article>
     </aside>
@@ -118,29 +136,22 @@
       </div>
 
       @for (site of sites(); track site.id) {
-        <button
-          type="button"
-          class="to-site-table__row"
-          [attr.data-testid]="'platform-site-row-' + site.id"
-          (click)="openSite(site)"
-        >
-          <span>
-            <strong>{{ site.siteName }}</strong>
-            <small>{{ site.siteCode }}</small>
-          </span>
+      <button type="button" class="to-site-table__row" [attr.data-testid]="'platform-site-row-' + site.id"
+        (click)="openSite(site)">
+        <span>
+          <strong>{{ site.siteName }}</strong>
+          <small>{{ site.siteCode }}</small>
+        </span>
 
-          <span>{{ site.tenantName }}</span>
-          <span>{{ site.category }}</span>
-          <span>{{ site.city }}, {{ site.country }}</span>
-          <span>{{ site.devices }}</span>
+        <span>{{ site.tenantName }}</span>
+        <span>{{ site.category }}</span>
+        <span>{{ site.city }}, {{ site.country }}</span>
+        <span>{{ site.devices }}</span>
 
-          <span>
-            <p-tag
-              [value]="site.status"
-              [severity]="statusSeverity(site.status)"
-            />
-          </span>
-        </button>
+        <span>
+          <p-tag [value]="site.status" [severity]="statusSeverity(site.status)" />
+        </span>
+      </button>
       }
     </div>
   </article>

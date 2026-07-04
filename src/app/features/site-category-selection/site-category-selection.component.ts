@@ -1,8 +1,10 @@
 import { CommonModule, TitleCasePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { SiteCategory } from '../../core/enums/site-category.enum';
+import { SiteService } from '../../core/services/site.service';
+import { firstValueFrom } from 'rxjs';
 
 type SiteCategoryCard = {
   key: SiteCategory;
@@ -81,11 +83,15 @@ const CATEGORY_META: Record<
   templateUrl: './site-category-selection.component.html',
   styleUrl: './site-category-selection.component.scss',
 })
-export class SiteCategorySelectionComponent {
+export class SiteCategorySelectionComponent implements OnInit {
   private readonly router = inject(Router);
+  readonly siteService = inject(SiteService);
 
   readonly tenantName = signal('Algotricz Telecom');
 
+  ngOnInit(): void {
+    this.getSiteCategorySummary()
+  }
   readonly categories = signal<Partial<Record<SiteCategory, number>>>({
     [SiteCategory.TOWER]: 12,
     [SiteCategory.BUILDING]: 5,
@@ -118,7 +124,9 @@ export class SiteCategorySelectionComponent {
   readonly totalSites = computed(() =>
     this.cards().reduce((total, card) => total + card.count, 0),
   );
-
+  async getSiteCategorySummary() {
+    const data = await firstValueFrom(this.siteService.getCategorySummary())
+  }
   selectCategory(category: SiteCategory): void {
     this.router.navigate(['/dashboard/site-category', category.toLowerCase()]);
   }

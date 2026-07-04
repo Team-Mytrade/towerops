@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   OnInit,
   signal,
 } from '@angular/core';
@@ -13,16 +12,15 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
-import { firstValueFrom } from 'rxjs';
 
-import { Site, SiteService } from '../../core/services/site.service';
+import { Site } from '../../core/services/site.service';
 import {
   Technician,
   TechnicianPayload,
-  TechnicianService,
   TechnicianStatus,
 } from '../../core/services/technician.service';
-import { User, UserService } from '../../core/services/user.service';
+import { User } from '../../core/services/user.service';
+
 import { Drawer } from '../../shared/ui/drawer/drawer';
 import { DetailField } from '../../shared/ui/detail-field/detail-field';
 import { StatusBadge } from '../../shared/ui/status-badge/status-badge';
@@ -30,6 +28,12 @@ import { Timeline, TimelineItem } from '../../shared/ui/timeline/timeline';
 
 type DrawerMode = 'view' | 'create' | 'edit' | 'assignUser';
 type StatusFilter = 'All' | TechnicianStatus;
+
+const STORAGE_KEYS = {
+  technicians: 'towerops_technicians',
+  users: 'towerops_users',
+  sites: 'towerops_sites',
+};
 
 @Component({
   selector: 'to-technicians',
@@ -51,10 +55,6 @@ type StatusFilter = 'All' | TechnicianStatus;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Technicians implements OnInit {
-  private readonly technicianService = inject(TechnicianService);
-  private readonly userService = inject(UserService);
-  private readonly siteService = inject(SiteService);
-
   readonly loading = signal(false);
   readonly saving = signal(false);
 
@@ -68,6 +68,8 @@ export class Technicians implements OnInit {
   readonly technicians = signal<Technician[]>([]);
   readonly users = signal<User[]>([]);
   readonly sites = signal<Site[]>([]);
+
+  technicianForm: TechnicianPayload = this.emptyDraft();
 
   readonly statusOptions = [
     { label: 'All Status', value: 'All' },
@@ -95,11 +97,9 @@ export class Technicians implements OnInit {
     })),
   );
 
-  technicianForm: TechnicianPayload = this.emptyDraft();
-
   readonly timeline = signal<TimelineItem[]>([
-    { title: 'Technician profile synced', time: 'System', tone: 'info' },
-    { title: 'Availability loaded from backend', time: 'Now', tone: 'success' },
+    { title: 'Technician profile synced', time: 'Local demo data', tone: 'info' },
+    { title: 'Availability loaded', time: 'Now', tone: 'success' },
   ]);
 
   readonly filteredTechnicians = computed(() => {
@@ -149,27 +149,18 @@ export class Technicians implements OnInit {
     this.loadPageData();
   }
 
-  async loadPageData(): Promise<void> {
-    try {
-      this.loading.set(true);
+  loadPageData(): void {
+    this.loading.set(true);
 
-      const [technicians, usersRes, sitesRes] = await Promise.all([
-        firstValueFrom(this.technicianService.getAll()),
-        firstValueFrom(this.userService.getAll()),
-        firstValueFrom(this.siteService.getAll()),
-      ]);
+    this.seedLocalStorageIfEmpty();
 
-      this.technicians.set(technicians ?? []);
-      this.users.set(usersRes.data ?? []);
-      this.sites.set(sitesRes.data ?? []);
-    } catch (error) {
-      console.error('Failed to load technicians:', error);
-      this.technicians.set([]);
-      this.users.set([]);
-      this.sites.set([]);
-    } finally {
-      this.loading.set(false);
-    }
+    this.technicians.set(
+      this.readStorage<Technician[]>(STORAGE_KEYS.technicians, []),
+    );
+    this.users.set(this.readStorage<User[]>(STORAGE_KEYS.users, []));
+    this.sites.set(this.readStorage<Site[]>(STORAGE_KEYS.sites, []));
+
+    this.loading.set(false);
   }
 
   openCreate(): void {
@@ -187,7 +178,6 @@ export class Technicians implements OnInit {
 
   editTechnician(): void {
     const technician = this.selected();
-
     if (!technician) return;
 
     this.technicianForm = this.toPayload(technician);
@@ -196,58 +186,74 @@ export class Technicians implements OnInit {
 
   assignUser(): void {
     const technician = this.selected();
-
     if (!technician) return;
 
     this.technicianForm = this.toPayload(technician);
     this.drawerMode.set('assignUser');
   }
 
-  async saveTechnician(): Promise<void> {
+  saveTechnician(): void {
     if (this.saving()) return;
 
     const payload = this.normalizePayload();
 
-    if (!payload.technicianCode || !payload.firstName || !payload.email) {
-      return;
-    }
+    if (!payload.technicianCode || !payload.firstName || !payload.email) return;
 
-    try {
-      this.saving.set(true);
+    this.saving.set(true);
 
-      if (this.drawerMode() === 'edit' || this.drawerMode() === 'assignUser') {
-        const selected = this.selected();
-        if (!selected) return;
+    const technicians = [...this.technicians()];
 
-        await firstValueFrom(this.technicianService.update(selected.id, payload));
-      } else {
-        await firstValueFrom(this.technicianService.create(payload));
+    if (this.drawerMode() === 'edit' || this.drawerMode() === 'assignUser') {
+      const selected = this.selected();
+
+      if (!selected) {
+        this.saving.set(false);
+        return;
       }
 
-      await this.loadPageData();
-      this.closeDrawer();
-    } catch (error) {
-      console.error('Failed to save technician:', error);
-    } finally {
-      this.saving.set(false);
+      const updated = technicians.map((item) =>
+        item.id === selected.id
+          ? {
+            ...item,
+            ...payload,
+            username: this.getUsername(payload.userId),
+          }
+          : item,
+      );
+
+      this.technicians.set(updated);
+      this.writeStorage(STORAGE_KEYS.technicians, updated);
+    } else {
+      const newTechnician: Technician = {
+        id: this.nextId(technicians),
+        ...payload,
+        username: this.getUsername(payload.userId),
+      };
+
+      const updated = [newTechnician, ...technicians];
+
+      this.technicians.set(updated);
+      this.writeStorage(STORAGE_KEYS.technicians, updated);
     }
+
+    this.saving.set(false);
+    this.closeDrawer();
   }
 
-  async deleteTechnician(): Promise<void> {
+  deleteTechnician(): void {
     const technician = this.selected();
 
     if (!technician || this.saving()) return;
 
-    try {
-      this.saving.set(true);
-      await firstValueFrom(this.technicianService.delete(technician.id));
-      await this.loadPageData();
-      this.closeDrawer();
-    } catch (error) {
-      console.error('Failed to delete technician:', error);
-    } finally {
-      this.saving.set(false);
-    }
+    this.saving.set(true);
+
+    const updated = this.technicians().filter((item) => item.id !== technician.id);
+
+    this.technicians.set(updated);
+    this.writeStorage(STORAGE_KEYS.technicians, updated);
+
+    this.saving.set(false);
+    this.closeDrawer();
   }
 
   closeDrawer(): void {
@@ -329,14 +335,14 @@ export class Technicians implements OnInit {
 
   private emptyDraft(): TechnicianPayload {
     return {
-      technicianCode: '',
+      technicianCode: this.generateTechnicianCode(),
       firstName: '',
       lastName: '',
       email: '',
       phoneNumber: '',
       designation: '',
       department: '',
-      tenantId: '',
+      tenantId: 'ALG-001',
       siteCode: '',
       status: 'AVAILABLE',
       enabled: true,
@@ -344,5 +350,273 @@ export class Technicians implements OnInit {
       remarks: '',
       userId: null,
     };
+  }
+
+  private seedLocalStorageIfEmpty(): void {
+    if (!localStorage.getItem(STORAGE_KEYS.sites)) {
+      this.writeStorage(STORAGE_KEYS.sites, this.mockSites());
+    }
+
+    if (!localStorage.getItem(STORAGE_KEYS.users)) {
+      this.writeStorage(STORAGE_KEYS.users, this.mockUsers());
+    }
+
+    if (!localStorage.getItem(STORAGE_KEYS.technicians)) {
+      this.writeStorage(STORAGE_KEYS.technicians, this.mockTechnicians());
+    }
+  }
+
+  private mockSites(): Site[] {
+    return [
+      {
+        id: 1,
+        siteCode: 'TW-001',
+        siteName: 'Dubai Marina Tower',
+      } as Site,
+      {
+        id: 2,
+        siteCode: 'TW-002',
+        siteName: 'Business Bay Tower',
+      } as Site,
+      {
+        id: 3,
+        siteCode: 'BL-001',
+        siteName: 'Abu Dhabi Central Building',
+      } as Site,
+      {
+        id: 4,
+        siteCode: 'WH-001',
+        siteName: 'Ajman Coastal Warehouse',
+      } as Site,
+    ];
+  }
+
+  private mockUsers(): User[] {
+    return [
+      {
+        id: 1,
+        userCode: 'USR-001',
+        userType: 'SUPER_ADMIN',
+        username: 'superadmin',
+        email: 'superadmin@towerops.demo',
+        roleIds: [1],
+        enabled: true,
+        phoneNumber: '+971500000001',
+        address: {
+          street: 'Sheikh Zayed Road',
+          city: 'Dubai',
+          state: 'Dubai',
+          postalCode: '00001',
+          country: 'UAE',
+        },
+        active: true,
+      },
+      {
+        id: 2,
+        userCode: 'USR-002',
+        userType: 'TENANT_ADMIN',
+        username: 'admin_user',
+        email: 'admin@algotricz.demo',
+        roleIds: [2],
+        enabled: true,
+        phoneNumber: '+971500000002',
+        address: {
+          street: 'Business Bay',
+          city: 'Dubai',
+          state: 'Dubai',
+          postalCode: '00002',
+          country: 'UAE',
+        },
+        active: true,
+      },
+      {
+        id: 3,
+        userCode: 'USR-003',
+        userType: 'TECHNICIAN',
+        username: 'arun.kumar',
+        email: 'arun.kumar@towerops.demo',
+        roleIds: [4],
+        enabled: true,
+        phoneNumber: '+971501112233',
+        address: {
+          street: 'Al Barsha',
+          city: 'Dubai',
+          state: 'Dubai',
+          postalCode: '00003',
+          country: 'UAE',
+        },
+        active: true,
+      },
+      {
+        id: 4,
+        userCode: 'USR-004',
+        userType: 'TECHNICIAN',
+        username: 'naveen.raj',
+        email: 'naveen.raj@towerops.demo',
+        roleIds: [4],
+        enabled: true,
+        phoneNumber: '+971502223344',
+        address: {
+          street: 'Dubai Marina',
+          city: 'Dubai',
+          state: 'Dubai',
+          postalCode: '00004',
+          country: 'UAE',
+        },
+        active: true,
+      },
+      {
+        id: 5,
+        userCode: 'USR-005',
+        userType: 'TECHNICIAN',
+        username: 'faisal.rahman',
+        email: 'faisal.rahman@towerops.demo',
+        roleIds: [4],
+        enabled: true,
+        phoneNumber: '+971503334455',
+        address: {
+          street: 'Corniche Road',
+          city: 'Abu Dhabi',
+          state: 'Abu Dhabi',
+          postalCode: '00005',
+          country: 'UAE',
+        },
+        active: true,
+      },
+    ];
+  }
+
+  private mockTechnicians(): Technician[] {
+    return [
+      {
+        id: 1,
+        technicianCode: 'TECH-001',
+        firstName: 'Arun',
+        lastName: 'Kumar',
+        email: 'arun.kumar@towerops.demo',
+        phoneNumber: '+971501112233',
+        designation: 'Field Engineer',
+        department: 'Network Operations',
+        tenantId: 'ALG-001',
+        siteCode: 'TW-001',
+        status: 'AVAILABLE',
+        enabled: true,
+        skillSet: 'Signal inspection, gateway setup, RF calibration',
+        remarks: 'Senior field technician for Dubai zone.',
+        userId: 3,
+        username: 'arun.kumar',
+      },
+      {
+        id: 2,
+        technicianCode: 'TECH-002',
+        firstName: 'Naveen',
+        lastName: 'Raj',
+        email: 'naveen.raj@towerops.demo',
+        phoneNumber: '+971502223344',
+        designation: 'Maintenance Engineer',
+        department: 'Field Service',
+        tenantId: 'ALG-001',
+        siteCode: 'TW-002',
+        status: 'ASSIGNED',
+        enabled: true,
+        skillSet: 'Battery backup, generator inspection, cabling',
+        remarks: 'Handles priority maintenance tickets.',
+        userId: 4,
+        username: 'naveen.raj',
+      },
+      {
+        id: 3,
+        technicianCode: 'TECH-003',
+        firstName: 'Faisal',
+        lastName: 'Rahman',
+        email: 'faisal.rahman@towerops.demo',
+        phoneNumber: '+971503334455',
+        designation: 'IoT Support Engineer',
+        department: 'IoT Operations',
+        tenantId: 'ALG-001',
+        siteCode: 'BL-001',
+        status: 'ON_SITE',
+        enabled: true,
+        skillSet: 'Device provisioning, telemetry, gateway troubleshooting',
+        remarks: 'Currently supporting Abu Dhabi sites.',
+        userId: 5,
+        username: 'faisal.rahman',
+      },
+      {
+        id: 4,
+        technicianCode: 'TECH-004',
+        firstName: 'Rahul',
+        lastName: 'Menon',
+        email: 'rahul.menon@towerops.demo',
+        phoneNumber: '+971504445566',
+        designation: 'Power Systems Technician',
+        department: 'Power Operations',
+        tenantId: 'ALG-001',
+        siteCode: 'WH-001',
+        status: 'OFF_DUTY',
+        enabled: true,
+        skillSet: 'UPS, generator, battery bank, fuel sensor calibration',
+        remarks: 'Available for emergency escalation only.',
+        userId: null,
+        username: '',
+      },
+      {
+        id: 5,
+        technicianCode: 'TECH-005',
+        firstName: 'Imran',
+        lastName: 'Shaikh',
+        email: 'imran.shaikh@towerops.demo',
+        phoneNumber: '+971505556677',
+        designation: 'Junior Technician',
+        department: 'Field Service',
+        tenantId: 'ALG-001',
+        siteCode: 'TW-001',
+        status: 'INACTIVE',
+        enabled: false,
+        skillSet: 'Basic device inspection and preventive maintenance',
+        remarks: 'Inactive for demo status visibility.',
+        userId: null,
+        username: '',
+      },
+    ];
+  }
+
+  private generateTechnicianCode(): string {
+    const technicians = this.readStorage<Technician[]>(
+      STORAGE_KEYS.technicians,
+      [],
+    );
+
+    const nextNumber = technicians.length + 1;
+    return `TECH-${String(nextNumber).padStart(3, '0')}`;
+  }
+
+  private getUsername(userId: number | null): string {
+    if (!userId) return '';
+
+    const user = this.users().find((item) => item.id === userId);
+    return user?.username ?? '';
+  }
+
+  private nextId<T extends { id?: number }>(items: T[]): number {
+    const maxId = items.reduce(
+      (max, item) => Math.max(max, Number(item.id) || 0),
+      0,
+    );
+
+    return maxId + 1;
+  }
+
+  private readStorage<T>(key: string, fallback: T): T {
+    try {
+      const value = localStorage.getItem(key);
+      return value ? (JSON.parse(value) as T) : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  private writeStorage<T>(key: string, value: T): void {
+    localStorage.setItem(key, JSON.stringify(value));
   }
 }

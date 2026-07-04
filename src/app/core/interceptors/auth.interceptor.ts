@@ -4,6 +4,16 @@ import { inject } from '@angular/core';
 import { STORAGE_KEYS } from '../constants/storage.constants';
 import { StorageService } from '../services/storage.service';
 
+const TENANT_HEADER_EXCLUDED_URLS = [
+  '/v1/auth/login',
+  '/v1/auth/logout',
+  '/v1/tenants',
+];
+
+const USER_HEADER_EXCULDED_URLS = [
+  '/api/v1/device-models'
+]
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const storage = inject(StorageService);
 
@@ -16,7 +26,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     headers = headers.set('Authorization', `Bearer ${token}`);
   }
 
-  if (tenantId) {
+  const shouldSkipTenantHeader = TENANT_HEADER_EXCLUDED_URLS.some((url) =>
+    req.url.includes(url),
+  );
+
+  if (!shouldSkipTenantHeader && tenantId) {
     headers = headers.set('X-Tenant-Id', tenantId);
   }
 

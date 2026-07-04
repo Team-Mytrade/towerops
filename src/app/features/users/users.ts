@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   OnInit,
   signal,
 } from '@angular/core';
@@ -12,12 +11,13 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { PasswordModule } from 'primeng/password';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
-import { firstValueFrom } from 'rxjs';
-import { PasswordModule } from 'primeng/password';
-import { Role, RoleService } from '../../core/services/role.service';
-import { User, UserPayload, UserService } from '../../core/services/user.service';
+
+import { Role } from '../../core/services/role.service';
+import { User, UserPayload } from '../../core/services/user.service';
+
 import { Drawer } from '../../shared/ui/drawer/drawer';
 import { DetailField } from '../../shared/ui/detail-field/detail-field';
 import { StatusBadge } from '../../shared/ui/status-badge/status-badge';
@@ -28,6 +28,11 @@ type DrawerMode = 'view' | 'create' | 'edit' | 'assignRole';
 type UserRow = User & {
   status: UserStatus;
   roleNames: string;
+};
+
+const STORAGE_KEYS = {
+  users: 'towerops_users',
+  roles: 'towerops_roles',
 };
 
 @Component({
@@ -44,16 +49,13 @@ type UserRow = User & {
     Drawer,
     DetailField,
     StatusBadge,
-    PasswordModule
+    PasswordModule,
   ],
   templateUrl: './users.html',
   styleUrl: './users.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Users implements OnInit {
-  private readonly userService = inject(UserService);
-  private readonly roleService = inject(RoleService);
-
   readonly loading = signal(false);
   readonly saving = signal(false);
 
@@ -67,6 +69,8 @@ export class Users implements OnInit {
 
   readonly users = signal<UserRow[]>([]);
   readonly roles = signal<Role[]>([]);
+
+  userForm: UserPayload = this.emptyUserForm();
 
   readonly userTypeOptions = [
     { label: 'Tenant Admin', value: 'TENANT_ADMIN' },
@@ -86,8 +90,6 @@ export class Users implements OnInit {
     { label: 'Active', value: true },
     { label: 'Inactive', value: false },
   ];
-
-  userForm: UserPayload = this.emptyUserForm();
 
   readonly roleOptions = computed(() => [
     { label: 'All Roles', value: 'All' as const },
@@ -112,12 +114,13 @@ export class Users implements OnInit {
     return this.users().filter((user) => {
       const matchesSearch =
         !query ||
-        user.username?.toLowerCase().includes(query) ||
-        user.email?.toLowerCase().includes(query) ||
-        user.userCode?.toLowerCase().includes(query) ||
-        user.phoneNumber?.toLowerCase().includes(query);
+        user.username.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query) ||
+        user.userCode.toLowerCase().includes(query) ||
+        user.phoneNumber.toLowerCase().includes(query) ||
+        user.roleNames.toLowerCase().includes(query);
 
-      const matchesRole = role === 'All' || user.roleIds?.includes(role);
+      const matchesRole = role === 'All' || user.roleIds.includes(role);
       const matchesStatus = status === 'All' || user.status === status;
 
       return matchesSearch && matchesRole && matchesStatus;
@@ -145,26 +148,18 @@ export class Users implements OnInit {
     this.loadPageData();
   }
 
-  async loadPageData(): Promise<void> {
-    try {
-      this.loading.set(true);
+  loadPageData(): void {
+    this.loading.set(true);
 
-      const [rolesRes, usersRes] = await Promise.all([
-        firstValueFrom(this.roleService.getAll()),
-        firstValueFrom(this.userService.getAll()),
-      ]);
+    this.seedLocalStorageIfEmpty();
 
-      this.roles.set(rolesRes.data ?? []);
+    const roles = this.readStorage<Role[]>(STORAGE_KEYS.roles, []);
+    const users = this.readStorage<User[]>(STORAGE_KEYS.users, []);
 
-      const rows = (usersRes.data ?? []).map((user) => this.mapUser(user, rolesRes.data ?? []));
-      this.users.set(rows);
-    } catch (error) {
-      console.error('Failed to load users:', error);
-      this.roles.set([]);
-      this.users.set([]);
-    } finally {
-      this.loading.set(false);
-    }
+    this.roles.set(roles);
+    this.users.set(users.map((user) => this.mapUser(user, roles)));
+
+    this.loading.set(false);
   }
 
   openCreate(): void {
@@ -195,11 +190,11 @@ export class Users implements OnInit {
       enabled: user.enabled,
       phoneNumber: user.phoneNumber ?? '',
       address: {
-        street: user.address?.street ?? '',
-        city: user.address?.city ?? '',
-        state: user.address?.state ?? '',
-        postalCode: user.address?.postalCode ?? '',
-        country: user.address?.country ?? '',
+        street: user.address.street ?? '',
+        city: user.address.city ?? '',
+        state: user.address.state ?? '',
+        postalCode: user.address.postalCode ?? '',
+        country: user.address.country ?? '',
       },
     };
 
@@ -212,68 +207,93 @@ export class Users implements OnInit {
     if (!user) return;
 
     this.userForm = {
-      ...this.emptyUserForm(),
-      ...user,
+      userCode: user.userCode,
+      userType: user.userType,
+      username: user.username,
+      email: user.email,
       password: '',
       roleIds: [...(user.roleIds ?? [])],
+      enabled: user.enabled,
+      phoneNumber: user.phoneNumber ?? '',
       address: {
-        street: user.address?.street ?? '',
-        city: user.address?.city ?? '',
-        state: user.address?.state ?? '',
-        postalCode: user.address?.postalCode ?? '',
-        country: user.address?.country ?? '',
+        street: user.address.street ?? '',
+        city: user.address.city ?? '',
+        state: user.address.state ?? '',
+        postalCode: user.address.postalCode ?? '',
+        country: user.address.country ?? '',
       },
     };
 
     this.drawerMode.set('assignRole');
   }
 
-  async saveUser(): Promise<void> {
+  saveUser(): void {
     if (this.saving()) return;
 
     const payload = this.normalizePayload();
 
-    if (!payload.userCode || !payload.username || !payload.email) {
-      return;
-    }
+    if (!payload.userCode || !payload.username || !payload.email) return;
 
-    try {
-      this.saving.set(true);
+    this.saving.set(true);
 
-      if (this.drawerMode() === 'edit' || this.drawerMode() === 'assignRole') {
-        const selected = this.selectedUser();
+    const roles = this.roles();
+    const users = this.readStorage<User[]>(STORAGE_KEYS.users, []);
 
-        if (!selected) return;
+    if (this.drawerMode() === 'edit' || this.drawerMode() === 'assignRole') {
+      const selected = this.selectedUser();
 
-        await firstValueFrom(this.userService.update(selected.id, payload));
-      } else {
-        await firstValueFrom(this.userService.create(payload));
+      if (!selected) {
+        this.saving.set(false);
+        return;
       }
 
-      await this.loadPageData();
-      this.closeDrawer();
-    } catch (error) {
-      console.error('Failed to save user:', error);
-    } finally {
-      this.saving.set(false);
+      const updatedUsers = users.map((user) => {
+        if (user.id !== selected.id) return user;
+
+        return {
+          ...user,
+          ...payload,
+          active: payload.enabled,
+        };
+      });
+
+      this.writeStorage(STORAGE_KEYS.users, updatedUsers);
+      this.users.set(updatedUsers.map((user) => this.mapUser(user, roles)));
+    } else {
+      const newUser: User = {
+        id: this.nextId(users),
+        ...payload,
+        active: payload.enabled,
+      };
+
+      const updatedUsers = [newUser, ...users];
+
+      this.writeStorage(STORAGE_KEYS.users, updatedUsers);
+      this.users.set(updatedUsers.map((user) => this.mapUser(user, roles)));
     }
+
+    this.saving.set(false);
+    this.closeDrawer();
   }
 
-  async deleteUser(): Promise<void> {
+  deleteUser(): void {
     const user = this.selectedUser();
 
     if (!user || this.saving()) return;
 
-    try {
-      this.saving.set(true);
-      await firstValueFrom(this.userService.delete(user.id));
-      await this.loadPageData();
-      this.closeDrawer();
-    } catch (error) {
-      console.error('Failed to delete user:', error);
-    } finally {
-      this.saving.set(false);
-    }
+    this.saving.set(true);
+
+    const roles = this.roles();
+
+    const updatedUsers = this
+      .readStorage<User[]>(STORAGE_KEYS.users, [])
+      .filter((item) => item.id !== user.id);
+
+    this.writeStorage(STORAGE_KEYS.users, updatedUsers);
+    this.users.set(updatedUsers.map((item) => this.mapUser(item, roles)));
+
+    this.saving.set(false);
+    this.closeDrawer();
   }
 
   closeDrawer(): void {
@@ -320,7 +340,10 @@ export class Users implements OnInit {
       },
     };
 
-    if (this.drawerMode() === 'edit' && !payload.password) {
+    if (
+      (this.drawerMode() === 'edit' || this.drawerMode() === 'assignRole') &&
+      !payload.password
+    ) {
       delete payload.password;
     }
 
@@ -329,7 +352,7 @@ export class Users implements OnInit {
 
   private emptyUserForm(): UserPayload {
     return {
-      userCode: '',
+      userCode: this.generateUserCode(),
       userType: 'TENANT_ADMIN',
       username: '',
       email: '',
@@ -345,5 +368,208 @@ export class Users implements OnInit {
         country: '',
       },
     };
+  }
+
+  private seedLocalStorageIfEmpty(): void {
+    if (!localStorage.getItem(STORAGE_KEYS.roles)) {
+      this.writeStorage(STORAGE_KEYS.roles, this.mockRoles());
+    }
+
+    if (!localStorage.getItem(STORAGE_KEYS.users)) {
+      this.writeStorage(STORAGE_KEYS.users, this.mockUsers());
+    }
+  }
+
+  private mockRoles(): Role[] {
+    return [
+      {
+        id: 1,
+        roleCode: 'ROLE-001',
+        roleName: 'Super Admin',
+        description: 'Full platform access across tenants.',
+        permissions: [
+          'tenants:create',
+          'tenants:view',
+          'users:manage',
+          'roles:manage',
+          'sites:manage',
+          'devices:manage',
+          'alerts:manage',
+          'work-orders:manage',
+        ],
+      },
+      {
+        id: 2,
+        roleCode: 'ROLE-002',
+        roleName: 'Tenant Admin',
+        description: 'Tenant-level admin access.',
+        permissions: [
+          'users:manage',
+          'sites:manage',
+          'devices:manage',
+          'alerts:view',
+          'work-orders:manage',
+        ],
+      },
+      {
+        id: 3,
+        roleCode: 'ROLE-003',
+        roleName: 'NOC Operator',
+        description: 'Can monitor alerts, alarms, and dashboards.',
+        permissions: [
+          'dashboard:view',
+          'sites:view',
+          'devices:view',
+          'alerts:manage',
+          'work-orders:view',
+        ],
+      },
+      {
+        id: 4,
+        roleCode: 'ROLE-004',
+        roleName: 'Field Technician',
+        description: 'Can access assigned work orders.',
+        permissions: [
+          'mobile-jobs:view',
+          'work-orders:update',
+          'maintenance:update',
+        ],
+      },
+      {
+        id: 5,
+        roleCode: 'ROLE-005',
+        roleName: 'Viewer',
+        description: 'Read-only access.',
+        permissions: [
+          'dashboard:view',
+          'sites:view',
+          'devices:view',
+          'alerts:view',
+        ],
+      },
+    ];
+  }
+  private mockUsers(): User[] {
+    return [
+      {
+        id: 1,
+        userCode: 'USR-001',
+        userType: 'SUPER_ADMIN',
+        username: 'superadmin',
+        email: 'superadmin@towerops.demo',
+        roleIds: [1],
+        enabled: true,
+        phoneNumber: '+971500000001',
+        address: {
+          street: 'Sheikh Zayed Road',
+          city: 'Dubai',
+          state: 'Dubai',
+          postalCode: '00001',
+          country: 'UAE',
+        },
+        active: true,
+      },
+      {
+        id: 2,
+        userCode: 'USR-002',
+        userType: 'TENANT_ADMIN',
+        username: 'admin_user',
+        email: 'admin@algotricz.demo',
+        roleIds: [2],
+        enabled: true,
+        phoneNumber: '+971500000002',
+        address: {
+          street: 'Business Bay',
+          city: 'Dubai',
+          state: 'Dubai',
+          postalCode: '00002',
+          country: 'UAE',
+        },
+        active: true,
+      },
+      {
+        id: 3,
+        userCode: 'USR-003',
+        userType: 'NOC_OPERATOR',
+        username: 'noc.operator',
+        email: 'noc@towerops.demo',
+        roleIds: [3],
+        enabled: true,
+        phoneNumber: '+971500000003',
+        address: {
+          street: 'Dubai Marina',
+          city: 'Dubai',
+          state: 'Dubai',
+          postalCode: '00003',
+          country: 'UAE',
+        },
+        active: true,
+      },
+      {
+        id: 4,
+        userCode: 'USR-004',
+        userType: 'TECHNICIAN',
+        username: 'arun.kumar',
+        email: 'arun.kumar@towerops.demo',
+        roleIds: [4],
+        enabled: true,
+        phoneNumber: '+971501112233',
+        address: {
+          street: 'Al Barsha',
+          city: 'Dubai',
+          state: 'Dubai',
+          postalCode: '00004',
+          country: 'UAE',
+        },
+        active: true,
+      },
+      {
+        id: 5,
+        userCode: 'USR-005',
+        userType: 'VIEWER',
+        username: 'viewer.user',
+        email: 'viewer@towerops.demo',
+        roleIds: [5],
+        enabled: false,
+        phoneNumber: '+971500000005',
+        address: {
+          street: 'Corniche Road',
+          city: 'Abu Dhabi',
+          state: 'Abu Dhabi',
+          postalCode: '00005',
+          country: 'UAE',
+        },
+        active: false,
+      },
+    ];
+  }
+
+  private generateUserCode(): string {
+    const users = this.readStorage<User[]>(STORAGE_KEYS.users, []);
+    const nextNumber = users.length + 1;
+
+    return `USR-${String(nextNumber).padStart(3, '0')}`;
+  }
+
+  private nextId<T extends { id?: number }>(items: T[]): number {
+    const maxId = items.reduce(
+      (max, item) => Math.max(max, Number(item.id) || 0),
+      0,
+    );
+
+    return maxId + 1;
+  }
+
+  private readStorage<T>(key: string, fallback: T): T {
+    try {
+      const value = localStorage.getItem(key);
+      return value ? (JSON.parse(value) as T) : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  private writeStorage<T>(key: string, value: T): void {
+    localStorage.setItem(key, JSON.stringify(value));
   }
 }

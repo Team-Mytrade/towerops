@@ -28,7 +28,7 @@ export type ApiResponse<T> = {
 export class DeviceModelService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
-  private readonly endpoint = '/api/V1/device-models';
+  private readonly endpoint = '/api/v1/device-models';
 
   getAll() {
     return this.api.getRoot<ApiResponse<DeviceModel[]>>(this.endpoint, {
@@ -57,7 +57,7 @@ export class DeviceModelService {
   private headers(): Record<string, string> {
     return {
       'X-Tenant-Id': this.auth.getTenantId() || 'DEFAULT',
-      'X-User': this.auth.getUsername() || 'system',
+      // 'X-User': String(this.auth.getUserId() || 2),
     };
   }
 }

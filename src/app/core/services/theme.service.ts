@@ -14,7 +14,7 @@ export class ThemeService {
   private readonly storage = inject(StorageService);
 
   private readonly _theme = signal<AppTheme>(
-    this.storage.get<AppTheme>(STORAGE_KEYS.THEME) ?? 'light'
+    this.storage.get<AppTheme>(STORAGE_KEYS.theme) ?? 'light'
   );
 
   readonly theme = this._theme.asReadonly();
@@ -30,7 +30,7 @@ export class ThemeService {
         theme === 'dark'
       );
 
-      this.storage.set(STORAGE_KEYS.THEME, theme);
+      this.storage.set(STORAGE_KEYS.theme, theme);
     });
   }
 

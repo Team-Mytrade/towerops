@@ -33,6 +33,10 @@
   gap: 12px;
 }
 
+.to-detail-grid--wide {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .to-drawer-section {
   display: grid;
   gap: 12px;
@@ -66,9 +70,14 @@
 }
 
 .to-form-grid-wide input[pInputText],
+.to-form-grid-wide textarea[pInputText],
 .to-form-grid-wide p-select {
   width: 100%;
   min-width: 0;
+}
+
+.to-col-span-2 {
+  grid-column: span 2;
 }
 
 .to-rule-list,
@@ -93,17 +102,28 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
 
 .to-rule-builder-row {
   display: grid;
-  grid-template-columns: 1fr 100px 1fr 36px;
+  grid-template-columns: 1fr 120px 1fr 110px 36px;
   gap: 8px;
   align-items: center;
 }
 
-.to-rule-builder-row.actions {
-  grid-template-columns: 1fr 1fr 36px;
+.to-definition-preview {
+  margin: 0;
+  padding: 14px;
+  border-radius: var(--to-radius-lg);
+  border: 1px solid var(--to-border-soft);
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow: auto;
+  max-height: 360px;
 }
 
 @media (max-width: 640px) {
@@ -111,9 +131,13 @@
     width: 100%;
   }
 
+  .to-detail-grid--wide,
   .to-form-grid-wide,
-  .to-rule-builder-row,
-  .to-rule-builder-row.actions {
+  .to-rule-builder-row {
     grid-template-columns: 1fr;
+  }
+
+  .to-col-span-2 {
+    grid-column: auto;
   }
 }

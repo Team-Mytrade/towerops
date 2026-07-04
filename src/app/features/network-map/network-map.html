@@ -7,41 +7,20 @@
       </p>
     </div>
 
-    <p-button
-      label="Refresh"
-      icon="pi pi-refresh"
-      severity="secondary"
-      (click)="refreshMap()"
-    />
+    <p-button label="Refresh" icon="pi pi-refresh" severity="secondary" (click)="refreshMap()" />
   </header>
 
   <div class="to-toolbar">
     <div class="to-toolbar-left">
-      <input
-        pInputText
-        type="search"
-        placeholder="Search sites..."
-        [ngModel]="search()"
-        (ngModelChange)="search.set($event); refreshMap()"
-      />
+      <input pInputText type="search" placeholder="Search sites..." [ngModel]="search()"
+        (ngModelChange)="search.set($event); refreshMap()" />
 
-      <p-select
-        [options]="typeOptions"
-        [ngModel]="typeFilter()"
-        (ngModelChange)="typeFilter.set($event); refreshMap()"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Type"
-      />
+      <p-select [options]="typeOptions" [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event); refreshMap()"
+        optionLabel="label" optionValue="value" placeholder="Type" />
 
-      <p-select
-        [options]="statusOptions"
-        [ngModel]="statusFilter()"
-        (ngModelChange)="statusFilter.set($event); refreshMap()"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Status"
-      />
+      <p-select [options]="statusOptions" [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event); refreshMap()" optionLabel="label" optionValue="value"
+        placeholder="Status" />
     </div>
   </div>
 
@@ -56,38 +35,30 @@
     </div>
   </div>
 
-  <to-drawer
-    [open]="drawerOpen()"
-    size="compact"
-    [title]="selectedSite()?.name || 'Site Details'"
-    [eyebrow]="selectedSite()?.code || ''"
-    (closed)="closeDrawer()"
-  >
+  <to-drawer [open]="drawerOpen()" size="compact" [title]="selectedSite()?.name || 'Site Details'"
+    [eyebrow]="selectedSite()?.code || ''" (closed)="closeDrawer()">
     @if (selectedSite(); as site) {
-      <div class="to-detail-grid">
-        <to-detail-field label="Type" [value]="site.type" />
-        <to-detail-field label="Tenant" [value]="site.tenant" />
-        <to-detail-field label="City" [value]="site.city" />
-        <to-detail-field label="Address" [value]="site.address" />
-        <to-detail-field label="Devices" [value]="site.devices" />
-        <to-detail-field label="Alerts" [value]="site.alerts" />
-        <to-detail-field label="Work Orders" [value]="site.workOrders" />
-        <to-detail-field label="Latitude" [value]="site.lat" />
-        <to-detail-field label="Longitude" [value]="site.lng" />
-      </div>
+    <div class="to-detail-grid">
+      <to-detail-field label="Type" [value]="site.type" />
+      <to-detail-field label="Tenant" [value]="site.tenant" />
+      <to-detail-field label="City" [value]="site.city" />
+      <to-detail-field label="Address" [value]="site.address" />
+      <to-detail-field label="Devices" [value]="site.devices" />
+      <to-detail-field label="Alerts" [value]="site.alerts" />
+      <to-detail-field label="Work Orders" [value]="site.workOrders" />
+      <to-detail-field label="Latitude" [value]="site.lat" />
+      <to-detail-field label="Longitude" [value]="site.lng" />
+    </div>
 
-      <div class="to-drawer-section">
-        <h3>Status</h3>
-        <to-status-badge
-          [label]="site.status"
-          [tone]="statusTone(site.status)"
-        />
-      </div>
+    <div class="to-drawer-section">
+      <h3>Status</h3>
+      <to-status-badge [label]="site.status" [tone]="statusTone(site.status)" />
+    </div>
 
-      <ng-container drawer-actions>
-        <p-button label="View Site" icon="pi pi-map-marker" />
-        <p-button label="Devices" icon="pi pi-microchip" severity="secondary" />
-      </ng-container>
+    <ng-container drawer-actions>
+      <p-button label="View Site" icon="pi pi-map-marker" />
+      <p-button label="Devices" icon="pi pi-microchip" severity="secondary" />
+    </ng-container>
     }
   </to-drawer>
 </section>

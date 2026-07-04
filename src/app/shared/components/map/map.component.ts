@@ -13,7 +13,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
-import { FormsModule } from '@angular/forms';
 
 export type MapSite = {
   id: number | string;
@@ -29,7 +28,7 @@ export type MapSite = {
 @Component({
   selector: 'to-map',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './map.component.html',
   styleUrl: './map.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,8 +44,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   @Output() siteSelected = new EventEmitter<MapSite>();
 
-  searchText = '';
-  searching = false;
+  locating = false;
 
   private map?: L.Map;
   private markersLayer = L.layerGroup();
@@ -67,73 +65,33 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.map?.remove();
   }
 
-  searchLocation(): void {
-    const query = this.searchText.trim();
-
-    if (!query || !this.map) return;
-
-    this.searching = true;
-
-    const url =
-      `https://nominatim.openstreetmap.org/search` +
-      `?format=json` +
-      `&limit=1` +
-      `&accept-language=en` +
-      `&q=${encodeURIComponent(query)}`;
-
-    fetch(url)
-      .then((res) => res.json())
-      .then((results) => {
-        const location = results?.[0];
-
-        if (!location || !this.map) return;
-
-        const lat = Number(location.lat);
-        const lon = Number(location.lon);
-
-        this.map.setView([lat, lon], 13);
-
-        L.popup()
-          .setLatLng([lat, lon])
-          .setContent(`<strong>${location.display_name}</strong>`)
-          .openOn(this.map);
-      })
-      .finally(() => {
-        this.searching = false;
-      });
-  }
-
   useMyLocation(): void {
     if (!navigator.geolocation || !this.map) return;
 
-    navigator.geolocation.getCurrentPosition((position) => {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
+    this.locating = true;
 
-      this.map?.setView([lat, lon], 14);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
 
-      this.userMarker?.remove();
+        this.map?.setView([lat, lon], 14);
 
-      this.userMarker = L.marker([lat, lon], {
-        icon: this.createUserIcon(),
-      })
-        .addTo(this.map!)
-        .bindPopup('Your current location')
-        .openPopup();
-    });
-  }
+        this.userMarker?.remove();
 
-  shareCurrentView(): void {
-    if (!this.map) return;
+        this.userMarker = L.marker([lat, lon], {
+          icon: this.createUserIcon(),
+        })
+          .addTo(this.map!)
+          .bindPopup('Your current location')
+          .openPopup();
 
-    const center = this.map.getCenter();
-    const zoom = this.map.getZoom();
-
-    const url = `${window.location.origin}${window.location.pathname}?lat=${center.lat.toFixed(
-      6,
-    )}&lng=${center.lng.toFixed(6)}&zoom=${zoom}`;
-
-    navigator.clipboard?.writeText(url);
+        this.locating = false;
+      },
+      () => {
+        this.locating = false;
+      },
+    );
   }
 
   private initMap(): void {
@@ -141,13 +99,18 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy {
       zoomControl: true,
     }).setView(this.center, this.zoom);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(this.map);
+    // CARTO Voyager — clean modern basemap with Latin/English-script labels
+    L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20,
+      },
+    ).addTo(this.map);
 
     this.markersLayer.addTo(this.map);
-
-    this.applySharedLocationFromUrl();
   }
 
   private renderMarkers(): void {
@@ -228,18 +191,5 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy {
       iconSize: [34, 34],
       iconAnchor: [17, 17],
     });
-  }
-
-  private applySharedLocationFromUrl(): void {
-    if (!this.map) return;
-
-    const params = new URLSearchParams(window.location.search);
-    const lat = Number(params.get('lat'));
-    const lng = Number(params.get('lng'));
-    const zoom = Number(params.get('zoom') || 13);
-
-    if (Number.isFinite(lat) && Number.isFinite(lng)) {
-      this.map.setView([lat, lng], zoom);
-    }
   }
 }

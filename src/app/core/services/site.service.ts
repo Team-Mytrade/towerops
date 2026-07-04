@@ -2,8 +2,8 @@ import { Injectable, inject } from '@angular/core';
 
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
+import { SiteCategory } from '../enums/site-category.enum';
 
-export type SiteCategory = 'TOWER' | 'BUILDING' | 'WAREHOUSE';
 
 export type SiteAddress = {
   street: string;
@@ -39,10 +39,16 @@ export type ApiResponse<T> = {
 export class SiteService extends ApiService {
   private readonly auth = inject(AuthService);
 
-  private readonly endpoint = '/api/sites';
+  private readonly oldEndpoint = '/api/sites';
+  private readonly endpoint = '/v1/sites';
 
   getAll() {
-    return this.getRoot<ApiResponse<Site[]>>(this.endpoint, {
+    return this.get<ApiResponse<Site[]>>(this.endpoint, {
+      headers: this.tenantHeaders(),
+    });
+  }
+  getCategorySummary() {
+    return this.get<ApiResponse<any[]>>(`/v1/sites/category/summary`, {
       headers: this.tenantHeaders(),
     });
   }

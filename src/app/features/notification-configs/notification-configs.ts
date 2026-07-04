@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   OnInit,
   signal,
 } from '@angular/core';
@@ -14,12 +13,10 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
-import { firstValueFrom } from 'rxjs';
 
 import {
   NotificationConfig,
   NotificationConfigPayload,
-  NotificationConfigService,
   NotificationSeverity,
 } from '../../core/services/notification-config.service';
 
@@ -28,6 +25,8 @@ import { DetailField } from '../../shared/ui/detail-field/detail-field';
 import { StatusBadge } from '../../shared/ui/status-badge/status-badge';
 
 type DrawerMode = 'view' | 'create' | 'edit';
+
+const STORAGE_KEY = 'towerops_notification_configs';
 
 @Component({
   selector: 'to-notification-configs',
@@ -49,8 +48,6 @@ type DrawerMode = 'view' | 'create' | 'edit';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationConfigs implements OnInit {
-  private readonly service = inject(NotificationConfigService);
-
   readonly loading = signal(false);
   readonly saving = signal(false);
 
@@ -141,17 +138,16 @@ export class NotificationConfigs implements OnInit {
     this.loadConfigs();
   }
 
-  async loadConfigs(): Promise<void> {
-    try {
-      this.loading.set(true);
-      const rows = await firstValueFrom(this.service.getAll());
-      this.configs.set(rows ?? []);
-    } catch (error) {
-      console.error('Failed to load notification configs:', error);
-      this.configs.set([]);
-    } finally {
-      this.loading.set(false);
-    }
+  loadConfigs(): void {
+    this.loading.set(true);
+
+    this.seedLocalStorageIfEmpty();
+
+    this.configs.set(
+      this.readStorage<NotificationConfig[]>(STORAGE_KEY, []),
+    );
+
+    this.loading.set(false);
   }
 
   openCreate(): void {
@@ -176,49 +172,69 @@ export class NotificationConfigs implements OnInit {
     this.drawerMode.set('edit');
   }
 
-  async saveConfig(): Promise<void> {
+  saveConfig(): void {
     if (this.saving()) return;
 
     const payload = this.normalizePayload();
 
     if (!payload.name || !payload.eventType || !payload.subject) return;
 
-    try {
-      this.saving.set(true);
+    this.saving.set(true);
 
-      if (this.drawerMode() === 'edit') {
-        const selected = this.selected();
-        if (!selected) return;
+    const configs = [...this.configs()];
 
-        await firstValueFrom(this.service.update(selected.id, payload));
-      } else {
-        await firstValueFrom(this.service.create(payload));
+    if (this.drawerMode() === 'edit') {
+      const selected = this.selected();
+
+      if (!selected) {
+        this.saving.set(false);
+        return;
       }
 
-      await this.loadConfigs();
-      this.closeDrawer();
-    } catch (error) {
-      console.error('Failed to save notification config:', error);
-    } finally {
-      this.saving.set(false);
+      const updatedConfigs = configs.map((config) =>
+        config.id === selected.id
+          ? {
+            ...config,
+            ...payload,
+            updatedAt: new Date().toISOString(),
+          }
+          : config,
+      );
+
+      this.configs.set(updatedConfigs);
+      this.writeStorage(STORAGE_KEY, updatedConfigs);
+    } else {
+      const newConfig = {
+        id: this.nextId(configs),
+        ...payload,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as NotificationConfig;
+
+      const updatedConfigs = [newConfig, ...configs];
+
+      this.configs.set(updatedConfigs);
+      this.writeStorage(STORAGE_KEY, updatedConfigs);
     }
+
+    this.saving.set(false);
+    this.closeDrawer();
   }
 
-  async deleteConfig(): Promise<void> {
+  deleteConfig(): void {
     const config = this.selected();
 
     if (!config || this.saving()) return;
 
-    try {
-      this.saving.set(true);
-      await firstValueFrom(this.service.delete(config.id));
-      await this.loadConfigs();
-      this.closeDrawer();
-    } catch (error) {
-      console.error('Failed to delete notification config:', error);
-    } finally {
-      this.saving.set(false);
-    }
+    this.saving.set(true);
+
+    const updatedConfigs = this.configs().filter((item) => item.id !== config.id);
+
+    this.configs.set(updatedConfigs);
+    this.writeStorage(STORAGE_KEY, updatedConfigs);
+
+    this.saving.set(false);
+    this.closeDrawer();
   }
 
   closeDrawer(): void {
@@ -298,5 +314,123 @@ export class NotificationConfigs implements OnInit {
       phoneRecipients: '',
       active: true,
     };
+  }
+
+  private seedLocalStorageIfEmpty(): void {
+    if (!localStorage.getItem(STORAGE_KEY)) {
+      this.writeStorage(STORAGE_KEY, this.mockConfigs());
+    }
+  }
+
+  private mockConfigs(): NotificationConfig[] {
+    return [
+      {
+        id: 1,
+        name: 'Critical Alert Email + Websocket',
+        eventType: 'ALERT_CREATED',
+        subject: 'Critical Alert Raised - {{deviceId}}',
+        body:
+          'A critical alert has been raised for {{deviceId}}. Please check the NOC dashboard immediately.',
+        severity: 'CRITICAL',
+        emailEnabled: true,
+        smsEnabled: true,
+        websocketEnabled: true,
+        emailRecipients: 'noc@towerops.demo, admin@algotricz.demo',
+        phoneRecipients: '+971500000001,+971500000002',
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as NotificationConfig,
+      {
+        id: 2,
+        name: 'Ticket Assignment Notification',
+        eventType: 'TICKET_ASSIGNED',
+        subject: 'Ticket Assigned - {{ticketId}}',
+        body:
+          'A new ticket has been assigned to the technician. Please review and acknowledge.',
+        severity: 'HIGH',
+        emailEnabled: true,
+        smsEnabled: false,
+        websocketEnabled: true,
+        emailRecipients: 'fieldops@towerops.demo',
+        phoneRecipients: '',
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as NotificationConfig,
+      {
+        id: 3,
+        name: 'Work Order Completion Update',
+        eventType: 'WORK_ORDER_COMPLETED',
+        subject: 'Work Order Completed - {{workOrderCode}}',
+        body:
+          'The assigned work order has been completed and is waiting for verification.',
+        severity: 'MEDIUM',
+        emailEnabled: true,
+        smsEnabled: false,
+        websocketEnabled: true,
+        emailRecipients: 'noc@towerops.demo',
+        phoneRecipients: '',
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as NotificationConfig,
+      {
+        id: 4,
+        name: 'Resolved Alert Summary',
+        eventType: 'ALERT_RESOLVED',
+        subject: 'Alert Resolved - {{alertId}}',
+        body:
+          'The alert has been resolved successfully. Please review the resolution notes.',
+        severity: 'LOW',
+        emailEnabled: true,
+        smsEnabled: false,
+        websocketEnabled: false,
+        emailRecipients: 'admin@algotricz.demo',
+        phoneRecipients: '',
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as NotificationConfig,
+      {
+        id: 5,
+        name: 'Inactive SMS Test Config',
+        eventType: 'ALERT_ACKNOWLEDGED',
+        subject: 'Alert Acknowledged - {{alertId}}',
+        body:
+          'The alert has been acknowledged by the NOC operator.',
+        severity: 'LOW',
+        emailEnabled: false,
+        smsEnabled: true,
+        websocketEnabled: false,
+        emailRecipients: '',
+        phoneRecipients: '+971509999999',
+        active: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as NotificationConfig,
+    ];
+  }
+
+  private nextId<T extends { id?: number }>(items: T[]): number {
+    const maxId = items.reduce(
+      (max, item) => Math.max(max, Number(item.id) || 0),
+      0,
+    );
+
+    return maxId + 1;
+  }
+
+  private readStorage<T>(key: string, fallback: T): T {
+    try {
+      const value = localStorage.getItem(key);
+      return value ? (JSON.parse(value) as T) : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  private writeStorage<T>(key: string, value: T): void {
+    localStorage.setItem(key, JSON.stringify(value));
   }
 }

@@ -3,157 +3,444 @@
     <div>
       <p class="to-eyebrow">Technician</p>
       <h1>My Dashboard</h1>
-      <span>Track assigned work orders and update progress.</span>
+      <span>Track assigned work orders, history and notifications.</span>
     </div>
 
-    <button
-      type="button"
-      class="to-notification-btn"
-      data-testid="technician-notification-btn"
-    >
+    <button type="button" class="to-notification-btn" data-testid="technician-notification-btn"
+      (click)="activeTab.set(2)">
       <i class="pi pi-bell"></i>
-      <b>3</b>
+
+      @if (unreadNotifications()) {
+      <b>{{ unreadNotifications() }}</b>
+      }
     </button>
   </header>
 
   <div class="to-tech-kpis">
     @for (stat of stats(); track stat.label) {
-      <article class="to-tech-kpi" [class]="'to-tech-kpi--' + stat.tone">
-        <div>
-          <span>{{ stat.label }}</span>
-          <strong>{{ stat.value }}</strong>
-        </div>
+    <article class="to-tech-kpi" [class]="'to-tech-kpi--' + stat.tone">
+      <div>
+        <span>{{ stat.label }}</span>
+        <strong>{{ stat.value }}</strong>
+      </div>
 
-        <i [class]="stat.icon"></i>
-      </article>
+      <i [class]="stat.icon"></i>
+    </article>
     }
   </div>
 
-  <article class="to-card">
-    <div class="to-card-header">
-      <div>
-        <p class="to-eyebrow">Assigned Jobs</p>
-        <h2>Work Orders</h2>
-      </div>
-    </div>
+  <div class="to-tech-grid">
+    <article class="to-card to-tabs-card">
+      <p-tabs [value]="activeTab()" (valueChange)="activeTab.set(+$any($event))">
+        <p-tablist>
+          <p-tab [value]="0">Assigned Work</p-tab>
+          <p-tab [value]="1">Work History</p-tab>
+          <p-tab [value]="2">Notifications</p-tab>
+        </p-tablist>
 
-    <div class="to-workorder-list">
-      @for (order of workOrders(); track order.id) {
-        <button
-          type="button"
-          class="to-workorder-row"
-          [attr.data-testid]="'technician-workorder-' + order.id"
-          (click)="openWorkOrder(order)"
-        >
-          <div class="to-workorder-main">
-            <strong>{{ order.title }}</strong>
-            <span>{{ order.id }} · {{ order.siteCode }} · {{ order.siteName }}</span>
+        <p-tabpanels>
+          <p-tabpanel [value]="0">
+            <div class="to-workorder-list">
+              @for (order of assignedOrders(); track order.id) {
+              <button type="button" class="to-workorder-row" [attr.data-testid]="'technician-workorder-' + order.id"
+                (click)="openWorkOrder(order)">
+                <div class="to-workorder-main">
+                  <strong>{{ order.title }}</strong>
+                  <span>
+                    {{ order.id }} · {{ order.siteCode }} · {{ order.siteName }}
+                  </span>
+                </div>
+
+                <div class="to-workorder-meta">
+                  <p-tag [value]="order.priority" [severity]="prioritySeverity(order.priority)" />
+                  <p-tag [value]="order.status" [severity]="statusSeverity(order.status)" />
+                </div>
+
+                <i class="pi pi-arrow-right"></i>
+              </button>
+              } @empty {
+              <div class="to-empty-state">No active work orders.</div>
+              }
+            </div>
+          </p-tabpanel>
+
+          <p-tabpanel [value]="1">
+            <div class="to-workorder-list">
+              @for (order of workHistory(); track order.id) {
+              <button type="button" class="to-workorder-row" (click)="openWorkOrder(order)">
+                <div class="to-workorder-main">
+                  <strong>{{ order.title }}</strong>
+                  <span>
+                    {{ order.id }} · {{ order.siteCode }} · Completed
+                    {{ order.completedAt }}
+                  </span>
+                </div>
+
+                <div class="to-workorder-meta">
+                  <span class="to-duration">{{ order.duration || '-' }}</span>
+                  <p-tag [value]="order.status" severity="success" />
+                </div>
+
+                <i class="pi pi-arrow-right"></i>
+              </button>
+              } @empty {
+              <div class="to-empty-state">No completed work orders.</div>
+              }
+            </div>
+          </p-tabpanel>
+
+          <p-tabpanel [value]="2">
+            <div class="to-notification-toolbar">
+              <span>{{ unreadNotifications() }} unread</span>
+
+              <button type="button" (click)="markAllRead()">
+                Mark all read
+              </button>
+            </div>
+
+            <div class="to-notification-list">
+              @for (notification of notifications(); track notification.id) {
+              <button type="button" class="to-notification-row" [class.unread]="!notification.read"
+                (click)="openNotification(notification)">
+                <span class="to-notification-dot"></span>
+
+                <div>
+                  <p-tag [value]="notification.type" [severity]="notificationSeverity(notification.type)" />
+
+                  <strong>{{ notification.title }}</strong>
+                  <small>{{ notification.message }}</small>
+                </div>
+
+                <time>{{ notification.time }}</time>
+              </button>
+              }
+            </div>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    </article>
+
+    <aside class="to-side-stack">
+      <article class="to-card">
+        <div class="to-card-header">
+          <div>
+            <p class="to-eyebrow">Performance</p>
+            <h2>Completed Jobs</h2>
+          </div>
+        </div>
+
+        <div class="to-chart-box">
+          <p-chart type="bar" [data]="performanceChartData" [options]="performanceChartOptions" />
+        </div>
+      </article>
+
+      <article class="to-card">
+        <div class="to-card-header">
+          <div>
+            <p class="to-eyebrow">Recent</p>
+            <h2>Latest Notifications</h2>
           </div>
 
-          <div class="to-workorder-meta">
-            <p-tag
-              [value]="order.priority"
-              [severity]="prioritySeverity(order.priority)"
-            />
+          <button type="button" (click)="activeTab.set(2)">View all</button>
+        </div>
 
-            <p-tag
-              [value]="order.status"
-              [severity]="statusSeverity(order.status)"
-            />
-          </div>
-
-          <i class="pi pi-arrow-right"></i>
+        @for (item of notifications().slice(0, 3); track item.id) {
+        <button type="button" class="to-mini-notification" [class.unread]="!item.read" (click)="openNotification(item)">
+          <strong>{{ item.title }}</strong>
+          <span>{{ item.message }}</span>
         </button>
-      }
-    </div>
-  </article>
+        }
+      </article>
+    </aside>
+  </div>
 
   @if (selectedWorkOrder(); as order) {
-    <div class="to-drawer-backdrop" (click)="closeDrawer()"></div>
 
-    <aside class="to-workorder-drawer" data-testid="technician-workorder-detail-drawer">
-      <header>
-        <div>
-          <p class="to-eyebrow">Work Order Details</p>
-          <h2>{{ order.id }}</h2>
-          <span>{{ order.siteCode }} · {{ order.siteName }}</span>
-        </div>
+  <div class="to-drawer-backdrop" (click)="closeDrawer()"></div>
 
-        <button
-          type="button"
-          (click)="closeDrawer()"
-          data-testid="close-technician-workorder-drawer-btn"
-        >
-          <i class="pi pi-times"></i>
-        </button>
-      </header>
+  <aside class="to-workorder-drawer" data-testid="technician-workorder-detail-drawer">
+    <header>
+      <div>
+        <p class="to-eyebrow">Assigned Work Order</p>
+        <h2>{{ order.id }}</h2>
+        <span>{{ order.siteCode }} • {{ order.siteName }}</span>
+      </div>
+
+      <button type="button" (click)="closeDrawer()">
+        <i class="pi pi-times"></i>
+      </button>
+    </header>
+
+    <div class="to-workorder-drawer__body">
 
       <div class="to-status-strip">
-        <p-tag
-          [value]="order.priority"
-          [severity]="prioritySeverity(order.priority)"
-        />
+        <p-tag [value]="order.priority" [severity]="prioritySeverity(order.priority)" />
 
-        <p-tag
-          [value]="order.status"
-          [severity]="statusSeverity(order.status)"
-        />
+        <p-tag [value]="order.status" [severity]="statusSeverity(order.status)" />
       </div>
 
-      <section class="to-drawer-section">
-        <h3>{{ order.title }}</h3>
-        <p>{{ order.description }}</p>
-      </section>
+      <p-tabs value="overview">
 
-      <div class="to-detail-grid">
-        <div>
-          <span>Site</span>
-          <strong>{{ order.siteName }}</strong>
-        </div>
+        <p-tablist>
+          <p-tab value="overview">Overview</p-tab>
+          <p-tab value="checklist">
+            Checklist ({{ checklistProgress() }}%)
+          </p-tab>
 
-        <div>
-          <span>Site Code</span>
-          <strong>{{ order.siteCode }}</strong>
-        </div>
+          <p-tab value="devices">
+            Devices
+          </p-tab>
 
-        <div>
-          <span>Assigned At</span>
-          <strong>{{ order.assignedAt }}</strong>
-        </div>
+          <p-tab value="evidence">
+            Evidence
+          </p-tab>
 
-        <div>
-          <span>Current Status</span>
-          <strong>{{ order.status }}</strong>
-        </div>
-      </div>
+          <p-tab value="notes">
+            Notes
+          </p-tab>
 
-      <div class="to-drawer-actions">
-        @if (order.status === 'Pending') {
-          <p-button
-            label="Start Work"
-            icon="pi pi-play"
-            data-testid="mark-workorder-in-progress-btn"
-            (onClick)="markInProgress(order)"
-          />
-        }
+          <p-tab value="timeline">
+            Timeline
+          </p-tab>
 
-        @if (order.status !== 'Completed') {
-          <p-button
-            label="Mark Completed"
-            icon="pi pi-check"
-            severity="success"
-            data-testid="mark-workorder-completed-btn"
-            (onClick)="markCompleted(order)"
-          />
-        }
+        </p-tablist>
 
-        <p-button
-          label="Close"
-          severity="secondary"
-          outlined
-          (onClick)="closeDrawer()"
-        />
-      </div>
-    </aside>
+        <p-tabpanels>
+
+          <!-- ===================================================== -->
+          <!-- OVERVIEW -->
+          <!-- ===================================================== -->
+
+          <p-tabpanel value="overview">
+
+            <section class="to-drawer-section">
+
+              <h3>{{ order.title }}</h3>
+
+              <p>
+                {{ order.description }}
+              </p>
+
+            </section>
+
+            <div class="to-detail-grid">
+
+              <div>
+                <span>Site</span>
+                <strong>{{ order.siteName }}</strong>
+              </div>
+
+              <div>
+                <span>Location</span>
+                <strong>{{ order.location }}</strong>
+              </div>
+
+              <div>
+                <span>Assigned</span>
+                <strong>{{ order.assignedAt }}</strong>
+              </div>
+
+              <div>
+                <span>Status</span>
+                <strong>{{ order.status }}</strong>
+              </div>
+
+              <div>
+                <span>Priority</span>
+                <strong>{{ order.priority }}</strong>
+              </div>
+
+              <div>
+                <span>Estimated Duration</span>
+                <strong>1h 30m</strong>
+              </div>
+
+            </div>
+
+          </p-tabpanel>
+
+          <!-- ===================================================== -->
+          <!-- CHECKLIST -->
+          <!-- ===================================================== -->
+
+          <p-tabpanel value="checklist">
+
+            <div class="to-checklist">
+
+              @for(item of checklist(); track item.id){
+
+              <label class="to-check-item">
+
+                <p-checkbox [binary]="true" [ngModel]="item.done" (ngModelChange)="toggleChecklist(item.id)" />
+
+                <span>
+                  {{ item.label }}
+                </span>
+
+              </label>
+
+              }
+
+            </div>
+
+          </p-tabpanel>
+
+          <!-- ===================================================== -->
+          <!-- DEVICES -->
+          <!-- ===================================================== -->
+
+          <p-tabpanel value="devices">
+
+            <div class="to-device-grid">
+
+              @for(device of affectedDevices; track device.serial){
+
+              <article class="to-device-card">
+
+                <strong>{{ device.name }}</strong>
+
+                <span>{{ device.serial }}</span>
+
+                <p-tag [value]="device.status" [severity]="
+                  device.status === 'Critical'
+                    ? 'danger'
+                    : device.status === 'Warning'
+                    ? 'warn'
+                    : 'success'
+                " />
+
+              </article>
+
+              }
+
+            </div>
+
+          </p-tabpanel>
+
+          <!-- ===================================================== -->
+          <!-- EVIDENCE -->
+          <!-- ===================================================== -->
+
+          <p-tabpanel value="evidence">
+
+            <div class="to-upload-grid">
+
+              <button type="button" (click)="markBeforeUploaded()">
+                <i class="pi pi-camera"></i>
+
+                <span>
+
+                  {{
+                  beforeUploaded()
+                  ? 'Before Photo Uploaded'
+                  : 'Upload Before Photo'
+                  }}
+
+                </span>
+
+              </button>
+
+              <button type="button" (click)="markAfterUploaded()">
+
+                <i class="pi pi-image"></i>
+
+                <span>
+
+                  {{
+                  afterUploaded()
+                  ? 'After Photo Uploaded'
+                  : 'Upload After Photo'
+                  }}
+
+                </span>
+
+              </button>
+
+            </div>
+
+          </p-tabpanel>
+
+          <!-- ===================================================== -->
+          <!-- NOTES -->
+          <!-- ===================================================== -->
+
+          <p-tabpanel value="notes">
+
+            <section class="to-drawer-section">
+
+              <h3>Technician Notes</h3>
+
+              <textarea pInputTextarea rows="6" [ngModel]="remarks()" (ngModelChange)="remarks.set($event)"
+                placeholder="Add work performed, spare parts replaced, observations...">
+            </textarea>
+
+            </section>
+
+          </p-tabpanel>
+
+          <!-- ===================================================== -->
+          <!-- TIMELINE -->
+          <!-- ===================================================== -->
+
+          <p-tabpanel value="timeline">
+
+            <div class="to-timeline">
+
+              @for(item of timeline(); track item.title){
+
+              <article class="to-timeline-item">
+
+                <strong>
+
+                  {{ item.title }}
+
+                </strong>
+
+                <span>
+
+                  {{ item.time }}
+
+                </span>
+
+              </article>
+
+              }
+
+            </div>
+
+          </p-tabpanel>
+
+        </p-tabpanels>
+
+      </p-tabs>
+
+    </div>
+
+    <footer class="to-workorder-drawer__footer">
+
+      @if(order.status==='Pending'){
+
+      <p-button label="Accept" icon="pi pi-check" severity="secondary" (onClick)="acceptWork(order)" />
+
+      }
+
+      @if(order.status==='Pending' || order.status==='Accepted'){
+
+      <p-button label="Start Work" icon="pi pi-play" (onClick)="markInProgress(order)" />
+
+      }
+
+      @if(order.status!=='Completed'){
+
+      <p-button label="Complete" icon="pi pi-check-circle" severity="success" (onClick)="markCompleted(order)" />
+
+      }
+
+      <p-button label="Close" severity="secondary" outlined (onClick)="closeDrawer()" />
+
+    </footer>
+
+  </aside>
+
   }
 </section>

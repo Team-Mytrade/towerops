@@ -193,12 +193,19 @@ export class NetworkMap implements AfterViewInit, OnDestroy {
   private initMap(): void {
     this.map = L.map('networkMap', {
       zoomControl: true,
-      attributionControl: false,
+      attributionControl: true,
     }).setView([24.4539, 54.3773], 7);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-    }).addTo(this.map);
+    // CARTO Voyager — matches the site-detail map, Latin/English-script labels
+    L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20,
+      },
+    ).addTo(this.map);
   }
 
   private renderMarkers(): void {

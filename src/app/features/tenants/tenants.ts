@@ -8,18 +8,17 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { ButtonModule } from 'primeng/button';
 import { DrawerModule } from 'primeng/drawer';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
-import { firstValueFrom } from 'rxjs';
 
-import { TenantService, Tenant, TenantPayload } from '../../core/services/tenant.service';
+import { Tenant, TenantPayload } from '../../core/services/tenant.service';
 import { DetailField } from '../../shared/ui/detail-field/detail-field';
 import { StatusBadge } from '../../shared/ui/status-badge/status-badge';
-import { ActivatedRoute, Router } from '@angular/router';
 
 type TenantStatus = 'Active' | 'Inactive';
 type DrawerMode = 'create' | 'view' | 'edit';
@@ -27,6 +26,8 @@ type DrawerMode = 'create' | 'view' | 'edit';
 type TenantRow = Tenant & {
   status: TenantStatus;
 };
+
+const STORAGE_KEY = 'towerops_tenants';
 
 @Component({
   selector: 'to-tenants',
@@ -47,9 +48,8 @@ type TenantRow = Tenant & {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Tenants implements OnInit {
-  private readonly tenantService = inject(TenantService);
   private readonly route = inject(ActivatedRoute);
-private readonly router = inject(Router);
+  private readonly router = inject(Router);
 
   readonly loading = signal(false);
   readonly saving = signal(false);
@@ -80,7 +80,8 @@ private readonly router = inject(Router);
         !query ||
         tenant.tenantName?.toLowerCase().includes(query) ||
         tenant.tenantId?.toLowerCase().includes(query) ||
-        tenant.email?.toLowerCase().includes(query);
+        tenant.email?.toLowerCase().includes(query) ||
+        tenant.phoneNumber?.toLowerCase().includes(query);
 
       const matchesStatus = status === 'All' || tenant.status === status;
 
@@ -89,29 +90,27 @@ private readonly router = inject(Router);
   });
 
   ngOnInit(): void {
-  this.getTenants();
+    this.getTenants();
 
-  this.route.queryParamMap.subscribe((params) => {
-    if (params.get('action') === 'create') {
-      queueMicrotask(() => this.openCreateTenant());
-    }
-  });
-}
-  async getTenants(): Promise<void> {
-    try {
-      this.loading.set(true);
+    this.route.queryParamMap.subscribe((params) => {
+      if (params.get('action') === 'create') {
+        queueMicrotask(() => this.openCreateTenant());
+      }
+    });
+  }
 
-      const response = await firstValueFrom(this.tenantService.getAll());
+  getTenants(): void {
+    this.loading.set(true);
 
-      const rows = (response.data ?? []).map((tenant) => this.mapTenant(tenant));
+    this.seedLocalStorageIfEmpty();
 
-      this.tenants.set(rows);
-    } catch (error) {
-      console.error('Failed to load tenants:', error);
-      this.tenants.set([]);
-    } finally {
-      this.loading.set(false);
-    }
+    const rows = this
+      .readStorage<Tenant[]>(STORAGE_KEY, [])
+      .map((tenant) => this.mapTenant(tenant));
+
+    this.tenants.set(rows);
+
+    this.loading.set(false);
   }
 
   openCreateTenant(): void {
@@ -130,9 +129,7 @@ private readonly router = inject(Router);
   openEditTenant(): void {
     const tenant = this.selectedTenant();
 
-    if (!tenant) {
-      return;
-    }
+    if (!tenant) return;
 
     this.tenantForm = {
       tenantId: tenant.tenantId,
@@ -141,7 +138,6 @@ private readonly router = inject(Router);
       phoneNumber: tenant.phoneNumber ?? '',
       address: tenant.address ?? '',
       enabled: tenant.enabled,
-      createdBy: '',
     };
 
     this.drawerMode.set('edit');
@@ -152,60 +148,82 @@ private readonly router = inject(Router);
     this.drawerMode.set('view');
     this.selectedTenant.set(null);
     this.tenantForm = this.getEmptyTenantForm();
+
+    this.router.navigate([], {
+      queryParams: { action: null },
+      queryParamsHandling: 'merge',
+    });
   }
 
-  async saveTenant(): Promise<void> {
-    if (this.saving()) {
-      return;
-    }
+  saveTenant(): void {
+    if (this.saving()) return;
 
     const payload = this.normalizePayload();
 
-    if (!payload.tenantId || !payload.tenantName) {
-      return;
-    }
+    if (!payload.tenantId || !payload.tenantName) return;
 
-    try {
-      this.saving.set(true);
+    this.saving.set(true);
 
-      if (this.drawerMode() === 'edit') {
-        const tenant = this.selectedTenant();
+    const tenants = this.readStorage<Tenant[]>(STORAGE_KEY, []);
 
-        if (!tenant) {
-          return;
-        }
+    if (this.drawerMode() === 'edit') {
+      const tenant = this.selectedTenant();
 
-        await firstValueFrom(this.tenantService.update(tenant.id, payload));
-      } else {
-        await firstValueFrom(this.tenantService.create(payload));
+      if (!tenant) {
+        this.saving.set(false);
+        return;
       }
 
-      await this.getTenants();
-      this.closeDrawer();
-    } catch (error) {
-      console.error('Failed to save tenant:', error);
-    } finally {
-      this.saving.set(false);
+      const updatedTenants = tenants.map((item) =>
+        item.id === tenant.id
+          ? {
+            ...item,
+            ...payload,
+            updatedAt: new Date().toISOString(),
+          } as Tenant
+          : item,
+      );
+
+      this.writeStorage(STORAGE_KEY, updatedTenants);
+      this.tenants.set(updatedTenants.map((item) => this.mapTenant(item)));
+    } else {
+      const newTenant: Tenant = {
+        id: this.nextId(tenants),
+        tenantId: payload.tenantId,
+        tenantName: payload.tenantName,
+        email: payload.email,
+        phoneNumber: payload.phoneNumber,
+        address: payload.address,
+        enabled: payload.enabled,
+        active: payload.enabled,
+      };
+
+      const updatedTenants = [newTenant, ...tenants];
+
+      this.writeStorage(STORAGE_KEY, updatedTenants);
+      this.tenants.set(updatedTenants.map((item) => this.mapTenant(item)));
     }
+
+    this.saving.set(false);
+    this.closeDrawer();
   }
 
-  async deleteTenant(): Promise<void> {
+  deleteTenant(): void {
     const tenant = this.selectedTenant();
 
-    if (!tenant || this.saving()) {
-      return;
-    }
+    if (!tenant || this.saving()) return;
 
-    try {
-      this.saving.set(true);
-      await firstValueFrom(this.tenantService.delete(tenant.id));
-      await this.getTenants();
-      this.closeDrawer();
-    } catch (error) {
-      console.error('Failed to delete tenant:', error);
-    } finally {
-      this.saving.set(false);
-    }
+    this.saving.set(true);
+
+    const updatedTenants = this
+      .readStorage<Tenant[]>(STORAGE_KEY, [])
+      .filter((item) => item.id !== tenant.id);
+
+    this.writeStorage(STORAGE_KEY, updatedTenants);
+    this.tenants.set(updatedTenants.map((item) => this.mapTenant(item)));
+
+    this.saving.set(false);
+    this.closeDrawer();
   }
 
   statusTone(status: TenantStatus): 'success' | 'danger' {
@@ -227,19 +245,99 @@ private readonly router = inject(Router);
       phoneNumber: this.tenantForm.phoneNumber.trim(),
       address: this.tenantForm.address.trim(),
       enabled: this.tenantForm.enabled,
-      createdBy: this.tenantForm.createdBy,
+      createdBy: this.tenantForm.createdBy?.trim() || 'local-demo',
     };
   }
 
   private getEmptyTenantForm(): TenantPayload {
     return {
-      tenantId: '',
+      tenantId: this.generateTenantId(),
       tenantName: '',
       email: '',
       phoneNumber: '',
       address: '',
       enabled: true,
-      createdBy: '',
+      createdBy: 'local-demo',
     };
+  }
+
+  private seedLocalStorageIfEmpty(): void {
+    if (!localStorage.getItem(STORAGE_KEY)) {
+      this.writeStorage(STORAGE_KEY, this.mockTenants());
+    }
+  }
+
+  private mockTenants(): Tenant[] {
+    return [
+      {
+        id: 1,
+        tenantId: 'ALG-001',
+        tenantName: 'Algotricz Telecom Operations',
+        email: 'admin@algotricz.demo',
+        phoneNumber: '+971500000001',
+        address: 'Business Bay, Dubai, UAE',
+        enabled: true,
+        active: true,
+      },
+      {
+        id: 2,
+        tenantId: 'MYT-002',
+        tenantName: 'MyTrade Tower Services',
+        email: 'ops@mytrade.demo',
+        phoneNumber: '+971500000002',
+        address: 'Dubai Marina, Dubai, UAE',
+        enabled: true,
+        active: true,
+      },
+      {
+        id: 3,
+        tenantId: 'NOC-003',
+        tenantName: 'NOC Infrastructure LLC',
+        email: 'noc@infrastructure.demo',
+        phoneNumber: '+971500000003',
+        address: 'Corniche Road, Abu Dhabi, UAE',
+        enabled: true,
+        active: true,
+      },
+      {
+        id: 4,
+        tenantId: 'LEG-004',
+        tenantName: 'Legacy Telecom Partner',
+        email: 'support@legacy.demo',
+        phoneNumber: '+971500000004',
+        address: 'Ajman Industrial Area, UAE',
+        enabled: false,
+        active: false,
+      },
+    ];
+  }
+
+  private generateTenantId(): string {
+    const tenants = this.readStorage<Tenant[]>(STORAGE_KEY, []);
+    const nextNumber = tenants.length + 1;
+
+    return `TEN-${String(nextNumber).padStart(3, '0')}`;
+  }
+
+  private nextId<T extends { id?: number }>(items: T[]): number {
+    const maxId = items.reduce(
+      (max, item) => Math.max(max, Number(item.id) || 0),
+      0,
+    );
+
+    return maxId + 1;
+  }
+
+  private readStorage<T>(key: string, fallback: T): T {
+    try {
+      const value = localStorage.getItem(key);
+      return value ? (JSON.parse(value) as T) : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  private writeStorage<T>(key: string, value: T): void {
+    localStorage.setItem(key, JSON.stringify(value));
   }
 }

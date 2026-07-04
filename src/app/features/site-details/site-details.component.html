@@ -1,139 +1,571 @@
-<section class="to-site-details" data-testid="site-details-page">
-  @if (site(); as site) {
-    <header class="to-site-header">
-      <div>
-        <button type="button" class="to-back-btn" (click)="goBack()" data-testid="site-details-back-btn">
-          <i class="pi pi-arrow-left"></i>
-          Back
-        </button>
+<section class="to-site-page">
 
-        <p class="to-eyebrow">{{ site.category }} Site</p>
-        <h1>{{ site.siteName }}</h1>
-        <span>{{ site.siteCode }} · {{ site.address.city }}, {{ site.address.country }}</span>
+  <!-- Header -->
+
+  <header class="to-page-header">
+
+    <div class="to-page-header__left">
+
+      <button pButton type="button" icon="pi pi-arrow-left" text (click)="back()">
+      </button>
+
+      <div>
+
+        <p class="to-eyebrow">
+          {{ site().category }}
+        </p>
+
+        <h1>
+
+          {{ site().siteCode }}
+
+          ·
+
+          {{ site().siteName }}
+
+        </h1>
+
+        <span>
+
+          {{ site().city }},
+          {{ site().country }}
+
+          •
+
+          Last heartbeat
+
+          {{ site().lastSync }}
+
+        </span>
+
       </div>
 
-      <p-tag
-        [value]="status()"
-        [severity]="status() === 'Healthy' ? 'success' : 'danger'"
-      />
-    </header>
-
-    <div class="to-kpi-grid">
-      <article>
-        <span>Devices</span>
-        <strong>{{ devices.length }}</strong>
-      </article>
-
-      <article>
-        <span>Active Alerts</span>
-        <strong>{{ alerts.length }}</strong>
-      </article>
-
-      <article>
-        <span>Work Orders</span>
-        <strong>{{ workOrders.length }}</strong>
-      </article>
-
-      <article>
-        <span>Maintenance</span>
-        <strong>{{ maintenance.length }}</strong>
-      </article>
     </div>
 
-    <div class="to-details-grid">
-      <article class="to-card to-info-card">
-        <h2>Site Information</h2>
+    <div class="to-page-header__right">
 
-        <div class="to-info-grid">
-          <div>
-            <span>Address</span>
+      <p-tag [value]="site().status" [severity]="statusSeverity(site().status)" />
+
+      <button pButton icon="pi pi-pencil" label="Edit" outlined>
+
+      </button>
+
+      <button pButton icon="pi pi-ellipsis-v" text>
+
+      </button>
+
+    </div>
+
+  </header>
+
+  <!-- KPI -->
+
+  <div class="to-kpi-grid">
+
+    @for(kpi of kpis();track kpi.label){
+
+    <article class="to-kpi-card">
+
+      <div>
+
+        <p>{{kpi.label}}</p>
+
+        <strong>{{kpi.value}}</strong>
+
+      </div>
+
+      <div class="to-kpi-icon" [class]="kpi.tone">
+
+        <i [class]="kpi.icon"></i>
+
+      </div>
+
+    </article>
+
+    }
+
+  </div>
+
+  <!-- Tabs -->
+
+  <p-tabs value="overview">
+
+    <p-tablist>
+
+      <p-tab value="overview">
+
+        Overview
+
+      </p-tab>
+
+      <p-tab value="devices">
+
+        Devices
+
+      </p-tab>
+
+      <p-tab value="alerts">
+
+        Alerts
+
+      </p-tab>
+
+      <p-tab value="workorders">
+
+        Work Orders
+
+      </p-tab>
+
+      <p-tab value="maintenance">
+
+        Maintenance
+
+      </p-tab>
+
+      <p-tab value="analytics">
+
+        Analytics
+
+      </p-tab>
+
+    </p-tablist>
+
+    <p-tabpanels>
+
+      <!-- Overview -->
+
+      <p-tabpanel value="overview">
+
+        <div class="to-overview-grid">
+
+          <article class="to-card">
+
+            <div class="to-card__header">
+
+              <div>
+
+                <p class="to-eyebrow">
+
+                  Devices
+
+                </p>
+
+                <h2>
+
+                  Live Health
+
+                </h2>
+
+              </div>
+
+            </div>
+
+            <div class="to-device-grid">
+
+              @for(device of devices();track device.id){
+
+              <button class="to-device-card" (click)="openDevice(device)">
+
+                <div>
+
+                  <strong>
+
+                    {{device.name}}
+
+                  </strong>
+
+                  <small>
+
+                    {{device.type}}
+
+                  </small>
+
+                </div>
+
+                <p-tag [value]="device.status" [severity]="statusSeverity(device.status)">
+
+                </p-tag>
+
+              </button>
+
+              }
+
+            </div>
+
+          </article>
+
+          <article class="to-card">
+
+            <div class="to-card__header">
+
+              <div>
+
+                <p class="to-eyebrow">
+
+                  Site Health
+
+                </p>
+
+                <h2>
+
+                  Overall Status
+
+                </h2>
+
+              </div>
+
+            </div>
+
+            <div class="to-chart-box">
+
+              <p-chart type="doughnut" [data]="healthChartData()" [options]="healthChartOptions">
+
+              </p-chart>
+
+            </div>
+
+          </article>
+
+        </div>
+
+        <div class="to-overview-grid">
+
+          <article class="to-card">
+
+            <div class="to-card__header">
+
+              <h2>
+
+                Recent Alerts
+
+              </h2>
+
+            </div>
+
+            @for(alert of alerts();track alert.id){
+
+            <button class="to-list-item" (click)="openAlert(alert)">
+
+              <div>
+
+                <strong>
+
+                  {{alert.title}}
+
+                </strong>
+
+                <small>
+
+                  {{alert.device}}
+
+                </small>
+
+              </div>
+
+              <p-tag [value]="alert.severity" [severity]="alertSeverity(alert.severity)">
+
+              </p-tag>
+
+            </button>
+
+            }
+
+          </article>
+
+          <article class="to-card">
+
+            <div class="to-card__header">
+
+              <h2>
+
+                Active Work Orders
+
+              </h2>
+
+            </div>
+
+            @for(work of workOrders();track work.id){
+
+            <button class="to-list-item" (click)="openWorkOrder(work)">
+
+              <div>
+
+                <strong>
+
+                  {{work.title}}
+
+                </strong>
+
+                <small>
+
+                  {{work.technician}}
+
+                </small>
+
+              </div>
+
+              <p-tag [value]="work.status" [severity]="workOrderSeverity(work.status)">
+
+              </p-tag>
+
+            </button>
+
+            }
+
+          </article>
+
+        </div>
+
+        <article class="to-card">
+
+          <div class="to-card__header">
+
+            <h2>
+
+              Activity Timeline
+
+            </h2>
+
+          </div>
+
+          <div class="to-timeline">
+
+            @for(item of timeline();track item.time){
+
+            <div class="to-timeline-item">
+
+              <span></span>
+
+              <div>
+
+                <strong>
+
+                  {{item.title}}
+
+                </strong>
+
+                <p>
+
+                  {{item.description}}
+
+                </p>
+
+                <small>
+
+                  {{item.time}}
+
+                </small>
+
+              </div>
+
+            </div>
+
+            }
+
+          </div>
+
+        </article>
+
+      </p-tabpanel>
+
+      <!-- Devices -->
+
+      <p-tabpanel value="devices">
+
+        <div class="to-device-grid">
+
+          @for(device of devices();track device.id){
+
+          <article class="to-card to-device-tile">
+
             <strong>
-              {{ site.address.street }},
-              {{ site.address.city }},
-              {{ site.address.state }},
-              {{ site.address.country }}
+
+              {{device.name}}
+
             </strong>
-          </div>
+
+            <p>
+
+              {{device.type}}
+
+            </p>
+
+            <p-tag [value]="device.status" [severity]="statusSeverity(device.status)">
+
+            </p-tag>
+
+            <div class="to-device-stats">
+
+              <span>
+
+                Battery
+
+                {{device.battery}}%
+
+              </span>
+
+              <span>
+
+                Signal
+
+                {{device.signal}}%
+
+              </span>
+
+              <span>
+
+                Temp
+
+                {{device.temperature}}°C
+
+              </span>
+
+            </div>
+
+            <button pButton label="View" outlined (click)="openDevice(device)">
+
+            </button>
+
+          </article>
+
+          }
+
+        </div>
+
+      </p-tabpanel>
+
+      <!-- Alerts -->
+
+      <p-tabpanel value="alerts">
+
+        @for(alert of alerts();track alert.id){
+
+        <button class="to-list-item" (click)="openAlert(alert)">
 
           <div>
-            <span>Postal Code</span>
-            <strong>{{ site.address.postalCode }}</strong>
+
+            <strong>
+
+              {{alert.title}}
+
+            </strong>
+
+            <small>
+
+              {{alert.description}}
+
+            </small>
+
           </div>
+
+          <p-tag [value]="alert.severity" [severity]="alertSeverity(alert.severity)">
+
+          </p-tag>
+
+        </button>
+
+        }
+
+      </p-tabpanel>
+
+      <!-- Work Orders -->
+
+      <p-tabpanel value="workorders">
+
+        @for(work of workOrders();track work.id){
+
+        <button class="to-list-item" (click)="openWorkOrder(work)">
 
           <div>
-            <span>Latitude</span>
-            <strong>{{ site.latitude }}</strong>
+
+            <strong>
+
+              {{work.title}}
+
+            </strong>
+
+            <small>
+
+              {{work.technician}}
+
+            </small>
+
           </div>
+
+          <p-tag [value]="work.priority" [severity]="prioritySeverity(work.priority)">
+
+          </p-tag>
+
+        </button>
+
+        }
+
+      </p-tabpanel>
+
+      <!-- Maintenance -->
+
+      <p-tabpanel value="maintenance">
+
+        @for(item of maintenance();track item.id){
+
+        <article class="to-list-item">
 
           <div>
-            <span>Longitude</span>
-            <strong>{{ site.longitude }}</strong>
+
+            <strong>
+
+              {{item.title}}
+
+            </strong>
+
+            <small>
+
+              {{item.scheduledAt}}
+
+            </small>
+
           </div>
-        </div>
 
-        <p>{{ site.description || 'No description available.' }}</p>
-      </article>
+          <p-tag [value]="item.status" severity="info">
 
-      <article class="to-card">
-        <div class="to-card-header">
-          <h2>Devices</h2>
-          <button type="button" (click)="goTo('/devices')">View all</button>
-        </div>
+          </p-tag>
 
-        @for (device of devices; track device.code) {
-          <div class="to-list-item">
-            <div>
-              <strong>{{ device.name }}</strong>
-              <span>{{ device.code }}</span>
-            </div>
-            <p-tag
-              [value]="device.status"
-              [severity]="device.status === 'Online' ? 'success' : 'warn'"
-            />
-          </div>
+        </article>
+
         }
-      </article>
 
-      <article class="to-card">
-        <div class="to-card-header">
-          <h2>Alerts</h2>
-          <button type="button" (click)="goTo('/alerts')">View all</button>
-        </div>
+      </p-tabpanel>
 
-        @for (alert of alerts; track alert.title) {
-          <div class="to-list-item danger">
-            <div>
-              <strong>{{ alert.title }}</strong>
-              <span>{{ alert.time }}</span>
-            </div>
-            <p-tag
-              [value]="alert.severity"
-              [severity]="alert.severity === 'Critical' ? 'danger' : 'warn'"
-            />
+      <!-- Analytics -->
+
+      <p-tabpanel value="analytics">
+
+        <article class="to-card">
+
+          <div class="to-card__header">
+
+            <h2>
+
+              Telemetry
+
+            </h2>
+
           </div>
-        }
-      </article>
 
-      <article class="to-card">
-        <div class="to-card-header">
-          <h2>Work Orders</h2>
-          <button type="button" (click)="goTo('/work-orders')">View all</button>
-        </div>
+          <div class="to-chart-large">
 
-        @for (wo of workOrders; track wo.id) {
-          <div class="to-list-item">
-            <div>
-              <strong>{{ wo.id }}</strong>
-              <span>{{ wo.title }}</span>
-            </div>
-            <p-tag [value]="wo.status" severity="info" />
+            <p-chart type="line" [data]="telemetryChartData" [options]="telemetryChartOptions">
+
+            </p-chart>
+
           </div>
-        }
-      </article>
-    </div>
-  } @else {
-    <div class="to-loading">
-      Loading site details...
-    </div>
-  }
+
+        </article>
+
+      </p-tabpanel>
+
+    </p-tabpanels>
+
+  </p-tabs>
+
 </section>
