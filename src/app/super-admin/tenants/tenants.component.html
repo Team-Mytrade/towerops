@@ -1,0 +1,155 @@
+<section class="to-tenants" data-testid="super-admin-tenants-page">
+  <header class="to-page-head">
+    <div>
+      <p class="label-tag">Super Admin</p>
+      <h1>Tenants</h1>
+    </div>
+
+    <button type="button" class="to-primary-btn" data-testid="create-tenant-btn" (click)="openCreate()">
+      Create Tenant
+    </button>
+  </header>
+
+  <div class="to-toolbar">
+    <input
+      class="to-input"
+      type="search"
+      placeholder="Search tenants..."
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event)"
+      data-testid="tenant-search-input"
+    />
+
+    <select
+      class="to-select"
+      [ngModel]="statusFilter()"
+      (ngModelChange)="statusFilter.set($event)"
+      data-testid="tenant-status-filter"
+    >
+      <option value="All">All Status</option>
+      <option value="Active">Active</option>
+      <option value="Inactive">Inactive</option>
+    </select>
+  </div>
+
+  <article class="to-panel">
+    <table class="to-table">
+      <thead>
+        <tr>
+          <th>Tenant</th>
+          <th>Admin</th>
+          <th>Sites</th>
+          <th>Devices</th>
+          <th>Users</th>
+          <th>Plan</th>
+          <th>Status</th>
+          <th>Last Activity</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (tenant of filteredTenants(); track tenant.id) {
+          <tr
+            role="button"
+            tabindex="0"
+            [attr.data-testid]="'tenant-row-' + tenant.id"
+            (click)="openTenant(tenant)"
+          >
+            <td>
+              <strong>{{ tenant.name }}</strong>
+              <span>{{ tenant.id }}</span>
+            </td>
+            <td>{{ tenant.admin }}</td>
+            <td>{{ tenant.sites }}</td>
+            <td>{{ tenant.devices }}</td>
+            <td>{{ tenant.users }}</td>
+            <td>{{ tenant.plan }}</td>
+            <td>
+              <span class="to-status" [class.active]="tenant.status === 'Active'">
+                {{ tenant.status }}
+              </span>
+            </td>
+            <td>{{ tenant.lastActivity }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </article>
+
+  @if (drawerMode()) {
+    <div class="to-drawer-backdrop" data-testid="tenant-drawer-backdrop" (click)="closeDrawer()">
+      <aside class="to-drawer" data-testid="tenant-drawer" (click)="$event.stopPropagation()">
+        <div class="to-drawer__head">
+          <div>
+            <p class="label-tag">
+              {{ drawerMode() === 'create' ? 'New Tenant' : selectedTenant()?.id }}
+            </p>
+            <h2>{{ drawerMode() === 'create' ? 'Create Tenant' : selectedTenant()?.name }}</h2>
+          </div>
+
+          <button type="button" data-testid="close-tenant-drawer-btn" (click)="closeDrawer()">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+
+        @if (drawerMode() === 'create') {
+          <div class="to-form-grid">
+            <label>
+              Tenant Name
+              <input class="to-input" placeholder="Example: du Telecom NOC" data-testid="tenant-name-input" />
+            </label>
+
+            <label>
+              Tenant Admin Name
+              <input class="to-input" placeholder="Admin full name" data-testid="tenant-admin-name-input" />
+            </label>
+
+            <label>
+              Tenant Admin Email
+              <input class="to-input" placeholder="admin@tenant.com" data-testid="tenant-admin-email-input" />
+            </label>
+
+            <label>
+              Max Sites
+              <input class="to-input" type="number" placeholder="100" data-testid="tenant-sites-limit-input" />
+            </label>
+
+            <label>
+              Max Devices
+              <input class="to-input" type="number" placeholder="5000" data-testid="tenant-devices-limit-input" />
+            </label>
+
+            <label>
+              Max Users
+              <input class="to-input" type="number" placeholder="250" data-testid="tenant-users-limit-input" />
+            </label>
+          </div>
+
+          <button type="button" class="to-primary-btn full" data-testid="save-tenant-btn">
+            Save Tenant
+          </button>
+        }
+
+        @if (drawerMode() === 'view' && selectedTenant(); as tenant) {
+          <div class="to-detail-grid">
+            <div><span>Admin</span><strong>{{ tenant.admin }}</strong></div>
+            <div><span>Status</span><strong>{{ tenant.status }}</strong></div>
+            <div><span>Sites</span><strong>{{ tenant.sites }}</strong></div>
+            <div><span>Devices</span><strong>{{ tenant.devices }}</strong></div>
+            <div><span>Users</span><strong>{{ tenant.users }}</strong></div>
+            <div><span>Plan</span><strong>{{ tenant.plan }}</strong></div>
+          </div>
+
+          <div class="to-drawer-actions">
+            <button type="button" data-testid="configure-tenant-btn">Configure Tenant</button>
+            <button type="button" data-testid="create-tenant-admin-btn">Create Tenant Admin</button>
+            <button type="button" data-testid="view-tenant-activity-btn">View Activity</button>
+            <button type="button" class="danger" data-testid="toggle-tenant-status-btn">
+              Activate / Deactivate
+            </button>
+          </div>
+        }
+      </aside>
+    </div>
+  }
+</section>

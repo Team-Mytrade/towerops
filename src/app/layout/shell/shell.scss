@@ -4,41 +4,27 @@
 
 .to-shell {
   min-height: 100vh;
-  background: #f8fafc;
-}
-
-.to-shell__sidebar {
-  position: fixed;
-  inset: 0 auto 0 0;
-  z-index: 60;
-}
-
-.to-shell__body {
-  min-height: 100vh;
-  margin-left: 16rem;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.06), transparent 34%),
+    var(--to-bg);
 }
 
 .to-shell__topbar {
   position: fixed;
   top: 0;
-  right: 0;
-  left: 16rem;
+  inset-inline: 0;
   z-index: 50;
 }
 
 .to-shell__content {
-  flex: 1;
-  min-width: 0;
-  padding: 88px 24px 24px;
+  min-height: 100vh;
+  padding: calc(var(--to-topbar-h) + 20px) var(--to-page-x) var(--to-page-y);
 }
 
 .to-loading-bar {
   position: fixed;
-  top: 64px;
-  left: 16rem;
+  top: var(--to-topbar-h);
+  left: 0;
   right: 0;
   z-index: 55;
   height: 3px;
@@ -48,19 +34,15 @@
 
 .to-loading-bar__indicator {
   height: 100%;
-  width: 40%;
-  background: var(--primary-color);
+  width: 38%;
+  background: var(--to-primary);
   animation: loading-slide 1s infinite ease-in-out;
 }
 
 .to-shell-content--loading {
   pointer-events: none;
-  opacity: 0.75;
+  opacity: 0.72;
   user-select: none;
-}
-
-.to-shell__backdrop {
-  display: none;
 }
 
 @keyframes loading-slide {
@@ -73,46 +55,8 @@
   }
 }
 
-@media (max-width: 1024px) {
-  .to-shell__body {
-    margin-left: 0;
-  }
-
-  .to-shell__topbar {
-    left: 0;
-  }
-
-  .to-loading-bar {
-    left: 0;
-  }
-
+@media (max-width: 720px) {
   .to-shell__content {
-    padding: 80px 16px 20px;
-  }
-
-  .to-shell__sidebar {
-    transform: translateX(-100%);
-    transition: transform 0.25s ease;
-  }
-
-  .to-shell--mobile-open .to-shell__sidebar {
-    transform: translateX(0);
-  }
-
-  .to-shell__backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 55;
-    display: block;
-    pointer-events: none;
-    opacity: 0;
-    background: rgba(15, 23, 42, 0.45);
-    backdrop-filter: blur(4px);
-    transition: opacity 0.25s ease;
-  }
-
-  .to-shell--mobile-open .to-shell__backdrop {
-    pointer-events: auto;
-    opacity: 1;
+    padding: calc(var(--to-topbar-h) + 14px) 14px 18px;
   }
 }

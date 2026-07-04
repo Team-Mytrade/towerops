@@ -9,17 +9,13 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./auth/auth.routes').then((m) => m.authRoutes),
   },
+
   {
-    path: '',
+    path: 'select',
     component: WorkspaceLayout,
     children: [
       {
         path: '',
-        pathMatch: 'full',
-        redirectTo: 'sites',
-      },
-      {
-        path: 'select',
         loadComponent: () =>
           import('./pages/site-selector/site-selector').then(
             (m) => m.SiteSelector
@@ -28,7 +24,6 @@ export const routes: Routes = [
     ],
   },
 
-
   {
     path: '',
     component: Shell,
@@ -36,70 +31,33 @@ export const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'sites',
+        redirectTo: 'select',
       },
+
       {
-        path: 'dashboard/:siteType',
-        loadComponent: () =>
-          import('./pages/dashboard/dashboard').then(
-            (m) => m.Dashboard
+        path: 'super-admin',
+        loadChildren: () =>
+          import('./super-admin/super-admin.routes').then(
+            (m) => m.SUPER_ADMIN_ROUTES
           ),
       },
+
       {
-  path: 'tickets',
-  loadComponent: () =>
-    import('./pages/work-orders/work-orders').then(
-      (m) => m.WorkOrdersComponent
-    ),
-},
-      {
-  path: 'users',
-  loadComponent: () =>
-    import('./pages/users/users.component').then(
-      (m) => m.UsersComponent
-    ),
-},
-      {
-        path: 'sites',
-        loadChildren: () => import('./pages/sites/sites.routes').then(
-          (m) => (m.SITES_ROUTES) as Routes
-        ),
-      },
-      {
-        path: 'maintenance',
-        loadComponent: () =>
-          import('./pages/maintenance/maintenance').then(
-            (m) => m.MaintenanceComponent
+        path: 'tenant',
+        loadChildren: () =>
+          import('./tenant/tenant.routes').then(
+            (m) => m.TENANT_ROUTES
           ),
       },
+
       {
-        path: 'assets',
-        loadComponent: () =>
-          import('./pages/assets/assets.component').then(
-            (m) => m.AssetsComponent
+        path: 'technician',
+        loadChildren: () =>
+          import('./technician/technician.routes').then(
+            (m) => m.TECHNICIAN_ROUTES
           ),
       },
-      {
-        path: 'alerts',
-        loadComponent: () =>
-          import('./pages/alerts/alerts.component').then(
-            (m) => m.AlertsComponent
-          ),
-      },
-      {
-        path: 'map',
-        loadComponent: () =>
-          import('./pages/network-map/network-map.component').then(
-            (m) => m.NetworkMapComponent
-          ),
-      },
-      {
-        path: 'settings',
-        loadComponent: () =>
-          import('./pages/settings/settings.component').then(
-            (m) => m.SettingsComponent
-          ),
-      },
+
       {
         path: 'no-access',
         loadComponent: () =>
@@ -107,6 +65,7 @@ export const routes: Routes = [
             (m) => m.NoAccessPage
           ),
       },
+
       {
         path: 'server-error',
         loadComponent: () =>

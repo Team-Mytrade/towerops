@@ -3,25 +3,28 @@
 
   --to-bg: #020617;
   --to-surface: #0f172a;
+  --to-surface-soft: #111827;
+  --to-surface-hover: #1e293b;
   --to-popover: #111827;
-
-  --to-sidebar: #020617;
-  --to-sidebar-hover: #111827;
-  --to-sidebar-active: #1e293b;
-  --to-sidebar-text: #94a3b8;
-  --to-sidebar-text-active: #ffffff;
 
   --to-primary: #60a5fa;
   --to-primary-hover: #3b82f6;
   --to-primary-active: #2563eb;
-  --to-primary-soft: rgba(96, 165, 250, 0.12);
+  --to-primary-soft: rgba(96, 165, 250, 0.14);
 
   --to-text: #f8fafc;
   --to-muted: #94a3b8;
+  --to-faint: #64748b;
   --to-text-inverse: #020617;
 
   --to-border: #1e293b;
-  --to-border-soft: #0f172a;
+  --to-border-soft: rgba(148, 163, 184, 0.14);
+
+  --to-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --to-shadow-md: 0 16px 40px rgba(0, 0, 0, 0.28);
+  --to-shadow-lg: 0 24px 70px rgba(0, 0, 0, 0.42);
+
+  --to-ring: 0 0 0 3px rgba(96, 165, 250, 0.18);
 
   --p-content-background: var(--to-surface);
   --p-content-color: var(--to-text);

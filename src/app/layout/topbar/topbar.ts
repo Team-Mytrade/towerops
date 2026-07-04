@@ -1,52 +1,42 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   OnDestroy,
   OnInit,
   inject,
-  output,
   signal,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
 
 import { filter, Subscription } from 'rxjs';
 
-import { ButtonModule } from 'primeng/button';
-import { SelectModule } from 'primeng/select';
-import { TooltipModule } from 'primeng/tooltip';
-import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
+import { MenuModule } from 'primeng/menu';
 
 import { ThemeService } from '../../core/services/theme.service';
-import { PageHeader } from '../../shared/components/page-header/page-header';
 
-type TowerLocation = {
-  name: string;
-  region: string;
-  towerCount: number;
-  criticalCount: number;
+type Breadcrumb = {
+  label: string;
 };
 
-type PageMeta = {
+type MegaMenuItem = {
+  label: string;
+  description: string;
+  icon: string;
+  path: string;
+  testId: string;
+};
+
+type MegaMenuGroup = {
   title: string;
-  subtitle: string;
+  items: MegaMenuItem[];
 };
 
 @Component({
   selector: 'to-topbar',
   standalone: true,
-  imports: [
-    CommonModule,
-    TooltipModule,
-    DatePipe,
-    SelectModule,
-    FormsModule,
-    ButtonModule,
-    PageHeader,
-    MenuModule,
-  ],
+  imports: [CommonModule, RouterLink, MenuModule],
   templateUrl: './topbar.html',
   styleUrl: './topbar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -55,145 +45,188 @@ export class Topbar implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   readonly themeService = inject(ThemeService);
 
-  readonly mobileMenuClick = output<void>();
+  readonly breadcrumbs = signal<Breadcrumb[]>([]);
+  readonly megaMenuOpen = signal(false);
 
-  pageTitle = 'NOC Command Center';
-  subtitle = 'Live telecom tower monitoring and operations overview';
+  readonly selectedTenant = signal('du Telecom NOC');
+  readonly selectedSite = signal('UAE Towers');
 
-  alertCount = signal(1);
-  now = signal(new Date());
-  isFullscreen = signal(false);
-  isSiteSelector = signal(false);
+  private routerSub?: Subscription;
 
-  selectedTenant = 'du Telecom NOC';
-
-  tenantMenuItems: MenuItem[] = [
+  readonly tenantMenuItems: MenuItem[] = [
     {
       label: 'du Telecom NOC',
       icon: 'pi pi-building',
-      command: () => (this.selectedTenant = 'du Telecom NOC'),
+      command: () => this.selectedTenant.set('du Telecom NOC'),
     },
     {
       label: 'Etisalat UAE',
       icon: 'pi pi-building-columns',
-      command: () => (this.selectedTenant = 'Etisalat UAE'),
+      command: () => this.selectedTenant.set('Etisalat UAE'),
     },
     {
-      label: 'TowerOps Demo Tenant',
+      label: 'TowerOps Demo',
       icon: 'pi pi-desktop',
-      command: () => (this.selectedTenant = 'TowerOps Demo Tenant'),
+      command: () => this.selectedTenant.set('TowerOps Demo'),
     },
   ];
 
-  locations: TowerLocation[] = [
+  readonly megaMenuGroups: MegaMenuGroup[] = [
     {
-      name: 'Chennai Network',
-      region: 'Tamil Nadu, India',
-      towerCount: 24,
-      criticalCount: 1,
+      title: 'Workspace',
+      items: [
+        {
+          label: 'Dashboard',
+          description: 'Selected site overview',
+          icon: 'fa-solid fa-chart-line',
+          path: '/dashboard/towers',
+          testId: 'mega-dashboard',
+        },
+        {
+          label: 'Sites',
+          description: 'Towers, buildings and warehouses',
+          icon: 'fa-solid fa-location-dot',
+          path: '/sites',
+          testId: 'mega-sites',
+        },
+        {
+          label: 'Network Map',
+          description: 'Live site map view',
+          icon: 'fa-solid fa-map-location-dot',
+          path: '/map',
+          testId: 'mega-map',
+        },
+      ],
     },
     {
-      name: 'Bangalore Network',
-      region: 'Karnataka, India',
-      towerCount: 18,
-      criticalCount: 2,
+      title: 'Operations',
+      items: [
+        {
+          label: 'Alerts',
+          description: 'Raised sensor events',
+          icon: 'fa-solid fa-bell',
+          path: '/alerts',
+          testId: 'mega-alerts',
+        },
+        {
+          label: 'Alarms',
+          description: 'Converted operational alarms',
+          icon: 'fa-solid fa-triangle-exclamation',
+          path: '/alarms',
+          testId: 'mega-alarms',
+        },
+        {
+          label: 'Tickets',
+          description: 'Fault tickets',
+          icon: 'fa-solid fa-ticket',
+          path: '/tickets',
+          testId: 'mega-tickets',
+        },
+        {
+          label: 'Work Orders',
+          description: 'Technician assignment flow',
+          icon: 'fa-solid fa-clipboard-list',
+          path: '/work-orders',
+          testId: 'mega-work-orders',
+        },
+        {
+          label: 'Maintenance',
+          description: 'Planned service activity',
+          icon: 'fa-solid fa-screwdriver-wrench',
+          path: '/maintenance',
+          testId: 'mega-maintenance',
+        },
+      ],
     },
     {
-      name: 'Hyderabad Network',
-      region: 'Telangana, India',
-      towerCount: 21,
-      criticalCount: 0,
+      title: 'Assets',
+      items: [
+        {
+          label: 'Devices',
+          description: 'IoT and field devices',
+          icon: 'fa-solid fa-microchip',
+          path: '/assets/devices',
+          testId: 'mega-devices',
+        },
+        {
+          label: 'Towers',
+          description: 'Tower asset registry',
+          icon: 'fa-solid fa-tower-cell',
+          path: '/assets/towers',
+          testId: 'mega-assets-towers',
+        },
+        {
+          label: 'Buildings',
+          description: 'Building sites',
+          icon: 'fa-solid fa-building',
+          path: '/assets/buildings',
+          testId: 'mega-buildings',
+        },
+        {
+          label: 'Warehouses',
+          description: 'Warehouse sites',
+          icon: 'fa-solid fa-warehouse',
+          path: '/assets/warehouses',
+          testId: 'mega-warehouses',
+        },
+      ],
     },
     {
-      name: 'Mumbai Network',
-      region: 'Maharashtra, India',
-      towerCount: 32,
-      criticalCount: 4,
+      title: 'Admin',
+      items: [
+        {
+          label: 'Overview',
+          description: 'Admin summary',
+          icon: 'fa-solid fa-chart-pie',
+          path: '/admin/overview',
+          testId: 'mega-admin-overview',
+        },
+        {
+          label: 'Users',
+          description: 'User access management',
+          icon: 'fa-solid fa-users',
+          path: '/admin/users',
+          testId: 'mega-admin-users',
+        },
+        {
+          label: 'Technicians',
+          description: 'Field workforce profiles',
+          icon: 'fa-solid fa-user-gear',
+          path: '/admin/technicians',
+          testId: 'mega-admin-technicians',
+        },
+        {
+          label: 'Roles & Permissions',
+          description: 'RBAC configuration',
+          icon: 'fa-solid fa-key',
+          path: '/admin/roles',
+          testId: 'mega-admin-roles',
+        },
+        {
+          label: 'Rule Engine',
+          description: 'Sensor condition rules',
+          icon: 'fa-solid fa-code-branch',
+          path: '/admin/rules',
+          testId: 'mega-admin-rules',
+        },
+      ],
     },
   ];
-
-  selectedLocation: TowerLocation = this.locations[0];
-
-  private timerId?: ReturnType<typeof setInterval>;
-  private routerSub?: Subscription;
-
-  private readonly routeMeta: Record<string, PageMeta> = {
-    '/dashboard': {
-      title: 'NOC Command Center',
-      subtitle: 'Live telecom tower monitoring and operations overview',
-    },
-    '/sites': {
-      title: 'Sites',
-      subtitle: 'Select a tenant workspace or operational site',
-    },
-    '/map': {
-      title: 'Network Map',
-      subtitle: 'Live tower locations, health status and active alarms',
-    },
-    '/alerts': {
-      title: 'Alerts',
-      subtitle: 'Critical alarms, threshold breaches and system events',
-    },
-    '/tickets': {
-      title: 'Work Orders',
-      subtitle: 'Track fault tickets from assignment to closure',
-    },
-    '/engineers': {
-      title: 'Field Engineers',
-      subtitle: 'Engineer availability, assignments and field activity',
-    },
-    '/assets': {
-      title: 'Asset Registry',
-      subtitle: '234 devices across the network',
-    },
-    '/settings': {
-      title: 'Settings',
-      subtitle: 'Tenant branding, appearance and user access',
-    },
-  };
 
   ngOnInit(): void {
-    this.updatePageState();
+    this.updateBreadcrumbs();
 
     this.routerSub = this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe(() => {
-        this.updatePageState();
+        this.updateBreadcrumbs();
+        this.megaMenuOpen.set(false);
       });
-
-    this.timerId = setInterval(() => {
-      this.now.set(new Date());
-    }, 1000);
   }
 
-  private updatePageState(): void {
-    const cleanUrl = this.getCleanUrl(this.router.url);
-    const meta = this.getPageMeta(cleanUrl);
-
-    this.pageTitle = meta.title;
-    this.subtitle = meta.subtitle;
-    this.isSiteSelector.set(cleanUrl === '/sites');
-  }
-
-  private getCleanUrl(url: string): string {
-    return url.split('?')[0].split('#')[0];
-  }
-
-  private getPageMeta(url: string): PageMeta {
-    if (this.routeMeta[url]) {
-      return this.routeMeta[url];
-    }
-
-    const matchedRoute = Object.keys(this.routeMeta)
-      .sort((a, b) => b.length - a.length)
-      .find((route) => url.startsWith(route));
-
-    return matchedRoute
-      ? this.routeMeta[matchedRoute]
-      : {
-          title: 'TowerOps',
-          subtitle: 'Telecom tower operations platform',
-        };
+  navigateTo(path: string): void {
+    this.megaMenuOpen.set(false);
+    this.router.navigateByUrl(path);
   }
 
   toggleTheme(): void {
@@ -203,19 +236,117 @@ export class Topbar implements OnInit, OnDestroy {
   toggleFullscreen(): void {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen?.();
-      this.isFullscreen.set(true);
       return;
     }
 
-    this.isFullscreen.set(false);
     document.exitFullscreen?.();
+  }
+
+  private updateBreadcrumbs(): void {
+    const url = this.router.url.split('?')[0].split('#')[0];
+
+    if (url.startsWith('/dashboard')) {
+      this.breadcrumbs.set([
+        { label: 'TowerOps' },
+        { label: 'Dashboard' },
+        { label: this.selectedSite() },
+      ]);
+      return;
+    }
+
+    if (url.startsWith('/sites/')) {
+      this.breadcrumbs.set([
+        { label: 'TowerOps' },
+        { label: 'Sites' },
+        { label: 'Details' },
+      ]);
+      return;
+    }
+
+    if (url.startsWith('/assets/')) {
+      const label = this.toTitle(url.split('/').at(-1) ?? 'Assets');
+
+      this.breadcrumbs.set([
+        { label: 'TowerOps' },
+        { label: 'Assets' },
+        { label },
+      ]);
+      return;
+    }
+
+    const map: Record<string, Breadcrumb[]> = {
+      '/sites': [{ label: 'TowerOps' }, { label: 'Sites' }],
+      '/map': [{ label: 'TowerOps' }, { label: 'Network Map' }],
+
+      '/alerts': [
+        { label: 'TowerOps' },
+        { label: 'Operations' },
+        { label: 'Alerts' },
+      ],
+      '/alarms': [
+        { label: 'TowerOps' },
+        { label: 'Operations' },
+        { label: 'Alarms' },
+      ],
+      '/tickets': [
+        { label: 'TowerOps' },
+        { label: 'Operations' },
+        { label: 'Tickets' },
+      ],
+      '/work-orders': [
+        { label: 'TowerOps' },
+        { label: 'Operations' },
+        { label: 'Work Orders' },
+      ],
+      '/maintenance': [
+        { label: 'TowerOps' },
+        { label: 'Operations' },
+        { label: 'Maintenance' },
+      ],
+
+      '/assets': [{ label: 'TowerOps' }, { label: 'Assets' }],
+
+      '/admin/overview': [
+        { label: 'TowerOps' },
+        { label: 'Admin' },
+        { label: 'Overview' },
+      ],
+      '/admin/users': [
+        { label: 'TowerOps' },
+        { label: 'Admin' },
+        { label: 'Users' },
+      ],
+      '/admin/technicians': [
+        { label: 'TowerOps' },
+        { label: 'Admin' },
+        { label: 'Technicians' },
+      ],
+      '/admin/roles': [
+        { label: 'TowerOps' },
+        { label: 'Admin' },
+        { label: 'Roles & Permissions' },
+      ],
+      '/admin/rules': [
+        { label: 'TowerOps' },
+        { label: 'Admin' },
+        { label: 'Rule Engine' },
+      ],
+
+      '/settings': [{ label: 'TowerOps' }, { label: 'Settings' }],
+    };
+
+    this.breadcrumbs.set(
+      map[url] ?? [{ label: 'TowerOps' }, { label: 'Workspace' }],
+    );
+  }
+
+  private toTitle(value: string): string {
+    return value
+      .replaceAll('-', ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
   ngOnDestroy(): void {
     this.routerSub?.unsubscribe();
-
-    if (this.timerId) {
-      clearInterval(this.timerId);
-    }
   }
 }

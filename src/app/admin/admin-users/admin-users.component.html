@@ -1,0 +1,169 @@
+<section class="to-admin-users" data-testid="admin-users-page">
+  <div class="to-page-header">
+    <div>
+      <p class="label-tag">Administration</p>
+      <h1>Users</h1>
+      <span>Create users, assign roles and manage account access.</span>
+    </div>
+
+    <button
+      type="button"
+      class="to-primary-btn"
+      data-testid="create-user-btn"
+      (click)="openCreateDrawer()"
+    >
+      <i class="pi pi-user-plus"></i>
+      Create User
+    </button>
+  </div>
+
+  <div class="to-filter-bar">
+    <input
+      type="search"
+      placeholder="Search users..."
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event)"
+      data-testid="user-search-input"
+    />
+
+    <select
+      [ngModel]="roleFilter()"
+      (ngModelChange)="roleFilter.set($event)"
+      data-testid="user-role-filter"
+    >
+      @for (role of roles; track role) {
+        <option [value]="role">{{ role }}</option>
+      }
+    </select>
+
+    <select
+      [ngModel]="statusFilter()"
+      (ngModelChange)="statusFilter.set($event)"
+      data-testid="user-status-filter"
+    >
+      @for (status of statuses; track status) {
+        <option [value]="status">{{ status }}</option>
+      }
+    </select>
+  </div>
+
+  <article class="to-card">
+    <table class="to-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Role</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Linked Technician</th>
+          <th>Last Active</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (user of filteredUsers(); track user.id) {
+          <tr
+            role="button"
+            tabindex="0"
+            [attr.data-testid]="'user-row-' + user.id"
+            (click)="openUser(user)"
+          >
+            <td>
+              <strong>{{ user.name }}</strong>
+              <span>{{ user.email }}</span>
+            </td>
+            <td>{{ user.role }}</td>
+            <td>{{ user.type }}</td>
+            <td>
+              <span class="to-status" [class.active]="user.status === 'Active'">
+                {{ user.status }}
+              </span>
+            </td>
+            <td>{{ user.linkedTechnician || 'Not linked' }}</td>
+            <td>{{ user.lastActive }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </article>
+
+  @if (drawerMode()) {
+    <div class="to-drawer-backdrop" data-testid="user-drawer-backdrop" (click)="closeDrawer()">
+      <aside class="to-drawer" data-testid="user-drawer" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="to-drawer__close"
+          data-testid="close-user-drawer-btn"
+          (click)="closeDrawer()"
+        >
+          <i class="pi pi-times"></i>
+        </button>
+
+        @if (drawerMode() === 'create') {
+          <div class="to-drawer__header">
+            <p class="label-tag">New User</p>
+            <h2>Create User</h2>
+          </div>
+
+          <div class="to-form-grid">
+            <label>
+              Full Name
+              <input data-testid="user-name-input" placeholder="Enter full name" />
+            </label>
+
+            <label>
+              Email
+              <input data-testid="user-email-input" placeholder="name@company.com" />
+            </label>
+
+            <label>
+              Role
+              <select data-testid="user-create-role-select">
+                <option>Admin</option>
+                <option>NOC Operator</option>
+                <option>Technician</option>
+                <option>Super Admin</option>
+              </select>
+            </label>
+
+            <label>
+              Status
+              <select data-testid="user-create-status-select">
+                <option>Active</option>
+                <option>Inactive</option>
+              </select>
+            </label>
+          </div>
+
+          <button type="button" class="to-primary-btn full" data-testid="save-user-btn">
+            Save User
+          </button>
+        }
+
+        @if (drawerMode() === 'view' && selectedUser(); as user) {
+          <div class="to-drawer__header">
+            <p class="label-tag">{{ user.id }}</p>
+            <h2>{{ user.name }}</h2>
+            <span>{{ user.email }}</span>
+          </div>
+
+          <div class="to-detail-list">
+            <div><span>Role</span><strong>{{ user.role }}</strong></div>
+            <div><span>User Type</span><strong>{{ user.type }}</strong></div>
+            <div><span>Status</span><strong>{{ user.status }}</strong></div>
+            <div><span>Linked Technician</span><strong>{{ user.linkedTechnician || 'Not linked' }}</strong></div>
+            <div><span>Last Active</span><strong>{{ user.lastActive }}</strong></div>
+          </div>
+
+          <div class="to-drawer-actions">
+            <button type="button" data-testid="assign-role-btn">Assign Role</button>
+            <button type="button" data-testid="link-technician-btn">Link Technician</button>
+            <button type="button" class="danger" data-testid="deactivate-user-btn">
+              Deactivate
+            </button>
+          </div>
+        }
+      </aside>
+    </div>
+  }
+</section>

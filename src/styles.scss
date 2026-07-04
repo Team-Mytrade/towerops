@@ -1,40 +1,10 @@
-@use "./styles/tokens";
-@use "./styles/primeng";
-@use "./styles/dark-theme";
-@use "./styles/utilities";
+@use './styles/tokens';
+@use './styles/primeng';
+@use './styles/dark-theme';
+@use './styles/utilities';
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600;700&display=swap');
 
-@import "primeicons/primeicons.css";
-@import "leaflet/dist/leaflet.css";
-@import "./tailwind.css";
-
-/* Chrome, Edge, Safari */
-::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
-}
-
-/* Firefox */
-* {
-  scrollbar-width: none;
-}
-
-/* IE/Legacy */
-* {
-  -ms-overflow-style: none;
-}
-html,
-body,
-* {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-html::-webkit-scrollbar,
-body::-webkit-scrollbar,
-*::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
+@import 'primeicons/primeicons.css';
+@import 'leaflet/dist/leaflet.css';
+@import './tailwind.css';

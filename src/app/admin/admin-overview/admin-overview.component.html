@@ -1,0 +1,64 @@
+<section class="to-admin-page" data-testid="admin-overview-page">
+  <div class="to-page-header">
+    <div>
+      <p class="label-tag">Administration</p>
+      <h1>Admin Overview</h1>
+      <span>Manage users, roles, technicians and rule engine configuration.</span>
+    </div>
+  </div>
+
+  <div class="to-admin-kpi-grid">
+    @for (kpi of kpis(); track kpi.label) {
+      <article class="to-admin-kpi" [class]="kpi.variant">
+        <div>
+          <span>{{ kpi.label }}</span>
+          <strong>{{ kpi.value }}</strong>
+        </div>
+
+        <i [class]="kpi.icon"></i>
+      </article>
+    }
+  </div>
+
+  <div class="to-admin-grid">
+    <article class="to-card">
+      <div class="to-card__header">
+        <div>
+          <p class="label-tag">Quick Actions</p>
+          <h2>Admin Shortcuts</h2>
+        </div>
+      </div>
+
+      <div class="to-action-grid">
+        @for (action of quickActions; track action.label) {
+          <button
+            type="button"
+            class="to-action-card"
+            [attr.data-testid]="'admin-action-' + action.label.toLowerCase().replaceAll(' ', '-')"
+          >
+            <i [class]="action.icon"></i>
+            <span>{{ action.label }}</span>
+          </button>
+        }
+      </div>
+    </article>
+
+    <article class="to-card">
+      <div class="to-card__header">
+        <div>
+          <p class="label-tag">Activity</p>
+          <h2>Recent Admin Activity</h2>
+        </div>
+      </div>
+
+      <div class="to-activity-list">
+        @for (activity of activities; track activity) {
+          <div class="to-activity-item">
+            <span></span>
+            <p>{{ activity }}</p>
+          </div>
+        }
+      </div>
+    </article>
+  </div>
+</section>

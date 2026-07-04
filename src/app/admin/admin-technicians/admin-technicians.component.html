@@ -1,0 +1,224 @@
+<section class="to-admin-techs" data-testid="admin-technicians-page">
+  <div class="to-page-header">
+    <div>
+      <p class="label-tag">Administration</p>
+      <h1>Technicians</h1>
+      <span>Create technician profiles, link users and manage field availability.</span>
+    </div>
+
+    <button
+      type="button"
+      class="to-primary-btn"
+      data-testid="create-technician-btn"
+      (click)="openCreateDrawer()"
+    >
+      <i class="pi pi-wrench"></i>
+      Create Technician
+    </button>
+  </div>
+
+  <div class="to-filter-bar">
+    <input
+      type="search"
+      placeholder="Search technician..."
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event)"
+      data-testid="technician-search-input"
+    />
+
+    <select
+      [ngModel]="zoneFilter()"
+      (ngModelChange)="zoneFilter.set($event)"
+      data-testid="technician-zone-filter"
+    >
+      @for (zone of zones; track zone) {
+        <option [value]="zone">{{ zone }}</option>
+      }
+    </select>
+
+    <select
+      [ngModel]="availabilityFilter()"
+      (ngModelChange)="availabilityFilter.set($event)"
+      data-testid="technician-availability-filter"
+    >
+      @for (availability of availabilityOptions; track availability) {
+        <option [value]="availability">{{ availability }}</option>
+      }
+    </select>
+  </div>
+
+  <article class="to-card">
+    <table class="to-table">
+      <thead>
+        <tr>
+          <th>Technician</th>
+          <th>User ID</th>
+          <th>Zone</th>
+          <th>Skills</th>
+          <th>Availability</th>
+          <th>Jobs</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (tech of filteredTechnicians(); track tech.id) {
+          <tr
+            role="button"
+            tabindex="0"
+            [attr.data-testid]="'technician-row-' + tech.id"
+            (click)="openTechnician(tech)"
+          >
+            <td>
+              <strong>{{ tech.name }}</strong>
+              <span>{{ tech.email }}</span>
+            </td>
+
+            <td>{{ tech.userId || 'Not linked' }}</td>
+            <td>{{ tech.zone }}</td>
+
+            <td>
+              <div class="to-skill-list">
+                @for (skill of tech.skills; track skill) {
+                  <span>{{ skill }}</span>
+                }
+              </div>
+            </td>
+
+            <td>
+              <span
+                class="to-availability"
+                [class.available]="tech.availability === 'Available'"
+                [class.busy]="tech.availability === 'Busy'"
+                [class.offline]="tech.availability === 'Offline'"
+              >
+                {{ tech.availability }}
+              </span>
+            </td>
+
+            <td>{{ tech.currentJobs }}</td>
+
+            <td>
+              <span class="to-status" [class.active]="tech.status === 'Active'">
+                {{ tech.status }}
+              </span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </article>
+
+  @if (drawerMode()) {
+    <div
+      class="to-drawer-backdrop"
+      data-testid="technician-drawer-backdrop"
+      (click)="closeDrawer()"
+    >
+      <aside class="to-drawer" data-testid="technician-drawer" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="to-drawer__close"
+          data-testid="close-technician-drawer-btn"
+          (click)="closeDrawer()"
+        >
+          <i class="pi pi-times"></i>
+        </button>
+
+        @if (drawerMode() === 'create') {
+          <div class="to-drawer__header">
+            <p class="label-tag">New Technician</p>
+            <h2>Create Technician</h2>
+            <span>Link an existing user or create the profile now and link later.</span>
+          </div>
+
+          <div class="to-link-choice">
+            <button type="button" class="active" data-testid="link-existing-user-btn">
+              Link Existing User
+            </button>
+            <button type="button" data-testid="create-user-and-technician-btn">
+              Create User + Technician
+            </button>
+          </div>
+
+          <div class="to-form-grid">
+            <label>
+              User ID / Email
+              <input data-testid="technician-user-input" placeholder="Search existing user" />
+            </label>
+
+            <label>
+              Technician Name
+              <input data-testid="technician-name-input" placeholder="Enter technician name" />
+            </label>
+
+            <label>
+              Zone
+              <select data-testid="technician-zone-select">
+                <option>Dubai</option>
+                <option>Abu Dhabi</option>
+                <option>Sharjah</option>
+                <option>Ajman</option>
+              </select>
+            </label>
+
+            <label>
+              Skills
+              <input data-testid="technician-skills-input" placeholder="Signal, Power, Battery" />
+            </label>
+
+            <label>
+              Availability
+              <select data-testid="technician-availability-select">
+                <option>Available</option>
+                <option>Busy</option>
+                <option>Offline</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="to-note">
+            <i class="pi pi-info-circle"></i>
+            Technician needs a linked User ID to login and update assigned work orders.
+          </div>
+
+          <button type="button" class="to-primary-btn full" data-testid="save-technician-btn">
+            Save Technician
+          </button>
+        }
+
+        @if (drawerMode() === 'view' && selectedTechnician(); as tech) {
+          <div class="to-drawer__header">
+            <p class="label-tag">{{ tech.id }}</p>
+            <h2>{{ tech.name }}</h2>
+            <span>{{ tech.email }}</span>
+          </div>
+
+          <div class="to-detail-list">
+            <div><span>User ID</span><strong>{{ tech.userId || 'Not linked' }}</strong></div>
+            <div><span>Zone</span><strong>{{ tech.zone }}</strong></div>
+            <div><span>Skills</span><strong>{{ tech.skills.join(', ') }}</strong></div>
+            <div><span>Availability</span><strong>{{ tech.availability }}</strong></div>
+            <div><span>Current Jobs</span><strong>{{ tech.currentJobs }}</strong></div>
+            <div><span>Status</span><strong>{{ tech.status }}</strong></div>
+          </div>
+
+          <div class="to-drawer-actions">
+            <button type="button" data-testid="assign-user-to-technician-btn">
+              Link / Change User
+            </button>
+            <button type="button" data-testid="update-technician-zone-btn">
+              Update Zone
+            </button>
+            <button type="button" data-testid="view-technician-jobs-btn">
+              View Assigned Jobs
+            </button>
+            <button type="button" class="danger" data-testid="deactivate-technician-btn">
+              Deactivate Technician
+            </button>
+          </div>
+        }
+      </aside>
+    </div>
+  }
+</section>

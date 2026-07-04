@@ -1,6 +1,4 @@
 :root {
-  /* PrimeNG Mapping */
-
   --p-primary-color: var(--to-primary);
   --p-primary-hover-color: var(--to-primary-hover);
   --p-primary-active-color: var(--to-primary-active);
@@ -26,11 +24,11 @@
   --p-surface-900: #0f172a;
   --p-surface-950: #020617;
 
-  --p-border-radius-xs: 0.25rem;
+  --p-border-radius-xs: 0.375rem;
   --p-border-radius-sm: var(--to-radius-sm);
   --p-border-radius-md: var(--to-radius-md);
   --p-border-radius-lg: var(--to-radius-lg);
   --p-border-radius-xl: var(--to-radius-xl);
 
-  --p-mask-background: rgba(15, 23, 42, 0.35);
+  --p-mask-background: rgba(15, 23, 42, 0.28);
 }

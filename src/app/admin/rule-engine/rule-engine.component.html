@@ -1,0 +1,267 @@
+<section class="to-rule-engine" data-testid="rule-engine-page">
+  <div class="to-page-header">
+    <div>
+      <p class="label-tag">Administration</p>
+      <h1>Rule Engine</h1>
+      <span>Create simple backend rules that convert sensor conditions into alarms or tickets.</span>
+    </div>
+
+    <button
+      type="button"
+      class="to-primary-btn"
+      data-testid="create-rule-btn"
+      (click)="openCreateDrawer()"
+    >
+      <i class="pi pi-sitemap"></i>
+      Create Rule
+    </button>
+  </div>
+
+  <div class="to-rule-kpis">
+    <article>
+      <span>Active Rules</span>
+      <strong>{{ activeRules() }}</strong>
+    </article>
+    <article>
+      <span>Inactive Rules</span>
+      <strong>{{ inactiveRules() }}</strong>
+    </article>
+    <article>
+      <span>Alarm Rules</span>
+      <strong>{{ alarmRules() }}</strong>
+    </article>
+    <article>
+      <span>Ticket Rules</span>
+      <strong>{{ ticketRules() }}</strong>
+    </article>
+  </div>
+
+  <div class="to-filter-bar">
+    <input
+      type="search"
+      placeholder="Search rule..."
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event)"
+      data-testid="rule-search-input"
+    />
+
+    <select
+      [ngModel]="statusFilter()"
+      (ngModelChange)="statusFilter.set($event)"
+      data-testid="rule-status-filter"
+    >
+      @for (status of statuses; track status) {
+        <option [value]="status">{{ status }}</option>
+      }
+    </select>
+
+    <select
+      [ngModel]="actionFilter()"
+      (ngModelChange)="actionFilter.set($event)"
+      data-testid="rule-action-filter"
+    >
+      @for (action of actions; track action) {
+        <option [value]="action">{{ action }}</option>
+      }
+    </select>
+  </div>
+
+  <article class="to-card">
+    <table class="to-table">
+      <thead>
+        <tr>
+          <th>Rule</th>
+          <th>Condition</th>
+          <th>Action</th>
+          <th>Severity</th>
+          <th>Status</th>
+          <th>Last Triggered</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (rule of filteredRules(); track rule.id) {
+          <tr
+            role="button"
+            tabindex="0"
+            [attr.data-testid]="'rule-row-' + rule.id"
+            (click)="openRule(rule)"
+          >
+            <td>
+              <strong>{{ rule.name }}</strong>
+              <span>{{ rule.id }} · {{ rule.module }}</span>
+            </td>
+
+            <td>
+              <code>{{ rule.field }} {{ rule.operator }} {{ rule.value }}</code>
+            </td>
+
+            <td>{{ rule.action }}</td>
+
+            <td>
+              <span class="to-severity" [class]="rule.severity.toLowerCase()">
+                {{ rule.severity }}
+              </span>
+            </td>
+
+            <td>
+              <span class="to-status" [class.active]="rule.status === 'Active'">
+                {{ rule.status }}
+              </span>
+            </td>
+
+            <td>{{ rule.lastTriggered }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </article>
+
+  @if (drawerMode()) {
+    <div class="to-drawer-backdrop" data-testid="rule-drawer-backdrop" (click)="closeDrawer()">
+      <aside class="to-drawer" data-testid="rule-drawer" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="to-drawer__close"
+          data-testid="close-rule-drawer-btn"
+          (click)="closeDrawer()"
+        >
+          <i class="pi pi-times"></i>
+        </button>
+
+        @if (drawerMode() === 'create') {
+          <div class="to-drawer__header">
+            <p class="label-tag">New Rule</p>
+            <h2>Create Rule</h2>
+            <span>Simple IF condition and THEN action for prototype rule execution.</span>
+          </div>
+
+          <div class="to-rule-builder">
+            <section>
+              <p class="label-tag">Step 1</p>
+              <h3>Rule Info</h3>
+
+              <label>
+                Rule Name
+                <input data-testid="rule-name-input" placeholder="Example: Signal Drop Alarm" />
+              </label>
+
+              <label>
+                Status
+                <select data-testid="rule-create-status-select">
+                  <option>Active</option>
+                  <option>Inactive</option>
+                </select>
+              </label>
+            </section>
+
+            <section>
+              <p class="label-tag">Step 2</p>
+              <h3>IF Condition</h3>
+
+              <label>
+                Module
+                <select data-testid="rule-module-select">
+                  <option>Sensor</option>
+                  <option>Tower</option>
+                  <option>Alert</option>
+                </select>
+              </label>
+
+              <label>
+                Field
+                <select data-testid="rule-field-select">
+                  <option>signalStrength</option>
+                  <option>fuelLevel</option>
+                  <option>temperature</option>
+                  <option>batteryBackup</option>
+                  <option>generatorStatus</option>
+                </select>
+              </label>
+
+              <div class="to-inline-fields">
+                <label>
+                  Operator
+                  <select data-testid="rule-operator-select">
+                    <option>&lt;</option>
+                    <option>&gt;</option>
+                    <option>&lt;=</option>
+                    <option>&gt;=</option>
+                    <option>==</option>
+                    <option>!=</option>
+                  </select>
+                </label>
+
+                <label>
+                  Value
+                  <input data-testid="rule-value-input" placeholder="40" />
+                </label>
+              </div>
+            </section>
+
+            <section>
+              <p class="label-tag">Step 3</p>
+              <h3>THEN Action</h3>
+
+              <label>
+                Action
+                <select data-testid="rule-action-select">
+                  <option>Create Alarm</option>
+                  <option>Create Ticket</option>
+                </select>
+              </label>
+
+              <label>
+                Severity
+                <select data-testid="rule-severity-select">
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                  <option>Critical</option>
+                </select>
+              </label>
+            </section>
+          </div>
+
+          <div class="to-preview-box">
+            <p class="label-tag">Preview</p>
+            <strong>IF signalStrength &lt; 40 THEN create alarm with high severity</strong>
+          </div>
+
+          <button type="button" class="to-primary-btn full" data-testid="save-rule-btn">
+            Save Rule
+          </button>
+        }
+
+        @if (drawerMode() === 'view' && selectedRule(); as rule) {
+          <div class="to-drawer__header">
+            <p class="label-tag">{{ rule.id }}</p>
+            <h2>{{ rule.name }}</h2>
+            <span>{{ ruleSentence(rule) }}</span>
+          </div>
+
+          <div class="to-detail-list">
+            <div><span>Module</span><strong>{{ rule.module }}</strong></div>
+            <div><span>Field</span><strong>{{ rule.field }}</strong></div>
+            <div><span>Operator</span><strong>{{ rule.operator }}</strong></div>
+            <div><span>Value</span><strong>{{ rule.value }}</strong></div>
+            <div><span>Action</span><strong>{{ rule.action }}</strong></div>
+            <div><span>Severity</span><strong>{{ rule.severity }}</strong></div>
+            <div><span>Status</span><strong>{{ rule.status }}</strong></div>
+            <div><span>Last Triggered</span><strong>{{ rule.lastTriggered }}</strong></div>
+          </div>
+
+          <div class="to-drawer-actions">
+            <button type="button" data-testid="edit-rule-btn">Edit Rule</button>
+            <button type="button" data-testid="toggle-rule-status-btn">
+              Activate / Deactivate
+            </button>
+            <button type="button" class="danger" data-testid="delete-rule-btn">
+              Delete Rule
+            </button>
+          </div>
+        }
+      </aside>
+    </div>
+  }
+</section>

@@ -1,32 +1,16 @@
-<div class="to-shell" [class.to-shell--mobile-open]="mobileSidebarOpen()">
-  <div
-    class="to-shell__backdrop"
-    data-testid="sidebar-backdrop"
-    (click)="closeMobileSidebar()"
-  ></div>
+<div class="to-shell">
+  <to-topbar class="to-shell__topbar" />
 
-  <to-sidebar
-    class="to-shell__sidebar"
-    (navigated)="closeMobileSidebar()"
-  />
+  @if (loader.loading()) {
+    <div class="to-loading-bar">
+      <div class="to-loading-bar__indicator"></div>
+    </div>
+  }
 
-  <div class="to-shell__body">
-    <to-topbar
-      class="to-shell__topbar"
-      (mobileMenuClick)="openMobileSidebar()"
-    />
-
-    @if (loader.loading()) {
-      <div class="to-loading-bar">
-        <div class="to-loading-bar__indicator"></div>
-      </div>
-    }
-
-    <main
-      class="to-shell__content"
-      [class.to-shell-content--loading]="loader.loading()"
-    >
-      <router-outlet />
-    </main>
-  </div>
+  <main
+    class="to-shell__content"
+    [class.to-shell-content--loading]="loader.loading()"
+  >
+    <router-outlet />
+  </main>
 </div>

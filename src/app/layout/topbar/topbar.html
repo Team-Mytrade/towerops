@@ -1,101 +1,121 @@
 <header class="to-topbar" data-testid="app-topbar">
   <div class="to-topbar__left">
-    <button
-      type="button"
-      class="to-mobile-menu-btn"
-      data-testid="mobile-menu-btn"
-      pTooltip="Open navigation"
-      tooltipPosition="bottom"
-      (click)="mobileMenuClick.emit()"
-    >
-      <i class="pi pi-bars"></i>
-    </button>
+    <a class="to-brand" routerLink="/sites" data-testid="topbar-brand">
+      <span class="to-brand__mark">
+        <i class="fa-solid fa-tower-broadcast"></i>
+      </span>
 
-    @if (isSiteSelector()) {
-      <div class="to-workspace-brand">
-        <div class="to-workspace-brand__logo">
-          <i class="fa-solid fa-tower-broadcast"></i>
-        </div>
-
-        <div class="to-workspace-brand__copy">
-          <div class="to-workspace-brand__title">TowerOps</div>
-          <div class="to-workspace-brand__subtitle">NOC Platform</div>
-        </div>
-      </div>
-    } @else {
-      <div class="to-overview">
-        <to-page-header [title]="pageTitle" [subtitle]="subtitle" />
-      </div>
-    }
-  </div>
-
-  <div class="to-topbar__right">
-    @if (!isSiteSelector()) {
-      <p-button
-        icon="pi pi-bell"
-        [text]="true"
-        pTooltip="Alarms"
-        tooltipPosition="bottom"
-        severity="secondary"
-      />
-
-      <p-button
-        [icon]="themeService.isDark() ? 'pi pi-sun' : 'pi pi-moon'"
-        [text]="true"
-        [pTooltip]="themeService.isDark() ? 'Light mode' : 'Dark mode'"
-        tooltipPosition="bottom"
-        severity="secondary"
-        (click)="toggleTheme()"
-      />
-
-      <p-button
-        icon="pi pi-arrow-up-right-and-arrow-down-left-from-center"
-        [text]="true"
-        pTooltip="Full Screen"
-        tooltipPosition="bottom"
-        severity="secondary"
-        (click)="toggleFullscreen()"
-      />
-    }
+      <span class="to-brand__copy">
+        <strong>TowerOps</strong>
+        <em>NOC Platform</em>
+      </span>
+    </a>
 
     <p-menu
       #tenantMenu
       [model]="tenantMenuItems"
       [popup]="true"
       appendTo="body"
-      styleClass="to-tenant-menu"
+      styleClass="to-premium-menu"
     />
 
     <button
       type="button"
-      class="to-tenant-switcher"
+      class="to-site-chip"
       data-testid="tenant-switcher"
       (click)="tenantMenu.toggle($event)"
     >
-      <span class="to-tenant-switcher__dot"></span>
-
-      <span class="to-tenant-switcher__label">
-        {{ selectedTenant }}
-      </span>
-
+      <span></span>
+      {{ selectedTenant() }}
       <i class="pi pi-chevron-down"></i>
     </button>
 
-    <div class="to-user">
-      <div class="to-user__info">
-        <div>Vikram Singh</div>
-        <span>NOC Operator</span>
-      </div>
+    <nav class="to-breadcrumbs" aria-label="Breadcrumb">
+      @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
+        <span [class.active]="last">
+          {{ crumb.label }}
+        </span>
 
-      <div class="to-user__avatar">VS</div>
-
-      <p-button
-        severity="secondary"
-        [text]="true"
-        icon="pi pi-sign-out"
-        pTooltip="Logout"
-        tooltipPosition="bottom"
-      />
-    </div>
+        @if (!last) {
+          <i class="pi pi-angle-right"></i>
+        }
+      }
+    </nav>
   </div>
+
+  <div class="to-topbar__right">
+    <button
+      type="button"
+      class="to-menu-btn"
+      data-testid="app-menu-btn"
+      (click)="megaMenuOpen.set(!megaMenuOpen())"
+    >
+      <i class="fa-solid fa-grip"></i>
+      <span>Menu</span>
+    </button>
+
+    <button type="button" class="to-icon-btn" data-testid="topbar-alerts-btn">
+      <i class="pi pi-bell"></i>
+      <span class="to-alert-dot"></span>
+    </button>
+
+    <button
+      type="button"
+      class="to-icon-btn hide-sm"
+      data-testid="theme-toggle-btn"
+      (click)="toggleTheme()"
+    >
+      <i [class]="themeService.isDark() ? 'pi pi-sun' : 'pi pi-moon'"></i>
+    </button>
+
+    <button
+      type="button"
+      class="to-icon-btn hide-md"
+      data-testid="fullscreen-btn"
+      (click)="toggleFullscreen()"
+    >
+      <i class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
+    </button>
+
+    <button type="button" class="to-profile" data-testid="profile-btn">
+      <span>
+        <strong>Vikram Singh</strong>
+        <em>NOC Operator</em>
+      </span>
+
+      <b>VS</b>
+    </button>
+  </div>
+
+  @if (megaMenuOpen()) {
+    <div
+      class="to-mega-backdrop"
+      data-testid="mega-menu-backdrop"
+      (click)="megaMenuOpen.set(false)"
+    ></div>
+
+    <section class="to-mega-menu" data-testid="mega-menu">
+      @for (group of megaMenuGroups; track group.title) {
+        <div class="to-mega-group">
+          <p>{{ group.title }}</p>
+
+          @for (item of group.items; track item.label) {
+            <button
+              type="button"
+              class="to-mega-item"
+              [attr.data-testid]="item.testId"
+              (click)="navigateTo(item.path)"
+            >
+              <i [class]="item.icon"></i>
+
+              <span>
+                <strong>{{ item.label }}</strong>
+                <em>{{ item.description }}</em>
+              </span>
+            </button>
+          }
+        </div>
+      }
+    </section>
+  }
 </header>

@@ -1,0 +1,89 @@
+<section class="to-sa-dashboard" data-testid="super-admin-dashboard-page">
+  <header class="to-page-head">
+    <div>
+      <p class="label-tag">Super Admin</p>
+      <h1>Platform Overview</h1>
+    </div>
+
+    <button type="button" class="to-primary-btn" data-testid="create-tenant-shortcut-btn">
+      Create Tenant
+    </button>
+  </header>
+
+  <div class="to-kpi-grid">
+    @for (card of cards(); track card.label) {
+      <article class="to-kpi-card" [class]="'tone-' + card.tone">
+        <div class="to-kpi-card__top">
+          <span>{{ card.label }}</span>
+          <i [class]="card.icon"></i>
+        </div>
+
+        <strong>{{ card.value }}</strong>
+        <small>{{ card.meta }}</small>
+      </article>
+    }
+  </div>
+
+  <div class="to-content-grid">
+    <article class="to-panel">
+      <div class="to-panel__head">
+        <div>
+          <p class="label-tag">Tenants</p>
+          <h2>Tenant Health</h2>
+        </div>
+
+        <button type="button" class="to-secondary-btn" data-testid="view-tenants-btn">
+          View all
+        </button>
+      </div>
+
+      <div class="to-table-wrap">
+        <table class="to-table">
+          <thead>
+            <tr>
+              <th>Tenant</th>
+              <th>Sites</th>
+              <th>Devices</th>
+              <th>Alerts</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (tenant of tenantHealth(); track tenant.tenant) {
+              <tr>
+                <td>{{ tenant.tenant }}</td>
+                <td>{{ tenant.sites }}</td>
+                <td>{{ tenant.devices }}</td>
+                <td>{{ tenant.alerts }}</td>
+                <td>
+                  <span class="to-status" [class]="tenant.status.toLowerCase()">
+                    {{ tenant.status }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="to-panel">
+      <div class="to-panel__head">
+        <div>
+          <p class="label-tag">Activity</p>
+          <h2>Recent Activity</h2>
+        </div>
+      </div>
+
+      <div class="to-activity-list">
+        @for (activity of activities(); track activity) {
+          <div class="to-activity-item">
+            <span></span>
+            <p>{{ activity }}</p>
+          </div>
+        }
+      </div>
+    </article>
+  </div>
+</section>

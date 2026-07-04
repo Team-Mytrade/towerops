@@ -4,17 +4,17 @@ export const towerOpsTheme = {
   ...Aura,
   cssVariables: {
     light: {
-      'primary-color': 'var(--to-primary)',
+      'primary-color': '#2563eb',
       'primary-50': '#eff6ff',
       'primary-100': '#dbeafe',
       'primary-200': '#bfdbfe',
       'primary-300': '#93c5fd',
       'primary-400': '#60a5fa',
-      'primary-500': '#0052ff',
-      'primary-600': '#0077ff',
-      'primary-700': '#0047dc',
-      'primary-800': '#1e40af',
-      'primary-900': '#1e3a8a',
+      'primary-500': '#2563eb',
+      'primary-600': '#1d4ed8',
+      'primary-700': '#1e40af',
+      'primary-800': '#1e3a8a',
+      'primary-900': '#172554',
 
       'surface-0': '#ffffff',
       'surface-50': '#f8fafc',
@@ -35,13 +35,11 @@ export const towerOpsTheme = {
       'surface-border': '#e2e8f0',
 
       'success-color': '#10b981',
-      'info-color': '#00b2ff',
+      'info-color': '#3b82f6',
       'warn-color': '#f59e0b',
       'error-color': '#ef4444',
 
-      'mask-surface': 'rgba(15, 23, 42, 0.35)',
-
-      
+      'mask-surface': 'rgba(15, 23, 42, 0.28)',
     } as Record<string, string>,
   },
 };

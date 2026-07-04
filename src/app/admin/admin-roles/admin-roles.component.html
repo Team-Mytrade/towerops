@@ -1,0 +1,157 @@
+<section class="to-admin-roles" data-testid="admin-roles-page">
+  <div class="to-page-header">
+    <div>
+      <p class="label-tag">Administration</p>
+      <h1>Roles & Permissions</h1>
+      <span>Create roles and control module-level access.</span>
+    </div>
+
+    <button
+      type="button"
+      class="to-primary-btn"
+      data-testid="create-role-btn"
+      (click)="openCreateDrawer()"
+    >
+      <i class="pi pi-plus"></i>
+      Create Role
+    </button>
+  </div>
+
+  <div class="to-roles-layout">
+    <aside class="to-role-list">
+      <div class="to-section-header">
+        <p class="label-tag">Roles</p>
+        <strong>{{ roles().length }} roles</strong>
+      </div>
+
+      @for (role of roles(); track role.id) {
+        <button
+          type="button"
+          class="to-role-card"
+          [class.active]="selectedRoleId() === role.id"
+          [attr.data-testid]="'role-card-' + role.id"
+          (click)="selectRole(role)"
+        >
+          <div>
+            <strong>{{ role.name }}</strong>
+            <span>{{ role.description }}</span>
+          </div>
+
+          <em>{{ role.users }} users</em>
+        </button>
+      }
+    </aside>
+
+    <article class="to-card to-permission-panel">
+      @if (selectedRole(); as role) {
+        <div class="to-card__header">
+          <div>
+            <p class="label-tag">{{ role.id }}</p>
+            <h2>{{ role.name }}</h2>
+            <span>{{ role.description }}</span>
+          </div>
+
+          @if (role.systemRole) {
+            <span class="to-lock-pill">
+              <i class="pi pi-lock"></i>
+              System Role
+            </span>
+          }
+        </div>
+
+        <div class="to-permission-table-wrap">
+          <table class="to-permission-table">
+            <thead>
+              <tr>
+                <th>Module</th>
+                @for (action of actions; track action) {
+                  <th>{{ action }}</th>
+                }
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (permission of role.permissions; track permission.module) {
+                <tr>
+                  <td>
+                    <strong>{{ permission.module }}</strong>
+                  </td>
+
+                  @for (action of actions; track action) {
+                    <td>
+                      <button
+                        type="button"
+                        class="to-check-btn"
+                        [class.checked]="permission.actions[action]"
+                        [disabled]="role.systemRole"
+                        [attr.data-testid]="'permission-' + permission.module.toLowerCase().replaceAll(' ', '-') + '-' + action"
+                        (click)="togglePermission(permission.module, action)"
+                      >
+                        <i class="pi pi-check"></i>
+                      </button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="to-note">
+          <i class="pi pi-info-circle"></i>
+          Only Super Admin can close resolved work orders.
+        </div>
+      }
+    </article>
+  </div>
+
+  @if (drawerOpen()) {
+    <div class="to-drawer-backdrop" data-testid="role-drawer-backdrop" (click)="closeDrawer()">
+      <aside class="to-drawer" data-testid="role-drawer" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="to-drawer__close"
+          data-testid="close-role-drawer-btn"
+          (click)="closeDrawer()"
+        >
+          <i class="pi pi-times"></i>
+        </button>
+
+        <div class="to-drawer__header">
+          <p class="label-tag">New Role</p>
+          <h2>Create Role</h2>
+          <span>Define role details and attach permissions.</span>
+        </div>
+
+        <div class="to-form-grid">
+          <label>
+            Role Name
+            <input data-testid="role-name-input" placeholder="Example: NOC Supervisor" />
+          </label>
+
+          <label>
+            Description
+            <textarea
+              rows="4"
+              data-testid="role-description-input"
+              placeholder="What can this role manage?"
+            ></textarea>
+          </label>
+        </div>
+
+        <div class="to-mini-permissions">
+          <p class="label-tag">Quick Permission Preset</p>
+
+          <button type="button" data-testid="preset-admin-btn">Admin Access</button>
+          <button type="button" data-testid="preset-noc-btn">NOC Operations</button>
+          <button type="button" data-testid="preset-technician-btn">Technician Access</button>
+          <button type="button" data-testid="preset-custom-btn">Custom</button>
+        </div>
+
+        <button type="button" class="to-primary-btn full" data-testid="save-role-btn">
+          Save Role
+        </button>
+      </aside>
+    </div>
+  }
+</section>
