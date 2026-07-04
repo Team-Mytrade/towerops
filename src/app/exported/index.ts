@@ -1,9 +1,0 @@
-// export * from './page-header.component';
-// export * from './kpi-card.component';
-// export * from './status-badge.component';
-// export * from './severity-badge.component';
-// export * from './data-table.component';
-// export * from './detail-drawer.component';
-// export * from './app-shell.component';
-// export * from './app-sidebar.component';
-// export * from './app-topbar.component';

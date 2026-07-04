@@ -3,33 +3,36 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { firstValueFrom } from 'rxjs';
 
-import { AuthUser, LoginResponse } from '../../core/models/auth.models';
+import { UserType } from '../../core/enums/user-type.enum';
+import { SiteCategory } from '../../core/enums/site-category.enum';
+import { Site, SiteService } from '../../core/services/site.service';
 import { AuthService } from '../../core/services/auth.service';
-
-type DemoAccount = {
-  role: string;
-  name: string;
-  email: string;
-  password: string;
-  permissions: string[];
-  testId: string;
-};
 
 @Component({
   selector: 'to-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ButtonModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    ButtonModule,
+    ToggleSwitchModule,
+  ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent {
-  email = 'noc@towerops.io';
-  password = 'Noc@123';
+  username = '';
+  password = '';
 
   loading = signal(false);
   showPassword = signal(false);
+  errorMessage = signal('');
+  demoMode = signal(localStorage.getItem('demoMode') === 'false');
 
   currentYear = new Date().getFullYear();
 
@@ -39,96 +42,182 @@ export class LoginComponent {
     { value: '5', label: 'Roles' },
   ];
 
-  demoAccounts: DemoAccount[] = [
+  demoAccounts = [
     {
+      username: 'superadmin',
       role: 'Super Admin',
-      name: 'Aarav Sharma',
-      email: 'admin@towerops.io',
-      password: 'Admin@123',
-      permissions: ['*'],
-      testId: 'demo-super-admin',
+      description: 'Platform administration & tenants',
     },
     {
-      role: 'NOC Operator',
-      name: 'Nisha Rao',
-      email: 'noc@towerops.io',
-      password: 'Noc@123',
-      permissions: ['dashboard:view', 'alarms:view', 'work-orders:view'],
-      testId: 'demo-noc-operator',
+      username: 'tenantadmin',
+      role: 'Tenant Admin',
+      description: 'Operations NOC dashboard',
     },
     {
-      role: 'Maintenance Eng.',
-      name: 'Kiran Kumar',
-      email: 'kiran@towerops.io',
-      password: 'Kiran@123',
-      permissions: ['maintenance:view', 'work-orders:update'],
-      testId: 'demo-maintenance-eng',
-    },
-    {
-      role: 'Field Engineer',
-      name: 'Ravi Menon',
-      email: 'ravi@towerops.io',
-      password: 'Ravi@123',
-      permissions: ['work-orders:view', 'work-orders:update'],
-      testId: 'demo-field-engineer',
+      username: 'technician',
+      role: 'Technician',
+      description: 'Field engineer task dashboard',
     },
   ];
 
   constructor(
     private router: Router,
     private authService: AuthService,
-  ) {}
+    private sitesService: SiteService,
+  ) { }
 
   togglePassword(): void {
     this.showPassword.update((value) => !value);
   }
 
-  fillDemo(account: DemoAccount): void {
-    this.email = account.email;
-    this.password = account.password;
+  toggleDemoMode(value: boolean): void {
+    this.demoMode.set(value);
+    localStorage.setItem('demoMode', String(value));
+    this.errorMessage.set('');
   }
 
-  demoLogin(account: DemoAccount): void {
-    this.fillDemo(account);
-    this.signInDemoAccount(account);
-  }
+  async submit(): Promise<void> {
+    if (this.loading()) return;
+    console.log('called')
 
-  submit(): void {
-    const account = this.demoAccounts.find(
-      (demoAccount) =>
-        demoAccount.email.toLowerCase() === this.email.trim().toLowerCase() &&
-        demoAccount.password === this.password,
-    );
+    this.errorMessage.set('');
 
-    this.signInDemoAccount(account ?? this.demoAccounts[1]);
-  }
+    const username = this.username.trim();
 
-  private signInDemoAccount(account: DemoAccount): void {
-    if (this.loading()) {
+    if (!username || !this.password) {
+      this.errorMessage.set('Please enter username and password.');
       return;
     }
 
-    this.loading.set(true);
-    setTimeout(() => {
-      this.authService.setSession(this.createDemoSession(account));
+    try {
+      this.loading.set(true);
+      console.log('Requested')
+      const response = await this.authService.login({
+        username,
+        password: this.password,
+      });
+
+      if (!response?.success || !response.data?.token) {
+        this.errorMessage.set(response?.message || 'Login failed.');
+        return;
+      }
+
+      await this.navigateAfterLogin(response.data.userType);
+    } catch (error) {
+      console.error('Login error:', error);
+      this.errorMessage.set('Invalid username or password.');
+    } finally {
       this.loading.set(false);
-      this.router.navigate(['/sites']);
-    }, 600);
+    }
   }
 
-  private createDemoSession(account: DemoAccount): LoginResponse {
-    const user: AuthUser = {
-      id: account.email,
-      name: account.name,
-      email: account.email,
-      role: account.role,
-      permissions: account.permissions,
+  async demoLogin(account: { username: string }): Promise<void> {
+    if (!this.demoMode()) {
+      this.errorMessage.set('Enable Demo Mode to use demo login.');
+      return;
+    }
+
+    const mapping: Record<string, UserType> = {
+      superadmin: UserType.SUPER_ADMIN,
+      tenantadmin: UserType.TENANT_ADMIN,
+      technician: UserType.TECHNICIAN,
     };
 
-    return {
-      accessToken: `demo-access-token:${account.email}`,
-      refreshToken: `demo-refresh-token:${account.email}`,
-      user,
-    };
+    const userType = mapping[account.username];
+
+    if (!userType) {
+      this.errorMessage.set('Unknown demo account.');
+      return;
+    }
+
+    try {
+      this.loading.set(true);
+      this.errorMessage.set('');
+
+      await this.authService.loginDemo(userType, account.username);
+      await this.navigateAfterLogin(userType);
+    } catch (error) {
+      console.error('Demo login failed:', error);
+      this.errorMessage.set('Demo login failed.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  private async navigateAfterLogin(userType?: UserType): Promise<void> {
+    switch (userType) {
+      case UserType.SUPER_ADMIN:
+        await this.router.navigateByUrl('/platform-dashboard', {
+          replaceUrl: true,
+        });
+        return;
+
+      case UserType.TECHNICIAN:
+        await this.router.navigateByUrl('/technician-dashboard', {
+          replaceUrl: true,
+        });
+        return;
+
+      case UserType.TENANT_ADMIN:
+      case UserType.ADMIN:
+        await this.handleTenantAdminNavigation();
+        return;
+
+      default:
+        this.errorMessage.set('Unsupported user type.');
+    }
+  }
+
+  private async handleTenantAdminNavigation(): Promise<void> {
+    try {
+      const response = await firstValueFrom(this.sitesService.getAll());
+
+      if (!response?.success) {
+        await this.router.navigateByUrl('/site-category-selection', {
+          replaceUrl: true,
+        });
+        return;
+      }
+
+      const categoryCounts = this.getCategoryCounts(response.data ?? []);
+
+      sessionStorage.setItem(
+        'siteCategoryCounts',
+        JSON.stringify(categoryCounts),
+      );
+
+      const categories = Object.keys(categoryCounts).filter(
+        (key) => (categoryCounts[key as SiteCategory] ?? 0) > 0,
+      ) as SiteCategory[];
+
+      if (categories.length === 1) {
+        await this.router.navigate(
+          ['/dashboard/site-category', categories[0].toLowerCase()],
+          { replaceUrl: true },
+        );
+        return;
+      }
+
+      await this.router.navigateByUrl('/site-category-selection', {
+        replaceUrl: true,
+      });
+    } catch (error) {
+      console.error('Site loading failed after login:', error);
+
+      await this.router.navigateByUrl('/site-category-selection', {
+        replaceUrl: true,
+      });
+    }
+  }
+
+  private getCategoryCounts(
+    sites: Site[],
+  ): Partial<Record<SiteCategory, number>> {
+    return sites.reduce((acc, site) => {
+      if (!site.category) return acc;
+
+      acc[site.category] = (acc[site.category] ?? 0) + 1;
+      return acc;
+    }, {} as Partial<Record<SiteCategory, number>>);
   }
 }

@@ -1,0 +1,342 @@
+<section class="to-home">
+
+  <!-- Hero -->
+
+  <header class="to-home-hero">
+
+    <div>
+
+      <p class="label-tag">
+        Operations Center
+      </p>
+
+      <h1>
+        Welcome back,
+        Ahmed Hassan
+      </h1>
+
+      <p>
+        Monitor your entire IoT infrastructure across towers, buildings and
+        warehouses from a single operational workspace.
+      </p>
+
+    </div>
+
+    <div class="to-home-actions">
+
+      <p-button
+        icon="pi pi-refresh"
+        label="Refresh"
+      />
+
+      <p-button
+        severity="secondary"
+        icon="pi pi-download"
+        label="Export"
+      />
+
+    </div>
+
+  </header>
+
+  <!-- KPI -->
+
+  <div class="to-home-kpis">
+
+    @for (kpi of kpis(); track kpi.label) {
+
+      <article
+        class="to-kpi-card"
+        [class]="kpi.tone"
+      >
+
+        <div class="to-kpi-icon">
+          <i [class]="kpi.icon"></i>
+        </div>
+
+        <div>
+
+          <span>
+
+            {{ kpi.label }}
+
+          </span>
+
+          <strong>
+
+            {{ kpi.value }}
+
+          </strong>
+
+        </div>
+
+      </article>
+
+    }
+
+  </div>
+
+  <!-- Workspace -->
+
+  <section class="to-section">
+
+    <div class="to-section-header">
+
+      <div>
+
+        <h2>
+
+          Operational Workspaces
+
+        </h2>
+
+        <p>
+
+          Choose the environment you want to manage.
+
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="to-workspace-grid">
+
+      @for (
+        workspace of workspaces();
+        track workspace.type
+      ) {
+
+        <article class="to-workspace-card">
+
+          <div class="to-workspace-top">
+
+            <div class="to-workspace-icon">
+
+              <i
+                [class]="workspace.icon"
+              ></i>
+
+            </div>
+
+            <div>
+
+              <h3>
+
+                {{ workspace.label }}
+
+              </h3>
+
+              <p>
+
+                {{ workspace.description }}
+
+              </p>
+
+            </div>
+
+          </div>
+
+          <div class="to-workspace-metrics">
+
+            <div>
+
+              <span>Sites</span>
+
+              <strong>
+
+                {{ workspace.count }}
+
+              </strong>
+
+            </div>
+
+            <div>
+
+              <span>Devices</span>
+
+              <strong>
+
+                {{ workspace.devices }}
+
+              </strong>
+
+            </div>
+
+            <div>
+
+              <span>Alarms</span>
+
+              <strong>
+
+                {{ workspace.alarms }}
+
+              </strong>
+
+            </div>
+
+          </div>
+
+          <div class="to-health-grid">
+
+            <div>
+
+              <i class="healthy"></i>
+
+              Healthy
+
+              <strong>
+
+                {{ workspace.healthy }}
+
+              </strong>
+
+            </div>
+
+            <div>
+
+              <i class="warning"></i>
+
+              Warning
+
+              <strong>
+
+                {{ workspace.warning }}
+
+              </strong>
+
+            </div>
+
+            <div>
+
+              <i class="critical"></i>
+
+              Critical
+
+              <strong>
+
+                {{ workspace.critical }}
+
+              </strong>
+
+            </div>
+
+            <div>
+
+              <i class="offline"></i>
+
+              Offline
+
+              <strong>
+
+                {{ workspace.offline }}
+
+              </strong>
+
+            </div>
+
+          </div>
+
+          <footer>
+
+            <p-button
+              severity="secondary"
+              icon="pi pi-map"
+              label="View Sites"
+              (click)="openSites(workspace)"
+            />
+
+            <p-button
+              icon="pi pi-arrow-right"
+              label="Open Dashboard"
+              (click)="openWorkspace(workspace)"
+            />
+
+          </footer>
+
+        </article>
+
+      }
+
+    </div>
+
+  </section>
+  <section class="to-home-grid">
+
+    <article class="to-card">
+      <header class="to-card-header">
+        <h2 class="to-card-title">Critical Alarms</h2>
+        <button type="button">View All</button>
+      </header>
+
+      <div class="to-list">
+        @for (alarm of criticalAlarms; track alarm.title) {
+          <div class="to-list-item">
+            <div>
+              <strong>{{ alarm.title }}</strong>
+              <span>{{ alarm.site }}</span>
+            </div>
+
+            <small>{{ alarm.time }}</small>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="to-card">
+      <header class="to-card-header">
+        <h2 class="to-card-title">Engineers in Field</h2>
+        <button type="button">View All</button>
+      </header>
+
+      <div class="to-list">
+        @for (engineer of engineers; track engineer.name) {
+          <div class="to-list-item">
+            <div>
+              <strong>{{ engineer.name }}</strong>
+              <span>{{ engineer.location }} · {{ engineer.workOrder }}</span>
+            </div>
+
+            <small>{{ engineer.status }}</small>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="to-card to-ai-card">
+      <header class="to-card-header">
+        <h2 class="to-card-title">AI Operations Advisor</h2>
+      </header>
+
+      <div class="to-ai-body">
+        <i class="pi pi-sparkles"></i>
+
+        <div>
+          <strong>Battery degradation detected</strong>
+          <p>
+            Battery bank at West Bay Telecom Tower shows abnormal discharge.
+            Replacement recommended within 5 days.
+          </p>
+          <button type="button">View Recommendation →</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="to-card">
+      <header class="to-card-header">
+        <h2 class="to-card-title">Recent Activity</h2>
+      </header>
+
+      <div class="to-activity">
+        @for (item of activities; track item) {
+          <div>
+            <i class="pi pi-circle-fill"></i>
+            <span>{{ item }}</span>
+          </div>
+        }
+      </div>
+    </article>
+
+  </section>
+
+</section>

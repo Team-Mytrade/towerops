@@ -1,0 +1,45 @@
+<section class="to-category-page" data-testid="site-category-selection-page">
+  <header class="to-category-header">
+    <div>
+      <p class="to-eyebrow">Site category</p>
+      <h1>Select operational view</h1>
+      <span>{{ tenantName() }} · {{ totalSites() }} sites available</span>
+    </div>
+
+    <p-button
+      label="Refresh"
+      icon="pi pi-refresh"
+      severity="secondary"
+      outlined
+      size="small"
+      data-testid="refresh-site-categories-btn"
+    />
+  </header>
+
+  <div class="to-category-grid">
+    @for (card of cards(); track card.key) {
+      <button
+        type="button"
+        class="to-category-card"
+        [attr.data-testid]="card.testId"
+        (click)="selectCategory(card.key)"
+      >
+        <span class="to-category-card__icon">
+          <i [class]="card.icon"></i>
+        </span>
+
+        <span class="to-category-card__body">
+          <strong>{{ card.label }}</strong>
+          <small>{{ card.subtitle }}</small>
+        </span>
+
+        <span class="to-category-card__meta">
+          <b>{{ card.count }}</b>
+          <small>Sites</small>
+        </span>
+
+        <i class="pi pi-arrow-right to-category-card__arrow"></i>
+      </button>
+    }
+  </div>
+</section>

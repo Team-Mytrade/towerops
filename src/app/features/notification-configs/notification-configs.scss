@@ -1,0 +1,167 @@
+:host {
+  display: block;
+}
+
+.to-toolbar input[pInputText] {
+  width: 300px;
+}
+
+.to-card {
+  overflow: hidden;
+}
+
+.to-prime-table {
+  border-radius: var(--to-radius-lg);
+}
+
+.to-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.to-form-grid-wide {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.to-form-grid-wide label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.to-form-grid-wide span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--to-muted);
+}
+
+.to-col-span-2 {
+  grid-column: 1 / -1;
+}
+
+.to-drawer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--to-border-soft);
+}
+
+.to-drawer-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.to-drawer-section h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--to-text);
+}
+
+.to-description {
+  margin: 0;
+  padding: 14px;
+  border-radius: var(--to-radius-lg);
+  border: 1px solid var(--to-border);
+  background: var(--to-bg);
+  line-height: 1.6;
+  font-size: 13px;
+  color: var(--to-text);
+}
+
+.to-channel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.to-channel-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 16px;
+
+  border: 1px solid var(--to-border);
+  border-radius: var(--to-radius-lg);
+  background: var(--to-surface);
+}
+
+.to-channel-card strong {
+  display: block;
+  font-size: 13px;
+  color: var(--to-text);
+}
+
+.to-channel-card small {
+  display: block;
+  margin-top: 4px;
+  color: var(--to-muted);
+  font-size: 12px;
+}
+
+.to-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.to-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+
+  font-size: 12px;
+  font-weight: 500;
+
+  border-radius: 999px;
+
+  background: var(--to-primary-soft);
+  color: var(--to-primary);
+}
+
+textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 120px;
+}
+
+:host ::ng-deep {
+  .p-inputtext,
+  .p-select,
+  .p-textarea,
+  .p-inputswitch {
+    width: 100%;
+  }
+
+  .p-select {
+    min-height: 42px;
+  }
+
+  .p-inputswitch {
+    width: auto;
+  }
+
+  .p-inputtextarea {
+    resize: vertical;
+  }
+}
+
+@media (max-width: 768px) {
+  .to-toolbar input[pInputText] {
+    width: 100%;
+  }
+
+  .to-form-grid-wide,
+  .to-detail-grid,
+  .to-channel-grid {
+    grid-template-columns: 1fr;
+  }
+}

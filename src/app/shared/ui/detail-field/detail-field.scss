@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+
+.to-detail-field {
+  border: 1px solid var(--to-border);
+  border-radius: var(--to-radius-md);
+  background: var(--to-surface);
+  padding: 10px;
+}
+
+.to-detail-field span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--to-muted);
+  font-size: 12px;
+}
+
+.to-detail-field strong {
+  color: var(--to-text);
+  font-size: 13px;
+  font-weight: 500;
+}

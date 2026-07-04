@@ -1,0 +1,190 @@
+<section class="to-page" data-testid="users-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Users</h1>
+      <p class="to-page-description">
+        Manage platform users, role assignment and account status.
+      </p>
+    </div>
+
+    <p-button label="Create User" icon="pi pi-plus" data-testid="create-user-btn" (click)="openCreate()" />
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input pInputText type="search" placeholder="Search users..." [ngModel]="search()"
+        (ngModelChange)="search.set($event)" data-testid="user-search-input" />
+
+      <p-select [options]="roleOptions()" [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event)"
+        optionLabel="label" optionValue="value" placeholder="Role" appendTo="body" data-testid="user-role-filter" />
+
+      <p-select [options]="statusOptions" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)"
+        optionLabel="label" optionValue="value" placeholder="Status" appendTo="body" data-testid="user-status-filter" />
+    </div>
+  </div>
+
+  <div class="to-card">
+    <p-table [value]="filteredUsers()" dataKey="id" [rowHover]="true" [loading]="loading()" styleClass="to-prime-table">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>User</th>
+          <th>Email</th>
+          <th>Type</th>
+          <th>Roles</th>
+          <th>Phone</th>
+          <th>Status</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-user>
+        <tr role="button" tabindex="0" [attr.data-testid]="'user-row-' + user.id" (click)="openUser(user)">
+          <td>
+            <strong>{{ user.username }}</strong>
+            <span>{{ user.userCode }}</span>
+          </td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.userType }}</td>
+          <td>{{ user.roleNames }}</td>
+          <td>{{ user.phoneNumber || '-' }}</td>
+          <td>
+            <to-status-badge [label]="user.status" [tone]="statusTone(user.status)" />
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6">No users found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <to-drawer [open]="drawerOpen()" [size]="drawerSize" [title]="drawerTitle" [eyebrow]="drawerEyebrow"
+    (closed)="closeDrawer()">
+    <ng-container *ngIf="drawerMode() === 'view' && selectedUser() as user">
+      <div class="to-detail-grid">
+        <to-detail-field label="User Code" [value]="user.userCode" />
+        <to-detail-field label="Username" [value]="user.username" />
+        <to-detail-field label="Email" [value]="user.email" />
+        <to-detail-field label="Phone" [value]="user.phoneNumber || '-'" />
+        <to-detail-field label="Type" [value]="user.userType" />
+        <to-detail-field label="Roles" [value]="user.roleNames" />
+        <to-detail-field label="Status" [value]="user.status" />
+        <to-detail-field label="Street" [value]="user.address.street || '-'" />
+        <to-detail-field label="City" [value]="user.address.city || '-'" />
+        <to-detail-field label="State" [value]="user.address.state || '-'" />
+        <to-detail-field label="Postal Code" [value]="user.address.postalCode || '-'" />
+        <to-detail-field label="Country" [value]="user.address.country || '-'" />
+      </div>
+      <ng-container drawer-actions>
+        <p-button label="Edit" icon="pi pi-pencil" severity="secondary" data-testid="edit-user-btn"
+          (click)="editUser()" />
+        <p-button label="Assign Role" icon="pi pi-lock" data-testid="assign-user-role-btn" (click)="assignRole()" />
+        <p-button label="Delete" icon="pi pi-trash" severity="danger" [loading]="saving()" data-testid="delete-user-btn"
+          (click)="deleteUser()" />
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="drawerMode() === 'create' || drawerMode() === 'edit'">
+      <div class="to-drawer-section">
+        <h3>User Details</h3>
+        <div class="to-form-grid-wide">
+          <label>
+            <span>User Code</span>
+            <input pInputText [(ngModel)]="userForm.userCode" data-testid="user-code-input" />
+          </label>
+          <label>
+            <span>User Type</span>
+            <p-select [options]="userTypeOptions" [(ngModel)]="userForm.userType" optionLabel="label"
+              optionValue="value" [showClear]="true" appendTo="body" placeholder="Select User Type"
+              data-testid="user-type-select" />
+          </label>
+          <label>
+            <span>Username</span>
+            <input pInputText [(ngModel)]="userForm.username" data-testid="username-input" />
+          </label>
+          <label>
+            <span>Email</span>
+            <input pInputText type="email" [(ngModel)]="userForm.email" data-testid="user-email-input" />
+          </label>
+          <label>
+            <span>Password</span>
+            <p-password [(ngModel)]="userForm.password" [feedback]="false" [toggleMask]="true"
+              [placeholder]="drawerMode() === 'edit' ? 'Leave empty to keep unchanged' : 'Password'"
+              inputStyleClass="w-full" styleClass="w-full" data-testid="user-password-input" />
+          </label>
+          <label>
+            <span>Phone</span>
+            <input pInputText [(ngModel)]="userForm.phoneNumber" data-testid="user-phone-input" />
+          </label>
+          <label class="to-col-span-2">
+            <span>Roles</span>
+            <p-multiselect [options]="roleSelectOptions()" [(ngModel)]="userForm.roleIds" optionLabel="label"
+              optionValue="value" display="chip" appendTo="body" [showClear]="true" placeholder="Select roles"
+              data-testid="user-role-select" />
+          </label>
+          <label>
+            <span>Status</span>
+            <p-select [options]="enabledOptions" [(ngModel)]="userForm.enabled" optionLabel="label" optionValue="value"
+              appendTo="body" data-testid="user-status-select" />
+          </label>
+        </div>
+      </div>
+      <div class="to-drawer-section">
+        <h3>Address</h3>
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Street</span>
+            <input pInputText [(ngModel)]="userForm.address.street" />
+          </label>
+          <label>
+            <span>City</span>
+            <input pInputText [(ngModel)]="userForm.address.city" />
+          </label>
+          <label>
+            <span>State</span>
+            <input pInputText [(ngModel)]="userForm.address.state" />
+          </label>
+          <label>
+            <span>Postal Code</span>
+            <input pInputText [(ngModel)]="userForm.address.postalCode" />
+          </label>
+          <label>
+            <span>Country</span>
+            <input pInputText [(ngModel)]="userForm.address.country" />
+          </label>
+        </div>
+      </div>
+      <ng-container drawer-actions>
+        <p-button label="Cancel" severity="secondary" (click)="closeDrawer()" />
+        <p-button [label]="drawerMode() === 'edit' ? 'Save Changes' : 'Save User'" icon="pi pi-check"
+          [loading]="saving()" data-testid="save-user-btn" (click)="saveUser()" />
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="drawerMode() === 'assignRole' && selectedUser() as user">
+      <div class="to-drawer-section">
+        <h3>User</h3>
+        <to-detail-field label="Username" [value]="user.username" />
+        <to-detail-field label="Current Roles" [value]="user.roleNames" />
+      </div>
+      <div class="to-drawer-section">
+        <h3>Role Assignment</h3>
+        <div class="to-form-grid-wide">
+          <label class="to-col-span-2">
+            <span>Roles</span>
+            <p-multiselect [options]="roleSelectOptions()" [(ngModel)]="userForm.roleIds" optionLabel="label"
+              optionValue="value" display="chip" appendTo="body" [showClear]="true" placeholder="Select roles"
+              data-testid="assign-role-select" />
+          </label>
+        </div>
+      </div>
+      <ng-container drawer-actions>
+        <p-button label="Back" severity="secondary" (click)="drawerMode.set('view')" />
+        <p-button label="Assign Role" icon="pi pi-check" [loading]="saving()" data-testid="assign-role-save-btn"
+          (click)="saveUser()" />
+      </ng-container>
+    </ng-container>
+  </to-drawer>
+</section>

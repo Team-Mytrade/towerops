@@ -1,0 +1,483 @@
+// ---------------------------------------------------------------
+// Self-contained design constants (compile-time Sass vars, NOT
+// CSS custom properties). Nothing in this file depends on
+// tokens.scss or any global stylesheet loading correctly.
+// ---------------------------------------------------------------
+$primary: #2563eb;
+$primary-hover: #1d4ed8;
+$bg: #f8fafc;
+$surface: #ffffff;
+$border: #e5e7eb;
+$border-soft: #f1f5f9;
+$text: #0f172a;
+$muted: #64748b;
+$success: #16a34a;
+$warning: #d97706;
+$danger: #dc2626;
+$offline: #94a3b8;
+$radius-md: 10px;
+$radius-lg: 14px;
+$radius-xl: 16px;
+$shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+$shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+$font-heading: 'Outfit', sans-serif;
+$font-body: 'Sora', sans-serif;
+
+:host {
+  display: block;
+  font-family: $font-body;
+  color: $text;
+}
+
+.to-dashboard-page {
+  display: grid;
+  gap: 16px;
+  margin: 16px;
+}
+
+// ---------- Header ----------
+
+.to-dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 4px 0 6px;
+    font-family: $font-heading;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $text;
+  }
+
+  >div>span {
+    color: $muted;
+    font-size: 0.85rem;
+  }
+}
+
+.to-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.to-sync-time {
+  margin: 0;
+  color: $muted;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.to-eyebrow {
+  margin: 0;
+  color: $muted;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+// ---------- Cards (shared shell) ----------
+
+.to-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-sm;
+  padding: 16px;
+}
+
+.to-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+
+  h2 {
+    margin: 2px 0 0;
+    font-family: $font-heading;
+    font-size: 1rem;
+    font-weight: 700;
+    color: $text;
+  }
+}
+
+.to-view-all {
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  padding: 4px 0;
+  color: $primary;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    color: $primary-hover;
+    text-decoration: underline;
+  }
+}
+
+// ---------- KPI grid ----------
+
+.to-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.to-kpi-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  padding: 14px 16px;
+
+  div {
+    display: grid;
+    gap: 4px;
+  }
+
+  span {
+    color: $muted;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  strong {
+    font-family: $font-heading;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: $text;
+  }
+
+  i {
+    font-size: 1.2rem;
+    color: $primary;
+    opacity: 0.75;
+  }
+}
+
+// ---------- Map + side stack ----------
+
+.to-platform-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 14px;
+  align-items: start;
+}
+
+.to-map-card {
+  padding: 0;
+  overflow: hidden;
+
+  .to-card-header {
+    padding: 16px 16px 0;
+  }
+
+  to-map {
+    display: block;
+  }
+}
+
+.to-side-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.to-map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: $muted;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  i {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+
+    &.healthy {
+      background: $success;
+    }
+
+    &.warning {
+      background: $warning;
+    }
+
+    &.critical {
+      background: $danger;
+    }
+
+    &.offline {
+      background: $offline;
+    }
+  }
+}
+
+// ---------- Charts ----------
+
+.to-chart-box {
+  position: relative;
+  height: 200px;
+  padding: 0 4px;
+  overflow: hidden;
+
+  &--tall {
+    height: 260px;
+  }
+
+  p-chart {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  // p-chart renders its own <canvas> in an encapsulated template;
+  // ::ng-deep is required to size it, and position: relative above
+  // stops Chart.js's responsive resize loop from growing unbounded.
+  ::ng-deep canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+.to-distribution-legend {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.to-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: $muted;
+  font-size: 0.78rem;
+  font-weight: 600;
+
+  i {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+
+  &.healthy i {
+    background: $success;
+  }
+
+  &.warn i {
+    background: $warning;
+  }
+
+  &.critical i {
+    background: $danger;
+  }
+
+  &.offline i {
+    background: $offline;
+  }
+}
+
+// ---------- Alert / work-order rows ----------
+
+.to-alert-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  margin: 6px 0;
+  padding: 10px;
+  border: 0;
+  border-radius: $radius-md;
+  background: $bg;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: #eff6ff;
+  }
+
+  strong {
+    display: block;
+    color: $text;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  span {
+    display: block;
+    margin-top: 3px;
+    color: $muted;
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+}
+
+// ---------- Secondary grid: fuel + trend ----------
+
+.to-secondary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.to-fuel-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 44px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid $border-soft;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  strong {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: $text;
+  }
+
+  span {
+    color: $muted;
+    font-size: 0.7rem;
+  }
+
+  b {
+    text-align: right;
+    font-size: 0.8rem;
+    color: $text;
+  }
+}
+
+.to-fuel-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: $border-soft;
+  overflow: hidden;
+}
+
+.to-fuel-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+
+  &.healthy {
+    background: $success;
+  }
+
+  &.warn {
+    background: $warning;
+  }
+
+  &.critical {
+    background: $danger;
+  }
+}
+
+// ---------- Site directory table ----------
+
+.to-sites-card {
+  overflow-x: auto;
+}
+
+.to-site-table {
+  display: grid;
+  min-width: 640px;
+}
+
+.to-site-table__head,
+.to-site-table__row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) 90px 80px 90px 110px 110px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px;
+}
+
+.to-site-table__head {
+  color: $muted;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid $border;
+}
+
+.to-site-table__row {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid $border-soft;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: $bg;
+  }
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  strong {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: $text;
+  }
+
+  small {
+    color: $muted;
+    font-size: 0.68rem;
+  }
+}
+
+// ---------- Responsive ----------
+
+@media (max-width: 1100px) {
+  .to-platform-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .to-secondary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .to-dashboard-header {
+    flex-direction: column;
+  }
+
+  .to-header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

@@ -1,0 +1,238 @@
+<section class="to-page" data-testid="tenants-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Tenants</h1>
+      <p class="to-page-description">
+        Manage tenant accounts, contact details and operational access.
+      </p>
+    </div>
+
+    <p-button
+      label="Create Tenant"
+      icon="pi pi-plus"
+      data-testid="create-tenant-btn"
+      (click)="openCreateTenant()"
+    />
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search tenants..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        data-testid="tenant-search-input"
+      />
+
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="status()"
+        (ngModelChange)="status.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Status"
+        data-testid="tenant-status-filter"
+        appendTo="body"
+      />
+    </div>
+  </div>
+
+  <div class="to-card">
+    <p-table
+      [value]="filteredTenants()"
+      dataKey="id"
+      [rowHover]="true"
+      [loading]="loading()"
+      styleClass="to-prime-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Tenant</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Address</th>
+          <th>Status</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-tenant>
+        <tr
+          role="button"
+          tabindex="0"
+          [attr.data-testid]="'tenant-row-' + tenant.id"
+          (click)="openTenant(tenant)"
+        >
+          <td>
+            <strong>{{ tenant.tenantName }}</strong>
+            <span>{{ tenant.tenantId }}</span>
+          </td>
+
+          <td>{{ tenant.email || '-' }}</td>
+          <td>{{ tenant.phoneNumber || '-' }}</td>
+          <td>{{ tenant.address || '-' }}</td>
+
+          <td>
+            <to-status-badge
+              [label]="tenant.status"
+              [tone]="statusTone(tenant.status)"
+            />
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5">No tenants found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <p-drawer
+    [visible]="drawerOpen()"
+    position="right"
+    styleClass="to-tenant-drawer"
+    (onHide)="closeDrawer()"
+  >
+    <ng-template pTemplate="header">
+      <div>
+        <p class="label-tag">
+          @if (drawerMode() === 'create') {
+            New Tenant
+          } @else if (drawerMode() === 'edit') {
+            Edit Tenant
+          } @else {
+            {{ selectedTenant()?.tenantId }}
+          }
+        </p>
+
+        <h2>
+          @if (drawerMode() === 'create') {
+            Create Tenant
+          } @else if (drawerMode() === 'edit') {
+            Update Tenant
+          } @else {
+            {{ selectedTenant()?.tenantName }}
+          }
+        </h2>
+      </div>
+    </ng-template>
+
+    @if (drawerMode() === 'create' || drawerMode() === 'edit') {
+      <div class="to-drawer-section">
+        <h3>Tenant Details</h3>
+
+        <div class="to-form-grid">
+          <label>
+            <span>Tenant ID</span>
+            <input
+              pInputText
+              [(ngModel)]="tenantForm.tenantId"
+              data-testid="tenant-id-input"
+            />
+          </label>
+
+          <label>
+            <span>Tenant Name</span>
+            <input
+              pInputText
+              [(ngModel)]="tenantForm.tenantName"
+              data-testid="tenant-name-input"
+            />
+          </label>
+
+          <label>
+            <span>Email</span>
+            <input
+              pInputText
+              type="email"
+              [(ngModel)]="tenantForm.email"
+              data-testid="tenant-email-input"
+            />
+          </label>
+
+          <label>
+            <span>Phone Number</span>
+            <input
+              pInputText
+              [(ngModel)]="tenantForm.phoneNumber"
+              data-testid="tenant-phone-input"
+            />
+          </label>
+
+          <label>
+            <span>Address</span>
+            <input
+              pInputText
+              [(ngModel)]="tenantForm.address"
+              data-testid="tenant-address-input"
+            />
+          </label>
+
+          <label>
+            <span>Status</span>
+            <p-select
+              [options]="[
+                { label: 'Active', value: true },
+                { label: 'Inactive', value: false }
+              ]"
+              [(ngModel)]="tenantForm.enabled"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              data-testid="tenant-enabled-select"
+            />
+          </label>
+        </div>
+      </div>
+
+      <div class="to-drawer-actions">
+        <p-button
+          [label]="drawerMode() === 'edit' ? 'Update Tenant' : 'Save Tenant'"
+          icon="pi pi-check"
+          [loading]="saving()"
+          data-testid="save-tenant-btn"
+          (click)="saveTenant()"
+        />
+
+        <p-button
+          label="Cancel"
+          severity="secondary"
+          data-testid="cancel-tenant-btn"
+          (click)="closeDrawer()"
+        />
+      </div>
+    }
+
+    @if (drawerMode() === 'view' && selectedTenant(); as tenant) {
+      <div class="to-detail-grid">
+        <to-detail-field label="Tenant ID" [value]="tenant.tenantId" />
+        <to-detail-field label="Tenant Name" [value]="tenant.tenantName" />
+        <to-detail-field label="Email" [value]="tenant.email || '-'" />
+        <to-detail-field label="Phone" [value]="tenant.phoneNumber || '-'" />
+        <to-detail-field label="Address" [value]="tenant.address || '-'" />
+        <to-detail-field label="Status" [value]="tenant.status" />
+      </div>
+
+      <div class="to-drawer-actions">
+        <p-button
+          label="Edit Tenant"
+          icon="pi pi-pencil"
+          data-testid="edit-tenant-btn"
+          (click)="openEditTenant()"
+        />
+
+        <p-button
+          label="Delete"
+          icon="pi pi-trash"
+          severity="danger"
+          [loading]="saving()"
+          data-testid="delete-tenant-btn"
+          (click)="deleteTenant()"
+        />
+      </div>
+    }
+  </p-drawer>
+</section>

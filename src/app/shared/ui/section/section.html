@@ -1,0 +1,21 @@
+<section class="to-section">
+  <header class="to-section__head">
+    <div>
+      @if (eyebrow()) {
+        <p class="label-tag">{{ eyebrow() }}</p>
+      }
+
+      <h2>{{ title() }}</h2>
+
+      @if (description()) {
+        <p>{{ description() }}</p>
+      }
+    </div>
+
+    <ng-content select="[section-actions]" />
+  </header>
+
+  <div class="to-section__body">
+    <ng-content />
+  </div>
+</section>

@@ -1,0 +1,35 @@
+<div class="to-data-table">
+  <table>
+    <thead>
+      <tr>
+        @for (column of columns(); track column.key) {
+          <th [style.width]="column.width || null">
+            {{ column.label }}
+          </th>
+        }
+      </tr>
+    </thead>
+
+    <tbody>
+      @for (row of rows(); track row) {
+        <tr
+          role="button"
+          tabindex="0"
+          (click)="rowClick.emit(row)"
+        >
+          @for (column of columns(); track column.key) {
+            <td>
+              {{ getValue(row, column.key) }}
+            </td>
+          }
+        </tr>
+      } @empty {
+        <tr>
+          <td class="to-data-table__empty" [attr.colspan]="columns().length">
+            {{ emptyText() }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

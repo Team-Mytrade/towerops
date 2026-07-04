@@ -1,0 +1,15 @@
+<article class="to-stat-card" [class]="'tone-' + tone()">
+  <div class="to-stat-card__top">
+    <span>{{ label() }}</span>
+
+    @if (icon()) {
+      <i [class]="icon()"></i>
+    }
+  </div>
+
+  <strong>{{ value() }}</strong>
+
+  @if (meta()) {
+    <small>{{ meta() }}</small>
+  }
+</article>

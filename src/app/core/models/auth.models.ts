@@ -1,57 +1,28 @@
-export interface LoginRequest {
-  email: string;
+import { UserType } from "../enums/user-type.enum";
+
+export type LoginRequest = {
+  username: string;
   password: string;
-}
+};
 
-export interface LoginResponse {
-  accessToken: string;
-  refreshToken?: string;
-  user: AuthUser;
-}
+export type ApiResponse<T> = {
+  timestamp: number;
+  success: boolean;
+  message: string;
+  data: T;
+};
 
-export interface AuthUser {
-  id: string | number;
 
-  name: string;
-  email: string;
+export type LoginResponseData = {
+  token: string;
+  username: string;
+  tenantId: string;
 
-  role: string;
+  userId: number;
+  userType: UserType;
 
+  roles: string[];
   permissions: string[];
+};
 
-  tenant?: TenantInfo;
-
-  siteTypes?: SiteType[];
-
-  country?: string;
-
-  avatar?: string;
-}
-
-export interface TenantInfo {
-  id: string;
-  name: string;
-
-  logo?: string;
-
-  primaryColor?: string;
-}
-
-export type SiteType =
-  | 'towers'
-  | 'buildings'
-  | 'warehouses';
-
-export interface JwtPayload {
-  sub: string;
-
-  email: string;
-
-  role: string;
-
-  permissions: string[];
-
-  exp: number;
-
-  iat: number;
-}
+export type LoginResponse = ApiResponse<LoginResponseData>;

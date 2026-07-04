@@ -2,11 +2,15 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
+  HostListener,
   OnDestroy,
   OnInit,
+  Output,
   inject,
   signal,
 } from '@angular/core';
+<<<<<<< HEAD
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 
 import { filter, Subscription } from 'rxjs';
@@ -32,19 +36,30 @@ type MegaMenuGroup = {
   title: string;
   items: MegaMenuItem[];
 };
+=======
+import { NavigationEnd, Router } from '@angular/router';
+import { filter, Subscription } from 'rxjs';
+
+import { NavigationService } from '../../core/interceptors/navigation.service';
+>>>>>>> 07f97517238968882332611f88686810fc127484
 
 @Component({
   selector: 'to-topbar',
   standalone: true,
+<<<<<<< HEAD
   imports: [CommonModule, RouterLink, MenuModule],
+=======
+  imports: [CommonModule],
+>>>>>>> 07f97517238968882332611f88686810fc127484
   templateUrl: './topbar.html',
   styleUrl: './topbar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Topbar implements OnInit, OnDestroy {
   private readonly router = inject(Router);
-  readonly themeService = inject(ThemeService);
+  readonly navigation = inject(NavigationService);
 
+<<<<<<< HEAD
   readonly breadcrumbs = signal<Breadcrumb[]>([]);
   readonly megaMenuOpen = signal(false);
 
@@ -215,10 +230,24 @@ export class Topbar implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.updateBreadcrumbs();
+=======
+  @Output() readonly mobileMenu = new EventEmitter<void>();
+
+  private routerSub?: Subscription;
+
+  readonly navigatorOpen = signal(false);
+  readonly breadcrumbs = signal<string[]>(['TowerOps', 'Dashboard']);
+
+  readonly filteredGroups = this.navigation.filteredGroups;
+
+  ngOnInit(): void {
+    this.setBreadcrumbs();
+>>>>>>> 07f97517238968882332611f88686810fc127484
 
     this.routerSub = this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe(() => {
+<<<<<<< HEAD
         this.updateBreadcrumbs();
         this.megaMenuOpen.set(false);
       });
@@ -227,12 +256,33 @@ export class Topbar implements OnInit, OnDestroy {
   navigateTo(path: string): void {
     this.megaMenuOpen.set(false);
     this.router.navigateByUrl(path);
+=======
+        this.closeNavigator();
+        this.setBreadcrumbs();
+      });
   }
 
-  toggleTheme(): void {
-    this.themeService.toggleTheme();
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeNavigator();
   }
 
+  toggleNavigator(event?: MouseEvent): void {
+    event?.stopPropagation();
+    this.navigatorOpen.update((open) => !open);
+  }
+
+  openMobileMenu(): void {
+    this.mobileMenu.emit();
+>>>>>>> 07f97517238968882332611f88686810fc127484
+  }
+
+  closeNavigator(): void {
+    this.navigatorOpen.set(false);
+    this.navigation.clearSearch();
+  }
+
+<<<<<<< HEAD
   toggleFullscreen(): void {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen?.();
@@ -240,6 +290,19 @@ export class Topbar implements OnInit, OnDestroy {
     }
 
     document.exitFullscreen?.();
+=======
+  onSearch(value: string): void {
+    this.navigation.setSearch(value);
+  }
+
+  navigate(path: string): void {
+    this.closeNavigator();
+    this.router.navigateByUrl(path);
+  }
+
+  private setBreadcrumbs(): void {
+    this.breadcrumbs.set(this.navigation.getBreadcrumbs(this.router.url));
+>>>>>>> 07f97517238968882332611f88686810fc127484
   }
 
   private updateBreadcrumbs(): void {

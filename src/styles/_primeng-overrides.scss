@@ -1,0 +1,231 @@
+// buttons
+.p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text) {
+  border: 0 !important;
+  color: #fff !important;
+  background: var(--to-brand-gradient) !important;
+  box-shadow: var(--to-blue-shadow);
+}
+
+.p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text):hover {
+  background: var(--to-brand-gradient-hover) !important;
+}
+
+.p-button:focus-visible {
+  box-shadow: var(--to-ring);
+}
+
+// Inputs
+.p-inputtext,
+.p-password-input,
+.p-select,
+.p-multiselect,
+.p-datepicker-input,
+.p-inputnumber-input,
+.p-autocomplete-input,
+.p-tree-select {
+  height: 36px;
+  border-radius: var(--to-radius-lg);
+  border: 1px solid var(--to-border);
+  background: var(--to-surface);
+  font-size: 13px;
+  box-shadow: none;
+}
+.p-select-overlay,
+.p-multiselect-overlay,
+.p-autocomplete-overlay,
+.p-datepicker,
+.p-menu,
+.p-popover,
+.p-tieredmenu {
+  z-index: 10000 !important;
+}
+
+.p-inputtext:enabled:hover,
+.p-select:hover,
+.p-multiselect:hover {
+  border-color: #cbd5e1;
+}
+
+.p-inputtext:enabled:focus,
+.p-select.p-focus,
+.p-multiselect.p-focus {
+  border-color: var(--to-primary);
+  box-shadow: var(--to-ring);
+}
+
+// Textarea
+
+textarea.p-inputtextarea {
+  border-radius: var(--to-radius-lg);
+  font-size: 13px;
+}
+
+// Dropdown Panel
+.p-select-overlay,
+.p-multiselect-overlay,
+.p-datepicker,
+.p-autocomplete-overlay {
+  border: 1px solid var(--to-border);
+  border-radius: var(--to-radius-lg);
+  box-shadow: var(--to-shadow-md);
+}
+
+.p-select-option,
+.p-multiselect-option {
+  height: 38px;
+  font-size: 13px;
+}
+
+.p-select-option.p-select-option-selected,
+.p-multiselect-option.p-highlight {
+  background: var(--to-primary-soft);
+  color: var(--to-primary);
+}
+
+// Dialog
+.p-dialog {
+  border-radius: var(--to-radius-lg);
+  overflow: hidden;
+}
+
+.p-dialog-header {
+  height: 58px;
+  padding-inline: 18px;
+  border-bottom: 1px solid var(--to-border);
+}
+
+.p-dialog-content {
+  padding: 18px;
+}
+
+.p-dialog-footer {
+  border-top: 1px solid var(--to-border);
+  padding: 14px 18px;
+}
+
+// Drawer
+.p-drawer {
+  border-radius: 0;
+}
+
+.p-drawer-header {
+  height: 58px;
+  border-bottom: 1px solid var(--to-border);
+  padding-inline: 18px;
+}
+
+.p-drawer-content {
+  padding: 18px;
+}
+
+// Table
+.p-datatable {
+  font-size: 13px;
+}
+
+.p-datatable-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.p-datatable-thead>tr>th {
+  height: 42px;
+  background: var(--to-bg);
+  color: var(--to-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--to-border);
+}
+
+.p-datatable-tbody>tr>td {
+  height: 46px;
+  border-bottom: 1px solid var(--to-border-soft);
+}
+
+.p-datatable-tbody>tr:hover {
+  background: var(--to-surface-hover);
+}
+
+// Paginator
+.p-paginator {
+  border-top: 1px solid var(--to-border);
+  padding: 10px 14px;
+  background: var(--to-surface);
+}
+
+.p-paginator-page,
+.p-paginator-prev,
+.p-paginator-next,
+.p-paginator-first,
+.p-paginator-last {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--to-radius-md);
+}
+
+// Menu
+.p-menu,
+.p-tieredmenu,
+.p-megamenu,
+.p-contextmenu {
+  border-radius: var(--to-radius-lg);
+  border: 1px solid var(--to-border);
+  box-shadow: var(--to-shadow-md);
+}
+
+.p-menuitem-link {
+  height: 38px;
+  font-size: 13px;
+}
+
+// Toast
+.p-toast-message {
+  border-radius: var(--to-radius-lg);
+  box-shadow: var(--to-shadow-md);
+}
+
+// Tabs
+.p-tabs-nav {
+  border-bottom: 1px solid var(--to-border);
+}
+
+.p-tab {
+  height: 42px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.p-tab.p-tab-active {
+  color: var(--to-primary);
+}
+
+// Accordion
+.p-accordionheader {
+  min-height: 46px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.p-accordioncontent {
+  padding: 14px;
+}
+
+// Chips
+.p-chip {
+  height: 26px;
+  border-radius: var(--to-radius-md);
+  font-size: 12px;
+}
+
+// Checkbox & Radio
+.p-checkbox-box,
+.p-radiobutton-box {
+  border-radius: 4px;
+}
+
+// Progress
+.p-progressbar {
+  height: 6px;
+  border-radius: 999px;
+}
+
+// 

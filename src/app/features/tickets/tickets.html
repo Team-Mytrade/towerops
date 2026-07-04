@@ -1,0 +1,412 @@
+<section class="to-page" data-testid="tickets-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Tickets</h1>
+      <p class="to-page-description">
+        Track validated incidents from alert conversion to technician assignment.
+      </p>
+    </div>
+
+    <div class="flex gap-2">
+      <p-button
+        label="Refresh"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [loading]="loading()"
+        (click)="loadPageData()"
+      />
+
+      <p-button
+        label="Create Ticket"
+        icon="pi pi-plus"
+        data-testid="create-ticket-btn"
+        (click)="openCreateTicket()"
+      />
+    </div>
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search tickets..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        data-testid="ticket-search-input"
+      />
+
+      <p-select
+        [options]="severityOptions"
+        [ngModel]="severityFilter()"
+        (ngModelChange)="severityFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Severity"
+        appendTo="body"
+      />
+
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Status"
+        appendTo="body"
+      />
+    </div>
+  </div>
+
+  <div class="to-card">
+    <p-table
+      [value]="filteredTickets()"
+      dataKey="id"
+      [rowHover]="true"
+      [loading]="loading()"
+      styleClass="to-prime-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Ticket</th>
+          <th>Site</th>
+          <th>Device</th>
+          <th>Severity</th>
+          <th>Status</th>
+          <th>Assignee</th>
+          <th>Acknowledged</th>
+          <th>Resolved</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-ticket>
+        <tr
+          role="button"
+          tabindex="0"
+          [attr.data-testid]="'ticket-row-' + ticket.id"
+          (click)="openTicket(ticket)"
+        >
+          <td>
+            <strong>{{ ticket.title }}</strong>
+            <span>{{ ticket.ticketNumber || ('TCK-' + ticket.id) }}</span>
+          </td>
+
+          <td>{{ ticket.siteCode || '-' }}</td>
+          <td>{{ ticket.deviceId || '-' }}</td>
+
+          <td>
+            <to-status-badge
+              [label]="ticket.severity"
+              [tone]="severityTone(ticket.severity)"
+            />
+          </td>
+
+          <td>
+            <to-status-badge
+              [label]="ticket.status"
+              [tone]="statusTone(ticket.status)"
+            />
+          </td>
+
+          <td>{{ ticket.assignedUserName || 'Unassigned' }}</td>
+          <td>{{ formatDate(ticket.acknowledgedAt) }}</td>
+          <td>{{ formatDate(ticket.resolvedAt) }}</td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8">No tickets found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    [size]="drawerSize"
+    [title]="drawerTitle"
+    [eyebrow]="drawerEyebrow"
+    (closed)="closeDrawer()"
+  >
+    @if (drawerMode() === 'view' && selectedTicket(); as ticket) {
+      <div class="to-detail-grid">
+        <to-detail-field label="Ticket Number" [value]="ticket.ticketNumber || ('TCK-' + ticket.id)" />
+        <to-detail-field label="Alarm ID" [value]="ticket.alarmId" />
+        <to-detail-field label="Device" [value]="ticket.deviceId || '-'" />
+        <to-detail-field label="Site" [value]="ticket.siteCode || '-'" />
+        <to-detail-field label="Tenant" [value]="ticket.tenantId || '-'" />
+        <to-detail-field label="Rule ID" [value]="ticket.ruleId" />
+        <to-detail-field label="Severity" [value]="ticket.severity" />
+        <to-detail-field label="Status" [value]="ticket.status" />
+        <to-detail-field label="Assignee" [value]="ticket.assignedUserName || 'Unassigned'" />
+        <to-detail-field label="Acknowledged At" [value]="formatDate(ticket.acknowledgedAt)" />
+        <to-detail-field label="Resolved At" [value]="formatDate(ticket.resolvedAt)" />
+        <to-detail-field label="Active" [value]="ticket.active ? 'Yes' : 'No'" />
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Description</h3>
+        <p class="to-description">{{ ticket.description || '-' }}</p>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Timeline</h3>
+        <to-timeline [items]="timeline()" />
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button
+          label="Assign"
+          icon="pi pi-user-plus"
+          severity="secondary"
+          (click)="openAssign()"
+        />
+
+        <p-button
+          label="Acknowledge"
+          icon="pi pi-check"
+          severity="secondary"
+          [loading]="saving()"
+          (click)="acknowledgeTicket()"
+        />
+
+        <p-button
+          label="Transition"
+          icon="pi pi-arrow-right-arrow-left"
+          severity="secondary"
+          (click)="openTransition()"
+        />
+
+        <p-button
+          label="Resolve"
+          icon="pi pi-check-circle"
+          severity="success"
+          (click)="openResolve()"
+        />
+
+        <p-button
+          label="Delete"
+          icon="pi pi-trash"
+          severity="danger"
+          [loading]="saving()"
+          (click)="deleteTicket()"
+        />
+      </ng-container>
+    }
+
+    @if (drawerMode() === 'create') {
+      <div class="to-drawer-section">
+        <h3>Ticket Details</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Title</span>
+            <input
+              pInputText
+              [(ngModel)]="ticketForm.title"
+              placeholder="Signal issue"
+            />
+          </label>
+
+          <label>
+            <span>Severity</span>
+            <p-select
+              [options]="ticketSeverityOptions"
+              [(ngModel)]="ticketForm.severity"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+            />
+          </label>
+
+          <label>
+            <span>Alarm ID</span>
+            <input
+              pInputText
+              type="number"
+              [(ngModel)]="ticketForm.alarmId"
+            />
+          </label>
+
+          <label>
+            <span>Rule ID</span>
+            <input
+              pInputText
+              type="number"
+              [(ngModel)]="ticketForm.ruleId"
+            />
+          </label>
+
+          <label>
+            <span>Device ID</span>
+            <input
+              pInputText
+              [(ngModel)]="ticketForm.deviceId"
+              placeholder="DEV-001"
+            />
+          </label>
+
+          <label>
+            <span>Site Code</span>
+            <input
+              pInputText
+              [(ngModel)]="ticketForm.siteCode"
+              placeholder="TW001"
+            />
+          </label>
+
+          <label>
+            <span>Assigned User</span>
+            <p-select
+              [options]="userOptions()"
+              [ngModel]="ticketForm.assignedUserId"
+              (ngModelChange)="onTicketAssigneeChange($event)"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+              appendTo="body"
+              placeholder="Assign later"
+            />
+          </label>
+
+          <label class="to-col-span-2">
+            <span>Description</span>
+            <textarea
+              pInputText
+              rows="5"
+              [(ngModel)]="ticketForm.description"
+              placeholder="Describe the issue..."
+            ></textarea>
+          </label>
+        </div>
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button label="Cancel" severity="secondary" (click)="closeDrawer()" />
+
+        <p-button
+          label="Save Ticket"
+          icon="pi pi-check"
+          [loading]="saving()"
+          (click)="createTicket()"
+        />
+      </ng-container>
+    }
+
+    @if (drawerMode() === 'assign' && selectedTicket(); as ticket) {
+      <div class="to-drawer-section">
+        <h3>Ticket</h3>
+        <to-detail-field label="Ticket" [value]="ticket.ticketNumber || ('TCK-' + ticket.id)" />
+        <to-detail-field label="Site" [value]="ticket.siteCode || '-'" />
+        <to-detail-field label="Severity" [value]="ticket.severity" />
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Assign Technician/User</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>User</span>
+            <p-select
+              [options]="userOptions()"
+              [ngModel]="assignForm.userId"
+              (ngModelChange)="onAssignUserChange($event)"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+              appendTo="body"
+              placeholder="Select user"
+            />
+          </label>
+        </div>
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button label="Back" severity="secondary" (click)="drawerMode.set('view')" />
+
+        <p-button
+          label="Assign Ticket"
+          icon="pi pi-check"
+          [loading]="saving()"
+          (click)="assignTicket()"
+        />
+      </ng-container>
+    }
+
+    @if (drawerMode() === 'transition' && selectedTicket(); as ticket) {
+      <div class="to-drawer-section">
+        <h3>Transition Ticket</h3>
+        <to-detail-field label="Current Status" [value]="ticket.status" />
+
+        <div class="to-form-grid-wide mt-4">
+          <label>
+            <span>Target Status</span>
+            <p-select
+              [options]="ticketStatusOptions"
+              [(ngModel)]="transitionForm.targetStatus"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+            />
+          </label>
+
+          <label class="to-col-span-2">
+            <span>Remarks</span>
+            <textarea
+              pInputText
+              rows="4"
+              [(ngModel)]="transitionForm.remarks"
+              placeholder="Add remarks..."
+            ></textarea>
+          </label>
+        </div>
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button label="Back" severity="secondary" (click)="drawerMode.set('view')" />
+
+        <p-button
+          label="Update Status"
+          icon="pi pi-check"
+          [loading]="saving()"
+          (click)="transitionTicket()"
+        />
+      </ng-container>
+    }
+
+    @if (drawerMode() === 'resolve' && selectedTicket(); as ticket) {
+      <div class="to-drawer-section">
+        <h3>Resolve Ticket</h3>
+        <to-detail-field label="Ticket" [value]="ticket.ticketNumber || ('TCK-' + ticket.id)" />
+        <to-detail-field label="Current Status" [value]="ticket.status" />
+
+        <div class="to-form-grid-wide mt-4">
+          <label class="to-col-span-2">
+            <span>Resolution Notes</span>
+            <textarea
+              pInputText
+              rows="5"
+              [(ngModel)]="resolveForm.notes"
+              placeholder="Describe the resolution..."
+            ></textarea>
+          </label>
+        </div>
+      </div>
+
+      <ng-container drawer-actions>
+        <p-button label="Back" severity="secondary" (click)="drawerMode.set('view')" />
+
+        <p-button
+          label="Resolve Ticket"
+          icon="pi pi-check-circle"
+          severity="success"
+          [loading]="saving()"
+          (click)="resolveTicket()"
+        />
+      </ng-container>
+    }
+  </to-drawer>
+</section>

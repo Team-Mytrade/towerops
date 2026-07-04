@@ -1,0 +1,61 @@
+:host {
+  display: block;
+}
+
+.to-stat-card {
+  min-height: 96px;
+  padding: 12px;
+  border: 1px solid var(--to-border);
+  border-radius: var(--to-radius-lg);
+  background: var(--to-surface);
+
+  strong {
+    display: block;
+    margin-top: 14px;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: var(--to-text);
+  }
+
+  small {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--to-muted);
+  }
+}
+
+.to-stat-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  span {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--to-muted);
+  }
+
+  i {
+    font-size: 14px;
+    color: var(--to-muted);
+  }
+}
+
+.tone-info i {
+  color: var(--to-info);
+}
+
+.tone-success i {
+  color: var(--to-success);
+}
+
+.tone-warning i {
+  color: var(--to-warning);
+}
+
+.tone-danger i {
+  color: var(--to-danger);
+}

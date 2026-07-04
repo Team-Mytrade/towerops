@@ -1,185 +1,190 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, of, tap } from 'rxjs';
+import { Router } from '@angular/router';
 
-import { BaseService } from './base.service';
-import { StorageService } from './storage.service';
-import { EnvironmentService } from './environment.service';
-
-import {
-  LoginRequest,
-  LoginResponse,
-  AuthUser,
-} from '../models/auth.models';
-
-import { API_ENDPOINTS } from '../constants/api.constants';
+import { environment } from '../../../environments/environment';
 import { STORAGE_KEYS } from '../constants/storage.constants';
-import { MOCK_USER } from '../../mock/mock-user';
+import {
+  ApiResponse,
+  LoginRequest,
+  LoginResponseData,
+} from '../models/auth.models';
+import { StorageService } from './storage.service';
+import { UserType } from '../enums/user-type.enum';
 
-@Injectable({
-  providedIn: 'root',
-})
-export class AuthService extends BaseService {
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private readonly http = inject(HttpClient);
   private readonly storage = inject(StorageService);
-  private readonly _user = signal<AuthUser | null>(
-    this.storage.get<AuthUser>(STORAGE_KEYS.USER)
+  private readonly router = inject(Router);
+
+  readonly token = signal<string | null>(this.storage.get(STORAGE_KEYS.token));
+  readonly username = signal<string | null>(this.storage.get(STORAGE_KEYS.username));
+  readonly tenantId = signal<string | null>(this.storage.get(STORAGE_KEYS.tenantId));
+
+  readonly userId = signal<number | null>(
+    this.storage.get<number>(STORAGE_KEYS.userId),
   );
 
-  readonly currentUser = this._user.asReadonly();
-
-  readonly isLoggedIn = computed(
-    () => !!this.getAccessToken()
+  readonly userType = signal<UserType | null>(
+    this.storage.get<UserType>(STORAGE_KEYS.userType),
   );
 
-  readonly permissions = computed(
-    () => this._user()?.permissions ?? []
+  readonly roles = signal<string[]>(
+    this.storage.get<string[]>(STORAGE_KEYS.roles) ?? [],
   );
 
-  readonly role = computed(
-    () => this._user()?.role ?? null
+  readonly permissions = signal<string[]>(
+    this.storage.get<string[]>(STORAGE_KEYS.permissions) ?? [],
   );
 
-  readonly tenant = computed(
-  () => this._user()?.tenant ?? null
-);
+  readonly authenticated = computed(() => !!this.token());
 
-readonly siteTypes = computed(
-  () => this._user()?.siteTypes ?? []
-);
-
-readonly country = computed(
-  () => this._user()?.country ?? null
-);
-
-hasSiteType(
-  siteType: string
-): boolean {
-  return (
-    this.siteTypes().includes(
-      siteType as any
-    )
+  readonly isSuperAdmin = computed(
+    () =>
+      this.userType() === UserType.SUPER_ADMIN ||
+      this.tenantId() === 'DEFAULT' ||
+      this.roles().includes(UserType.SUPER_ADMIN),
   );
-}
 
-hasSingleSiteType(): boolean {
-  return this.siteTypes().length === 1;
-}
+  readonly isTenantAdmin = computed(
+    () =>
+      this.userType() === UserType.TENANT_ADMIN ||
+      this.userType() === UserType.ADMIN,
+  );
 
-  login(payload: LoginRequest): Observable<LoginResponse> {
-    if (this.env.useMockAuth) {
-      const response: LoginResponse = {
-        accessToken: 'mock-access-token',
-        refreshToken: 'mock-refresh-token',
-        user: MOCK_USER,
-      };
+  readonly isTechnician = computed(
+    () => this.userType() === UserType.TECHNICIAN,
+  );
 
-      return of(response).pipe(
-        tap((mockResponse) => {
-          this.setSession(mockResponse);
-        })
-      );
-    }
+  login(payload: LoginRequest): Promise<ApiResponse<LoginResponseData>> {
+    const url = `${environment.apiUrl}/v1/auth/login`;
 
-    return this.post<LoginResponse>(
-      API_ENDPOINTS.auth.login,
-      payload
-    ).pipe(
-      tap((response) => {
-        this.setSession(response);
-      })
-    );
+    console.log('[LOGIN URL]', url);
+    console.log('[LOGIN PAYLOAD]', payload);
+
+    return new Promise((resolve, reject) => {
+      this.http.post<ApiResponse<LoginResponseData>>(url, payload).subscribe({
+        next: (res) => {
+          console.log('[LOGIN RESPONSE]', res);
+
+          if (res?.success && res.data?.token) {
+            this.setSession(res.data);
+          }
+
+          resolve(res);
+        },
+        error: (error) => {
+          console.error('[LOGIN ERROR]', error);
+          reject(error);
+        },
+      });
+    });
   }
 
-  logout(): Observable<unknown> {
-    if (this.env.useMockAuth) {
-      this.clearSession();
-      return of(true);
-    }
+  setSession(data: LoginResponseData): void {
+    const roles = data.roles ?? [];
+    const permissions = data.permissions ?? [];
 
-    return this.post(
-      API_ENDPOINTS.auth.logout,
-      {}
-    ).pipe(
-      tap(() => {
-        this.clearSession();
-      })
-    );
-  }
+    this.storage.set(STORAGE_KEYS.token, data.token);
+    this.storage.set(STORAGE_KEYS.username, data.username);
+    this.storage.set(STORAGE_KEYS.tenantId, data.tenantId);
+    this.storage.set(STORAGE_KEYS.userId, data.userId);
+    this.storage.set(STORAGE_KEYS.userType, data.userType);
+    this.storage.set(STORAGE_KEYS.roles, roles);
+    this.storage.set(STORAGE_KEYS.permissions, permissions);
 
-  initializeMockUser(): void {
-    if (!this.env.useMockAuth) return;
-
-    const existingUser =
-      this.storage.get<AuthUser>(STORAGE_KEYS.USER);
-
-    const existingToken =
-      this.storage.get<string>(STORAGE_KEYS.ACCESS_TOKEN);
-
-    if (existingUser && existingToken) {
-      this._user.set(existingUser);
-      return;
-    }
-
-    const response: LoginResponse = {
-      accessToken: 'mock-access-token',
-      refreshToken: 'mock-refresh-token',
-      user: MOCK_USER,
-    };
-
-    this.setSession(response);
-  }
-
-  setSession(response: LoginResponse): void {
-    this.storage.set(
-      STORAGE_KEYS.ACCESS_TOKEN,
-      response.accessToken
-    );
-
-    if (response.refreshToken) {
-      this.storage.set(
-        STORAGE_KEYS.REFRESH_TOKEN,
-        response.refreshToken
-      );
-    }
-
-    this.storage.set(
-      STORAGE_KEYS.USER,
-      response.user
-    );
-
-    this._user.set(response.user);
+    this.token.set(data.token);
+    this.username.set(data.username);
+    this.tenantId.set(data.tenantId);
+    this.userId.set(data.userId);
+    this.userType.set(data.userType);
+    this.roles.set(roles);
+    this.permissions.set(permissions);
   }
 
   clearSession(): void {
-    this.storage.remove(STORAGE_KEYS.ACCESS_TOKEN);
-    this.storage.remove(STORAGE_KEYS.REFRESH_TOKEN);
-    this.storage.remove(STORAGE_KEYS.USER);
+    this.storage.remove(STORAGE_KEYS.token);
+    this.storage.remove(STORAGE_KEYS.username);
+    this.storage.remove(STORAGE_KEYS.tenantId);
+    this.storage.remove(STORAGE_KEYS.userId);
+    this.storage.remove(STORAGE_KEYS.userType);
+    this.storage.remove(STORAGE_KEYS.roles);
+    this.storage.remove(STORAGE_KEYS.permissions);
 
-    this._user.set(null);
+    this.token.set(null);
+    this.username.set(null);
+    this.tenantId.set(null);
+    this.userId.set(null);
+    this.userType.set(null);
+    this.roles.set([]);
+    this.permissions.set([]);
   }
 
-  getAccessToken(): string | null {
-    return this.storage.get<string>(
-      STORAGE_KEYS.ACCESS_TOKEN
-    );
+  logout(): void {
+    this.clearSession();
+    this.router.navigateByUrl('/login', { replaceUrl: true });
+  }
+  /**
+   * Development-only demo login that bypasses the backend.
+   * Works only when not in production mode.
+   */
+  loginDemo(userType: UserType, username: string): Promise<void> {
+    if (environment.production) {
+      return Promise.reject('Demo login is disabled in production');
+    }
+    const mockData: LoginResponseData = {
+      token: 'demo-token',
+      username,
+      tenantId: 'DEMO',
+      userId: 0,
+      userType,
+      roles: [],
+      permissions: [],
+    };
+    this.setSession(mockData);
+    return Promise.resolve();
   }
 
-  getRefreshToken(): string | null {
-    return this.storage.get<string>(
-      STORAGE_KEYS.REFRESH_TOKEN
-    );
+  isLoggedIn(): boolean {
+    return this.authenticated();
   }
 
-  hasPermission(permission: string): boolean {
-    return this.permissions().includes(permission);
+  getToken(): string | null {
+    return this.token();
   }
 
-  hasAnyPermission(permissions: string[]): boolean {
-    return permissions.some((permission) =>
-      this.hasPermission(permission)
-    );
+  getUsername(): string | null {
+    return this.username();
+  }
+
+  getTenantId(): string | null {
+    return this.tenantId();
+  }
+
+  getUserId(): number | null {
+    return this.userId();
+  }
+
+  getUserType(): UserType | null {
+    return this.userType();
   }
 
   hasRole(role: string): boolean {
-    return this.role() === role;
+    return this.roles().includes(role);
+  }
+
+  hasAnyRole(roles: string[]): boolean {
+    return roles.some((role) => this.roles().includes(role));
+  }
+
+  hasPermission(permission: string): boolean {
+    const permissions = this.permissions();
+
+    return permissions.includes('*') || permissions.includes(permission);
+  }
+
+  hasAnyPermission(permissions: string[]): boolean {
+    return permissions.some((permission) => this.hasPermission(permission));
   }
 }

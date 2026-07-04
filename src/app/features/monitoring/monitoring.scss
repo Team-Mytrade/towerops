@@ -1,0 +1,160 @@
+:host {
+  display: block;
+}
+
+.to-toolbar input[pInputText] {
+  width: 280px;
+}
+
+.to-card {
+  overflow: hidden;
+}
+
+:host ::ng-deep .to-prime-table tbody tr {
+  cursor: pointer;
+}
+
+:host ::ng-deep .to-prime-table td strong {
+  display: block;
+  font-weight: 500;
+  color: var(--to-text);
+}
+
+:host ::ng-deep .to-prime-table td span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--to-muted);
+}
+
+.to-monitor-kpi {
+  border: 1px solid var(--to-border);
+  border-radius: var(--to-radius-lg);
+  background: var(--to-surface);
+  padding: 14px;
+}
+
+.to-monitor-kpi span {
+  display: block;
+  font-size: 12px;
+  color: var(--to-muted);
+}
+
+.to-monitor-kpi strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--to-text);
+}
+
+.to-monitor-kpi.healthy {
+  border-left: 3px solid var(--to-success);
+}
+
+.to-monitor-kpi.warning {
+  border-left: 3px solid var(--to-warning);
+}
+
+.to-monitor-kpi.critical {
+  border-left: 3px solid var(--to-danger);
+}
+
+.to-monitor-kpi.offline {
+  border-left: 3px solid var(--to-offline);
+}
+
+.to-health-bars {
+  display: grid;
+  gap: 10px;
+}
+
+.to-health-bars > div:not(.bar) {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--to-muted);
+}
+
+.to-health-bars strong {
+  color: var(--to-text);
+  font-weight: 600;
+}
+
+.bar {
+  height: 8px;
+  border-radius: var(--to-radius-md);
+  background: var(--to-surface-soft);
+  overflow: hidden;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  background: var(--to-success);
+}
+
+.bar.warning i {
+  background: var(--to-warning);
+}
+
+.bar.critical i {
+  background: var(--to-danger);
+}
+
+.to-live-snapshot {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.to-live-snapshot article {
+  border: 1px solid var(--to-border);
+  border-radius: var(--to-radius-lg);
+  background: var(--to-surface);
+  padding: 12px;
+}
+
+.to-live-snapshot span {
+  display: block;
+  font-size: 12px;
+  color: var(--to-muted);
+}
+
+.to-live-snapshot strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--to-text);
+}
+
+.to-detail-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.to-drawer-section {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--to-border-soft);
+}
+
+.to-drawer-section h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--to-text);
+}
+
+@media (max-width: 640px) {
+  .to-toolbar input[pInputText] {
+    width: 100%;
+  }
+
+  .to-live-snapshot {
+    grid-template-columns: 1fr;
+  }
+}

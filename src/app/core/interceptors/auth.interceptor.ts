@@ -1,44 +1,38 @@
-import {
-  HttpInterceptorFn,
-  HttpRequest,
-} from '@angular/common/http';
-
+import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 
-import { AuthService } from '../services/auth.service';
+import { STORAGE_KEYS } from '../constants/storage.constants';
+import { StorageService } from '../services/storage.service';
 
-const AUTH_EXCLUDED_URLS = [
-  '/auth/login',
-  '/auth/refresh',
-  '/auth/forgot-password',
-  '/auth/reset-password',
+const TENANT_HEADER_EXCLUDED_URLS = [
+  '/v1/auth/login',
+  '/v1/auth/logout',
+  '/v1/tenants',
 ];
 
-export const authInterceptor: HttpInterceptorFn = (
-  req,
-  next
-) => {
-  const authService = inject(AuthService);
+const USER_HEADER_EXCULDED_URLS = [
+  '/api/v1/device-models'
+]
 
-  const isExcluded = AUTH_EXCLUDED_URLS.some(
-    (url) => req.url.includes(url)
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const storage = inject(StorageService);
+
+  const token = storage.get(STORAGE_KEYS.token);
+  const tenantId = storage.get(STORAGE_KEYS.tenantId);
+
+  let headers = req.headers;
+
+  if (token) {
+    headers = headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  const shouldSkipTenantHeader = TENANT_HEADER_EXCLUDED_URLS.some((url) =>
+    req.url.includes(url),
   );
 
-  if (isExcluded) {
-    return next(req);
+  if (!shouldSkipTenantHeader && tenantId) {
+    headers = headers.set('X-Tenant-Id', tenantId);
   }
 
-  const token = authService.getAccessToken();
-
-  if (!token) {
-    return next(req);
-  }
-
-  const authRequest = req.clone({
-    setHeaders: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  return next(authRequest);
+  return next(req.clone({ headers }));
 };

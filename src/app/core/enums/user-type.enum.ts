@@ -1,0 +1,7 @@
+export enum UserType {
+    TENANT_ADMIN = 'TENANT_ADMIN',
+    ADMIN = 'ADMIN',
+    TECHNICIAN = 'TECHNICIAN',
+    CUSTOMER = 'CUSTOMER',
+    SUPER_ADMIN = 'SUPER_ADMIN'
+}

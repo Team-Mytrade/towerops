@@ -47,29 +47,16 @@
       <p>Access the NOC dashboard and field workflows.</p>
 
       <div class="mt-8 space-y-4">
-        <label class="label-tag block mb-2">Email</label>
-        <input
-          data-testid="login-email"
-          name="email"
-          type="email"
-          required
-          [(ngModel)]="email"
-          class="input"
-        />
+        <label class="label-tag block mb-2">Username</label>
+        <input data-testid="login-username" name="username" type="text" required [(ngModel)]="username" class="input" />
       </div>
 
       <div class="mt-6">
         <label class="label-tag block mb-2">Password</label>
 
         <div class="password-field">
-          <input
-            data-testid="login-password"
-            name="password"
-            [type]="showPassword() ? 'text' : 'password'"
-            required
-            [(ngModel)]="password"
-            class="input pr-12"
-          />
+          <input data-testid="login-password" name="password" [type]="showPassword() ? 'text' : 'password'" required
+            [(ngModel)]="password" class="input pr-12" />
 
           <button type="button" class="eye-btn" (click)="togglePassword()">
             <i [class]="showPassword() ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
@@ -78,20 +65,44 @@
       </div>
 
       <div class="flex justify-between my-4">
-        <a
-          routerLink="/forgot-password"
-          class="font-sora text-sm text-blue-600 hover:text-blue-700"
-        >
+        <a routerLink="/forgot-password" class="font-sora text-sm text-blue-600 hover:text-blue-700">
           Forgot password?
         </a>
       </div>
-
+      <div *ngIf="errorMessage()" class="login-error" data-testid="login-error">
+        {{ errorMessage() }}
+      </div>
       <button data-testid="login-submit" type="submit" class="submit-btn" [disabled]="loading()">
         <i *ngIf="loading()" class="pi pi-spin pi-spinner"></i>
         <span>{{ loading() ? 'Signing in...' : 'Sign in' }}</span>
       </button>
 
-      
+      <div class="demo">
+        <div class="demo__mode">
+          <div>
+            <label class="label-tag block">Demo Mode</label>
+            <small>Enable mock login without contacting backend.</small>
+          </div>
+
+          <p-toggleswitch name="demoMode" [ngModel]="demoMode()" [ngModelOptions]="{ standalone: true }"
+            (ngModelChange)="toggleDemoMode($event)" inputId="demoMode" data-testid="demo-mode-toggle" />
+        </div>
+
+        @if(demoMode()){
+        <label class="label-tag block mb-3">Quick Demo Login</label>
+
+        <div class="demo__grid">
+          <button type="button" *ngFor="let account of demoAccounts" (click)="demoLogin(account)"
+            [disabled]="loading() || !demoMode()" class="demo-card">
+            <div>{{ account.role }}</div>
+            <span>{{ account.description }}</span>
+          </button>
+        </div>
+        }
+        <small *ngIf="!demoMode()" class="demo__hint">
+          Enable Demo Mode to use demo accounts. Normal sign in uses the real API.
+        </small>
+      </div>
     </form>
   </section>
 </div>

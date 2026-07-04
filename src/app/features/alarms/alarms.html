@@ -1,0 +1,249 @@
+<section class="to-page" data-testid="alarms-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Alarms</h1>
+      <p class="to-page-description">
+        Manage operational alarms converted from validated alerts and rule engine events.
+      </p>
+    </div>
+
+    <div class="to-header-actions">
+      <p-button label="Alarm Rules" icon="pi pi-cog" severity="secondary" (click)="openRuleDrawer()" />
+      <p-button label="Refresh" icon="pi pi-refresh" />
+    </div>
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search alarms..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+
+      <p-select
+        [options]="severityOptions"
+        [ngModel]="severityFilter()"
+        (ngModelChange)="severityFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Severity"
+      />
+
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Status"
+      />
+
+      <p-select
+        [options]="categoryOptions"
+        [ngModel]="categoryFilter()"
+        (ngModelChange)="categoryFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Category"
+      />
+    </div>
+  </div>
+
+  <div class="to-kpi-grid">
+    <article class="to-alarm-kpi">
+      <span>Total Alarms</span>
+      <strong>{{ summary().total }}</strong>
+    </article>
+
+    <article class="to-alarm-kpi critical">
+      <span>Critical</span>
+      <strong>{{ summary().critical }}</strong>
+    </article>
+
+    <article class="to-alarm-kpi open">
+      <span>Open</span>
+      <strong>{{ summary().open }}</strong>
+    </article>
+
+    <article class="to-alarm-kpi acknowledged">
+      <span>Acknowledged</span>
+      <strong>{{ summary().acknowledged }}</strong>
+    </article>
+  </div>
+
+  <div class="to-alarms-layout">
+    <section class="to-card to-alarm-feed">
+      <header class="to-card-header">
+        <h2 class="to-card-title">Alarm Feed</h2>
+        <span>{{ filteredAlarms().length }}</span>
+      </header>
+
+      <div class="to-alarm-feed__body">
+        @for (alarm of filteredAlarms(); track alarm.id) {
+          <button
+            type="button"
+            class="to-alarm-card"
+            [class.active]="selectedAlarm().id === alarm.id"
+            [class]="alarm.severity.toLowerCase()"
+            (click)="selectAlarm(alarm)"
+          >
+            <div class="to-alarm-card__top">
+              <to-status-badge
+                [label]="alarm.severity"
+                [tone]="severityTone(alarm.severity)"
+              />
+
+              <small>{{ alarm.createdAt }}</small>
+            </div>
+
+            <strong>{{ alarm.title }}</strong>
+            <p>{{ alarm.site }}</p>
+
+            <div class="to-alarm-card__meta">
+              <span>{{ alarm.device }}</span>
+              <to-status-badge
+                [label]="alarm.status"
+                [tone]="statusTone(alarm.status)"
+              />
+            </div>
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="to-card to-alarm-detail">
+      @if (selectedAlarm(); as alarm) {
+        <header class="to-card-header">
+          <div>
+            <h2 class="to-card-title">{{ alarm.title }}</h2>
+            <p>{{ alarm.description }}</p>
+          </div>
+
+          <to-status-badge
+            [label]="alarm.status"
+            [tone]="statusTone(alarm.status)"
+          />
+        </header>
+
+        <div class="to-alarm-detail__body">
+          <div class="to-detail-grid">
+            <to-detail-field label="Alarm ID" [value]="alarm.id" />
+            <to-detail-field label="Site" [value]="alarm.site" />
+            <to-detail-field label="Device" [value]="alarm.device" />
+            <to-detail-field label="Category" [value]="alarm.category" />
+            <to-detail-field label="Severity" [value]="alarm.severity" />
+            <to-detail-field label="Status" [value]="alarm.status" />
+            <to-detail-field label="Rule" [value]="alarm.rule" />
+            <to-detail-field label="Created" [value]="alarm.createdAt" />
+            <to-detail-field label="Current Value" [value]="alarm.currentValue" />
+            <to-detail-field label="Threshold" [value]="alarm.threshold" />
+            <to-detail-field label="Ticket" [value]="alarm.ticket" />
+            <to-detail-field label="Work Order" [value]="alarm.workOrder" />
+          </div>
+
+          <div class="to-drawer-section">
+            <h3>Timeline</h3>
+            <to-timeline [items]="timeline()" />
+          </div>
+        </div>
+
+        <footer class="to-detail-actions">
+          <p-button
+            label="Acknowledge"
+            icon="pi pi-check"
+            severity="secondary"
+            (click)="acknowledgeAlarm()"
+          />
+
+          <p-button
+            label="Suppress"
+            icon="pi pi-eye-slash"
+            severity="secondary"
+            (click)="suppressAlarm()"
+          />
+
+          <p-button
+            label="Create Ticket"
+            icon="pi pi-ticket"
+            (click)="createTicket()"
+          />
+
+          <p-button
+            label="Resolve"
+            icon="pi pi-check-circle"
+            severity="secondary"
+            (click)="resolveAlarm()"
+          />
+        </footer>
+      }
+    </section>
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    size="wide"
+    title="Alarm Rule Configuration"
+    eyebrow="Rule Settings"
+    (closed)="closeDrawer()"
+  >
+    <div class="to-drawer-section">
+      <h3>Conversion Rules</h3>
+
+      <div class="to-check-grid">
+        <label>
+          <p-checkbox [binary]="true" [ngModel]="true" />
+          <span>Convert critical alerts to alarms automatically</span>
+        </label>
+
+        <label>
+          <p-checkbox [binary]="true" [ngModel]="true" />
+          <span>Create ticket when alarm is critical</span>
+        </label>
+
+        <label>
+          <p-checkbox [binary]="true" [ngModel]="false" />
+          <span>Suppress duplicate alarms within 10 minutes</span>
+        </label>
+
+        <label>
+          <p-checkbox [binary]="true" [ngModel]="true" />
+          <span>Notify tenant admin on alarm creation</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="to-drawer-section">
+      <h3>Escalation</h3>
+
+      <div class="to-form-grid-wide">
+        <label>
+          <span>High Alarm Escalation</span>
+          <input pInputText value="10 mins" />
+        </label>
+
+        <label>
+          <span>Critical Alarm Escalation</span>
+          <input pInputText value="5 mins" />
+        </label>
+
+        <label>
+          <span>Auto Resolve Window</span>
+          <input pInputText value="30 mins" />
+        </label>
+
+        <label>
+          <span>Duplicate Suppression Window</span>
+          <input pInputText value="10 mins" />
+        </label>
+      </div>
+    </div>
+
+    <ng-container drawer-actions>
+      <p-button label="Cancel" severity="secondary" (click)="closeDrawer()" />
+      <p-button label="Save Rules" icon="pi pi-check" (click)="closeDrawer()" />
+    </ng-container>
+  </to-drawer>
+</section>

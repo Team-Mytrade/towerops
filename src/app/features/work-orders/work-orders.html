@@ -1,0 +1,387 @@
+<section class="to-page" data-testid="work-orders-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Work Orders</h1>
+      <p class="to-page-description">
+        Dispatch, track and close field work from ticket assignment to verification.
+      </p>
+    </div>
+
+    <div class="flex gap-2">
+      <p-button
+        label="Refresh"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [loading]="loading()"
+        (click)="loadPageData()"
+      />
+
+      <p-button
+        label="Create Work Order"
+        icon="pi pi-plus"
+        data-testid="create-work-order-btn"
+        (click)="openCreate()"
+      />
+    </div>
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search work orders..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+    </div>
+  </div>
+
+  <div class="to-kanban" cdkDropListGroup>
+    @for (column of columns; track column.status) {
+      <section class="to-kanban-column">
+        <header>
+          <h2>{{ column.title }}</h2>
+          <span>{{ itemsByStatus(column.status).length }}</span>
+        </header>
+
+        <div
+          class="to-kanban-list"
+          cdkDropList
+          [id]="column.status"
+          [cdkDropListData]="itemsByStatus(column.status)"
+          [cdkDropListConnectedTo]="connectedDropLists"
+          (cdkDropListDropped)="onDrop($event, column.status)"
+        >
+          @for (item of itemsByStatus(column.status); track item.id) {
+            <article
+              class="to-work-card"
+              cdkDrag
+              [cdkDragData]="item"
+              (click)="openWorkOrder(item)"
+            >
+              <span class="priority-strip" [class]="item.status.toLowerCase()"></span>
+
+              <div class="to-work-card__head">
+                <strong>{{ item.workOrderCode }}</strong>
+
+                <to-status-badge
+                  [label]="item.status"
+                  [tone]="statusTone(item.status)"
+                />
+              </div>
+
+              <h3>{{ item.title }}</h3>
+
+              <p>Ticket: {{ item.ticketId || '-' }}</p>
+              <p>Alert: {{ item.alertId || '-' }}</p>
+
+              <div class="to-work-card__meta">
+                <span>{{ item.technicianName || technicianLabel(item.technicianId) }}</span>
+                <span>{{ formatDate(item.scheduledAt) }}</span>
+              </div>
+            </article>
+          } @empty {
+            <div class="to-empty-state">No work orders.</div>
+          }
+        </div>
+      </section>
+    }
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    [size]="drawerMode() === 'view' ? 'compact' : 'wide'"
+    [title]="drawerTitle"
+    [eyebrow]="drawerEyebrow"
+    (closed)="closeDrawer()"
+  >
+    @if (drawerMode() === 'view' && selected(); as item) {
+      <div class="to-detail-grid">
+        <to-detail-field label="Work Order" [value]="item.workOrderCode" />
+        <to-detail-field label="Ticket" [value]="item.ticketId || '-'" />
+        <to-detail-field label="Alert" [value]="item.alertId || '-'" />
+        <to-detail-field
+          label="Technician"
+          [value]="item.technicianName || technicianLabel(item.technicianId)"
+        />
+        <to-detail-field label="Status" [value]="item.status" />
+        <to-detail-field label="Scheduled" [value]="formatDate(item.scheduledAt)" />
+        <to-detail-field label="Started" [value]="formatDate(item.startedAt)" />
+        <to-detail-field label="Completed" [value]="formatDate(item.completedAt)" />
+        <to-detail-field label="Labor Hours" [value]="item.laborHours" />
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Description</h3>
+        <p class="to-description">{{ item.description || '-' }}</p>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Resolution</h3>
+        <p class="to-description">{{ item.resolution || '-' }}</p>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Remarks</h3>
+        <p class="to-description">{{ item.remarks || '-' }}</p>
+      </div>
+
+      <div class="to-drawer-section">
+        <h3>Timeline</h3>
+        <to-timeline [items]="timeline()" />
+      </div>
+
+    }
+
+    @if (drawerMode() === 'create' || drawerMode() === 'edit') {
+      <div class="to-drawer-section">
+        <h3>Work Order Details</h3>
+
+        <div class="to-form-grid-wide">
+          <label>
+            <span>Work Order Code</span>
+            <input
+              pInputText
+              [(ngModel)]="form.workOrderCode"
+              placeholder="WO-1001"
+            />
+          </label>
+
+          <label>
+            <span>Status</span>
+            <p-select
+              [options]="statusOptions"
+              [(ngModel)]="form.status"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+            />
+          </label>
+
+          <label>
+            <span>Ticket ID</span>
+            <input
+              pInputText
+              type="number"
+              [(ngModel)]="form.ticketId"
+            />
+          </label>
+
+          <label>
+            <span>Alert ID</span>
+            <input
+              pInputText
+              type="number"
+              [(ngModel)]="form.alertId"
+            />
+          </label>
+
+          <label>
+            <span>Technician</span>
+            <p-select
+              [options]="technicianOptions()"
+              [(ngModel)]="form.technicianId"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              filterBy="label"
+              appendTo="body"
+              placeholder="Select technician"
+            />
+          </label>
+
+          <label>
+            <span>Labor Hours</span>
+            <input
+              pInputText
+              type="number"
+              [(ngModel)]="form.laborHours"
+            />
+          </label>
+
+          <label class="to-col-span-2">
+            <span>Title</span>
+            <input
+              pInputText
+              [(ngModel)]="form.title"
+              placeholder="Signal inspection"
+            />
+          </label>
+
+          <label class="to-col-span-2">
+            <span>Description</span>
+            <textarea
+              pInputText
+              rows="4"
+              [(ngModel)]="form.description"
+              placeholder="Describe the work order..."
+            ></textarea>
+          </label>
+        </div>
+      </div>
+
+     <div class="to-drawer-section">
+  <h3>Schedule</h3>
+
+  <div class="to-form-grid-wide">
+    <label>
+      <span>Scheduled At</span>
+      <p-datepicker
+        [(ngModel)]="form.scheduledAt"
+        appendTo="body"
+        [showIcon]="true"
+        [showTime]="true"
+        [showButtonBar]="true"
+        hourFormat="24"
+        dateFormat="dd/mm/yy"
+        placeholder="Select schedule date & time"
+      />
+    </label>
+
+    <label>
+      <span>Started At</span>
+      <p-datepicker
+        [(ngModel)]="form.startedAt"
+        appendTo="body"
+        [showIcon]="true"
+        [showTime]="true"
+        [showButtonBar]="true"
+        hourFormat="24"
+        dateFormat="dd/mm/yy"
+        placeholder="Select start date & time"
+      />
+    </label>
+
+    <label>
+      <span>Completed At</span>
+      <p-datepicker
+        [(ngModel)]="form.completedAt"
+        appendTo="body"
+        [showIcon]="true"
+        [showTime]="true"
+        [showButtonBar]="true"
+        hourFormat="24"
+        dateFormat="dd/mm/yy"
+        placeholder="Select completion date & time"
+      />
+    </label>
+  </div>
+</div>
+
+      <div class="to-drawer-section">
+        <h3>Closure Notes</h3>
+
+        <div class="to-form-grid-wide">
+          <label class="to-col-span-2">
+            <span>Resolution</span>
+            <textarea
+              pInputText
+              rows="3"
+              [(ngModel)]="form.resolution"
+              placeholder="Resolution summary..."
+            ></textarea>
+          </label>
+
+          <label class="to-col-span-2">
+            <span>Remarks</span>
+            <textarea
+              pInputText
+              rows="3"
+              [(ngModel)]="form.remarks"
+              placeholder="Additional remarks..."
+            ></textarea>
+          </label>
+        </div>
+      </div>
+
+    }
+
+    <ng-container drawer-actions>
+      @if (drawerMode() === 'view' && selected(); as item) {
+        <p-button
+          label="Edit"
+          icon="pi pi-pencil"
+          severity="secondary"
+          (click)="editWorkOrder()"
+        />
+
+        <p-button
+          label="Assign"
+          icon="pi pi-user-plus"
+          severity="secondary"
+          (click)="pendingMove.set({ item, target: 'ASSIGNED' }); selectedTechnicianId = item.technicianId || 0; assignDrawerOpen.set(true)"
+        />
+
+        <p-button
+          label="Send to Verification"
+          icon="pi pi-check"
+          (click)="updateWorkOrder(item, { status: 'VERIFIED' })"
+        />
+
+        <p-button
+          label="Delete"
+          icon="pi pi-trash"
+          severity="danger"
+          [loading]="saving()"
+          (click)="deleteWorkOrder()"
+        />
+      }
+    </ng-container>
+
+    <ng-container drawer-actions>
+      @if (drawerMode() === 'create' || drawerMode() === 'edit') {
+        <p-button
+          label="Cancel"
+          severity="secondary"
+          (click)="closeDrawer()"
+        />
+
+        <p-button
+          [label]="drawerMode() === 'edit' ? 'Save Changes' : 'Save Work Order'"
+          icon="pi pi-check"
+          [loading]="saving()"
+          (click)="saveWorkOrder()"
+        />
+      }
+    </ng-container>
+  </to-drawer>
+
+  <to-drawer
+    [open]="assignDrawerOpen()"
+    size="compact"
+    title="Assign Technician"
+    eyebrow="Work Order Assignment"
+    (closed)="assignDrawerOpen.set(false)"
+  >
+    <div class="to-drawer-section">
+      <h3>Technician</h3>
+
+      <p-select
+        [options]="technicianOptions()"
+        [(ngModel)]="selectedTechnicianId"
+        optionLabel="label"
+        optionValue="value"
+        [filter]="true"
+        filterBy="label"
+        appendTo="body"
+        placeholder="Select technician"
+      />
+    </div>
+
+    <ng-container drawer-actions>
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        (click)="assignDrawerOpen.set(false)"
+      />
+
+      <p-button
+        label="Assign"
+        icon="pi pi-check"
+        [loading]="saving()"
+        (click)="assignAndMove()"
+      />
+    </ng-container>
+  </to-drawer>
+</section>

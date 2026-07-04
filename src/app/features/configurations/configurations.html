@@ -1,0 +1,262 @@
+<section class="to-page" data-testid="configurations-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Configuration Center</h1>
+      <p class="to-page-description">
+        Manage operational defaults, thresholds, notification channels, security and integrations.
+      </p>
+    </div>
+
+    <div class="to-header-actions">
+      <p-button label="Reset Section" severity="secondary" icon="pi pi-refresh" (click)="resetCurrentSection()" />
+      <p-button label="Edit Configuration" icon="pi pi-pencil" (click)="openEditDrawer()" />
+    </div>
+  </header>
+
+  <div class="to-config-layout">
+    <aside class="to-card to-config-nav">
+      <button
+        *ngFor="let section of sections"
+        type="button"
+        [class.active]="activeSection() === section"
+        (click)="selectSection(section)"
+      >
+        <span>{{ section }}</span>
+        <i class="pi pi-angle-right"></i>
+      </button>
+    </aside>
+
+    <section class="to-card to-config-panel">
+      <header class="to-card-header">
+        <div>
+          <h2 class="to-card-title">{{ title() }}</h2>
+          <p>{{ description() }}</p>
+        </div>
+      </header>
+
+      <div class="to-config-body">
+        @switch (activeSection()) {
+          @case ('General') {
+            <div class="to-config-grid">
+              <article><span>Tenant Name</span><strong>{{ configuration.tenantName }}</strong></article>
+              <article><span>Language</span><strong>{{ configuration.language }}</strong></article>
+              <article><span>Timezone</span><strong>{{ configuration.timezone }}</strong></article>
+              <article><span>Currency</span><strong>{{ configuration.currency }}</strong></article>
+              <article><span>Date Format</span><strong>{{ configuration.dateFormat }}</strong></article>
+            </div>
+          }
+
+          @case ('Thresholds') {
+            <div class="to-config-grid">
+              <article><span>Fuel Threshold</span><strong>{{ configuration.fuelThreshold }}%</strong></article>
+              <article><span>Battery Voltage</span><strong>{{ configuration.batteryVoltage }}V</strong></article>
+              <article><span>Temperature</span><strong>{{ configuration.temperature }}°C</strong></article>
+              <article><span>Signal Strength</span><strong>{{ configuration.signalStrength }} dBm</strong></article>
+              <article><span>Generator Runtime</span><strong>{{ configuration.generatorRuntime }} hrs</strong></article>
+            </div>
+          }
+
+          @case ('Alarm Rules') {
+            <div class="to-config-grid">
+              <article><span>Auto Create Ticket</span><strong>{{ configuration.autoTicket ? 'Enabled' : 'Disabled' }}</strong></article>
+              <article><span>Duplicate Window</span><strong>{{ configuration.duplicateWindow }}</strong></article>
+              <article><span>Critical Escalation</span><strong>{{ configuration.criticalEscalation }}</strong></article>
+              <article><span>High Escalation</span><strong>{{ configuration.highEscalation }}</strong></article>
+              <article><span>Auto Resolve</span><strong>{{ configuration.autoResolve }}</strong></article>
+            </div>
+          }
+
+          @case ('Maintenance') {
+            <div class="to-config-grid">
+              <article><span>PM Frequency</span><strong>{{ configuration.preventiveMaintenance }}</strong></article>
+              <article><span>Checklist Required</span><strong>{{ configuration.checklistRequired ? 'Yes' : 'No' }}</strong></article>
+              <article><span>Photos Required</span><strong>{{ configuration.photosRequired ? 'Yes' : 'No' }}</strong></article>
+              <article><span>Sensor Validation</span><strong>{{ configuration.sensorValidation ? 'Yes' : 'No' }}</strong></article>
+              <article><span>Approval Required</span><strong>{{ configuration.approvalRequired ? 'Yes' : 'No' }}</strong></article>
+            </div>
+          }
+
+          @case ('Notifications') {
+            <div class="to-config-grid">
+              <article><span>Email</span><strong>{{ configuration.email ? 'Enabled' : 'Disabled' }}</strong></article>
+              <article><span>SMS</span><strong>{{ configuration.sms ? 'Enabled' : 'Disabled' }}</strong></article>
+              <article><span>WhatsApp</span><strong>{{ configuration.whatsapp ? 'Enabled' : 'Disabled' }}</strong></article>
+              <article><span>Teams</span><strong>{{ configuration.teams ? 'Enabled' : 'Disabled' }}</strong></article>
+              <article><span>Slack</span><strong>{{ configuration.slack ? 'Enabled' : 'Disabled' }}</strong></article>
+            </div>
+          }
+
+          @case ('Sites') {
+            <div class="to-config-grid">
+              <article><span>Default Region</span><strong>{{ configuration.defaultRegion }}</strong></article>
+              <article><span>Default Site Type</span><strong>{{ configuration.defaultSiteType }}</strong></article>
+              <article><span>Default Timezone</span><strong>{{ configuration.defaultTimezone }}</strong></article>
+            </div>
+          }
+
+          @case ('Devices') {
+            <div class="to-config-grid">
+              <article><span>Polling Interval</span><strong>{{ configuration.pollingInterval }}</strong></article>
+              <article><span>Heartbeat</span><strong>{{ configuration.heartbeat }}</strong></article>
+              <article><span>Offline Timeout</span><strong>{{ configuration.offlineTimeout }}</strong></article>
+            </div>
+          }
+
+          @case ('Integrations') {
+            <div class="to-integration-grid">
+              <article [class]="integrationClass(configuration.smtp)"><span>SMTP</span><strong>{{ integrationStatus(configuration.smtp) }}</strong></article>
+              <article [class]="integrationClass(configuration.mqtt)"><span>MQTT</span><strong>{{ integrationStatus(configuration.mqtt) }}</strong></article>
+              <article [class]="integrationClass(configuration.azure)"><span>Azure IoT</span><strong>{{ integrationStatus(configuration.azure) }}</strong></article>
+              <article [class]="integrationClass(configuration.twilio)"><span>Twilio</span><strong>{{ integrationStatus(configuration.twilio) }}</strong></article>
+              <article [class]="integrationClass(configuration.webhook)"><span>Webhook</span><strong>{{ integrationStatus(configuration.webhook) }}</strong></article>
+            </div>
+          }
+
+          @case ('Security') {
+            <div class="to-config-grid">
+              <article><span>MFA</span><strong>{{ configuration.mfa ? 'Enabled' : 'Disabled' }}</strong></article>
+              <article><span>Password Policy</span><strong>{{ configuration.passwordPolicy }}</strong></article>
+              <article><span>Session Timeout</span><strong>{{ configuration.sessionTimeout }}</strong></article>
+              <article><span>Max Login Attempts</span><strong>{{ configuration.maxLoginAttempts }}</strong></article>
+              <article><span>Audit Logs</span><strong>{{ configuration.auditLogs ? 'Enabled' : 'Disabled' }}</strong></article>
+            </div>
+          }
+
+          @case ('System') {
+            <div class="to-config-grid">
+              <article><span>Version</span><strong>{{ configuration.version }}</strong></article>
+              <article><span>License</span><strong>{{ configuration.license }}</strong></article>
+              <article><span>Database</span><strong>{{ configuration.database }}</strong></article>
+              <article><span>Storage</span><strong>{{ configuration.storage }}</strong></article>
+              <article><span>Backups</span><strong>{{ configuration.backups }}</strong></article>
+              <article><span>Logs</span><strong>{{ configuration.logs }}</strong></article>
+            </div>
+          }
+        }
+      </div>
+    </section>
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    size="wide"
+    [title]="title() + ' Configuration'"
+    eyebrow="Edit Settings"
+    (closed)="closeDrawer()"
+  >
+    <div class="to-drawer-section">
+      <h3>{{ title() }}</h3>
+
+      @switch (activeSection()) {
+        @case ('General') {
+          <div class="to-form-grid-wide">
+            <label><span>Tenant Name</span><input pInputText [(ngModel)]="configuration.tenantName" /></label>
+            <label><span>Language</span><input pInputText [(ngModel)]="configuration.language" /></label>
+            <label><span>Timezone</span><input pInputText [(ngModel)]="configuration.timezone" /></label>
+            <label><span>Currency</span><input pInputText [(ngModel)]="configuration.currency" /></label>
+            <label><span>Date Format</span><input pInputText [(ngModel)]="configuration.dateFormat" /></label>
+          </div>
+        }
+
+        @case ('Thresholds') {
+          <div class="to-form-grid-wide">
+            <label><span>Fuel Threshold</span><input pInputText type="number" [(ngModel)]="configuration.fuelThreshold" /></label>
+            <label><span>Battery Voltage</span><input pInputText type="number" [(ngModel)]="configuration.batteryVoltage" /></label>
+            <label><span>Temperature</span><input pInputText type="number" [(ngModel)]="configuration.temperature" /></label>
+            <label><span>Signal Strength</span><input pInputText type="number" [(ngModel)]="configuration.signalStrength" /></label>
+            <label><span>Generator Runtime</span><input pInputText type="number" [(ngModel)]="configuration.generatorRuntime" /></label>
+          </div>
+        }
+
+        @case ('Alarm Rules') {
+          <div class="to-form-grid-wide">
+            <label><span>Duplicate Window</span><input pInputText [(ngModel)]="configuration.duplicateWindow" /></label>
+            <label><span>Critical Escalation</span><input pInputText [(ngModel)]="configuration.criticalEscalation" /></label>
+            <label><span>High Escalation</span><input pInputText [(ngModel)]="configuration.highEscalation" /></label>
+            <label><span>Auto Resolve</span><input pInputText [(ngModel)]="configuration.autoResolve" /></label>
+          </div>
+
+          <div class="to-check-grid">
+            <label><p-checkbox [(ngModel)]="configuration.autoTicket" [binary]="true" /><span>Auto Create Ticket</span></label>
+          </div>
+        }
+
+        @case ('Maintenance') {
+          <div class="to-form-grid-wide">
+            <label><span>PM Frequency</span><input pInputText [(ngModel)]="configuration.preventiveMaintenance" /></label>
+          </div>
+
+          <div class="to-check-grid">
+            <label><p-checkbox [(ngModel)]="configuration.checklistRequired" [binary]="true" /><span>Checklist Required</span></label>
+            <label><p-checkbox [(ngModel)]="configuration.photosRequired" [binary]="true" /><span>Photos Required</span></label>
+            <label><p-checkbox [(ngModel)]="configuration.sensorValidation" [binary]="true" /><span>Sensor Validation</span></label>
+            <label><p-checkbox [(ngModel)]="configuration.approvalRequired" [binary]="true" /><span>Approval Required</span></label>
+          </div>
+        }
+
+        @case ('Notifications') {
+          <div class="to-check-grid">
+            <label><p-checkbox [(ngModel)]="configuration.email" [binary]="true" /><span>Email</span></label>
+            <label><p-checkbox [(ngModel)]="configuration.sms" [binary]="true" /><span>SMS</span></label>
+            <label><p-checkbox [(ngModel)]="configuration.whatsapp" [binary]="true" /><span>WhatsApp</span></label>
+            <label><p-checkbox [(ngModel)]="configuration.teams" [binary]="true" /><span>Teams</span></label>
+            <label><p-checkbox [(ngModel)]="configuration.slack" [binary]="true" /><span>Slack</span></label>
+          </div>
+        }
+
+        @case ('Sites') {
+          <div class="to-form-grid-wide">
+            <label><span>Default Region</span><input pInputText [(ngModel)]="configuration.defaultRegion" /></label>
+            <label><span>Default Site Type</span><input pInputText [(ngModel)]="configuration.defaultSiteType" /></label>
+            <label><span>Default Timezone</span><input pInputText [(ngModel)]="configuration.defaultTimezone" /></label>
+          </div>
+        }
+
+        @case ('Devices') {
+          <div class="to-form-grid-wide">
+            <label><span>Polling Interval</span><input pInputText [(ngModel)]="configuration.pollingInterval" /></label>
+            <label><span>Heartbeat</span><input pInputText [(ngModel)]="configuration.heartbeat" /></label>
+            <label><span>Offline Timeout</span><input pInputText [(ngModel)]="configuration.offlineTimeout" /></label>
+          </div>
+        }
+
+        @case ('Integrations') {
+          <div class="to-check-grid">
+            <label><p-checkbox [(ngModel)]="configuration.smtp" [binary]="true" /><span>SMTP</span></label>
+            <label><p-checkbox [(ngModel)]="configuration.mqtt" [binary]="true" /><span>MQTT</span></label>
+            <label><p-checkbox [(ngModel)]="configuration.azure" [binary]="true" /><span>Azure IoT</span></label>
+            <label><p-checkbox [(ngModel)]="configuration.twilio" [binary]="true" /><span>Twilio</span></label>
+            <label><p-checkbox [(ngModel)]="configuration.webhook" [binary]="true" /><span>Webhook</span></label>
+          </div>
+        }
+
+        @case ('Security') {
+          <div class="to-form-grid-wide">
+            <label><span>Password Policy</span><input pInputText [(ngModel)]="configuration.passwordPolicy" /></label>
+            <label><span>Session Timeout</span><input pInputText [(ngModel)]="configuration.sessionTimeout" /></label>
+            <label><span>Max Login Attempts</span><input pInputText type="number" [(ngModel)]="configuration.maxLoginAttempts" /></label>
+          </div>
+
+          <div class="to-check-grid">
+            <label><p-checkbox [(ngModel)]="configuration.mfa" [binary]="true" /><span>MFA</span></label>
+            <label><p-checkbox [(ngModel)]="configuration.auditLogs" [binary]="true" /><span>Audit Logs</span></label>
+          </div>
+        }
+
+        @case ('System') {
+          <div class="to-form-grid-wide">
+            <label><span>Version</span><input pInputText [(ngModel)]="configuration.version" readonly /></label>
+            <label><span>License</span><input pInputText [(ngModel)]="configuration.license" readonly /></label>
+            <label><span>Backups</span><input pInputText [(ngModel)]="configuration.backups" /></label>
+            <label><span>Logs</span><input pInputText [(ngModel)]="configuration.logs" /></label>
+          </div>
+        }
+      }
+    </div>
+
+    <ng-container drawer-actions>
+      <p-button label="Cancel" severity="secondary" (click)="closeDrawer()" />
+      <p-button label="Save Changes" icon="pi pi-check" (click)="saveChanges()" />
+    </ng-container>
+  </to-drawer>
+</section>

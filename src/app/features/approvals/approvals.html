@@ -1,0 +1,285 @@
+<section class="to-page" data-testid="approvals-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Approvals</h1>
+      <p class="to-page-description">
+        Review technician-completed work, verify evidence and approve final closure.
+      </p>
+    </div>
+
+    <div class="to-header-actions">
+      <p-button
+        label="Approval Policy"
+        icon="pi pi-cog"
+        severity="secondary"
+        (click)="openPolicyDrawer()"
+      />
+
+      <p-button label="Refresh" icon="pi pi-refresh" />
+    </div>
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search approvals..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Status"
+      />
+
+      <p-select
+        [options]="priorityOptions"
+        [ngModel]="priorityFilter()"
+        (ngModelChange)="priorityFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Priority"
+      />
+    </div>
+  </div>
+
+  <div class="to-kpi-grid">
+    <article class="to-approval-kpi">
+      <span>Total</span>
+      <strong>{{ summary().total }}</strong>
+    </article>
+
+    <article class="to-approval-kpi pending">
+      <span>Pending</span>
+      <strong>{{ summary().pending }}</strong>
+    </article>
+
+    <article class="to-approval-kpi approved">
+      <span>Approved</span>
+      <strong>{{ summary().approved }}</strong>
+    </article>
+
+    <article class="to-approval-kpi rejected">
+      <span>Rejected</span>
+      <strong>{{ summary().rejected }}</strong>
+    </article>
+  </div>
+
+  <div class="to-approvals-layout">
+    <section class="to-card to-approval-feed">
+      <header class="to-card-header">
+        <h2 class="to-card-title">Approval Queue</h2>
+        <span>{{ filteredApprovals().length }}</span>
+      </header>
+
+      <div class="to-approval-feed__body">
+        @for (approval of filteredApprovals(); track approval.id) {
+          <button
+            type="button"
+            class="to-approval-card"
+            [class.active]="selectedApproval().id === approval.id"
+            [class]="approval.priority.toLowerCase()"
+            (click)="selectApproval(approval)"
+          >
+            <div class="to-approval-card__top">
+              <to-status-badge
+                [label]="approval.priority"
+                [tone]="priorityTone(approval.priority)"
+              />
+
+              <small>{{ approval.submitted }}</small>
+            </div>
+
+            <strong>{{ approval.workOrder }}</strong>
+            <p>{{ approval.site }}</p>
+
+            <div class="to-approval-card__meta">
+              <span>{{ approval.technician }}</span>
+              <to-status-badge
+                [label]="approval.status"
+                [tone]="statusTone(approval.status)"
+              />
+            </div>
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="to-card to-approval-detail">
+      @if (selectedApproval(); as approval) {
+        <header class="to-card-header">
+          <div>
+            <h2 class="to-card-title">{{ approval.workOrder }}</h2>
+            <p>{{ approval.notes }}</p>
+          </div>
+
+          <to-status-badge
+            [label]="approval.status"
+            [tone]="statusTone(approval.status)"
+          />
+        </header>
+
+        <div class="to-approval-detail__body">
+          <div class="to-detail-grid">
+            <to-detail-field label="Approval ID" [value]="approval.id" />
+            <to-detail-field label="Work Order" [value]="approval.workOrder" />
+            <to-detail-field label="Ticket" [value]="approval.ticket" />
+            <to-detail-field label="Site" [value]="approval.site" />
+            <to-detail-field label="Technician" [value]="approval.technician" />
+            <to-detail-field label="Submitted" [value]="approval.submitted" />
+            <to-detail-field label="Priority" [value]="approval.priority" />
+            <to-detail-field label="Sensor Status" [value]="approval.sensorStatus" />
+          </div>
+
+          <div class="to-drawer-section">
+            <h3>Evidence</h3>
+
+            <div class="to-evidence-grid">
+              <article>
+                <span>Before</span>
+                <div class="to-evidence-placeholder">
+                  {{ approval.beforeImage }}
+                </div>
+              </article>
+
+              <article>
+                <span>After</span>
+                <div class="to-evidence-placeholder">
+                  {{ approval.afterImage }}
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <div class="to-drawer-section">
+            <h3>Checklist</h3>
+
+            <div class="to-checklist">
+              <label>
+                <p-checkbox [binary]="true" [ngModel]="approval.checklist[0]" [disabled]="true" />
+                <span>Technician reached site</span>
+              </label>
+
+              <label>
+                <p-checkbox [binary]="true" [ngModel]="approval.checklist[1]" [disabled]="true" />
+                <span>Repair completed</span>
+              </label>
+
+              <label>
+                <p-checkbox [binary]="true" [ngModel]="approval.checklist[2]" [disabled]="true" />
+                <span>After photo uploaded</span>
+              </label>
+
+              <label>
+                <p-checkbox [binary]="true" [ngModel]="approval.checklist[3]" [disabled]="true" />
+                <span>Sensor values recovered</span>
+              </label>
+            </div>
+
+            <p class="to-checklist-count">
+              {{ checklistCompleted(approval) }} / {{ checklistTotal(approval) }} completed
+            </p>
+          </div>
+
+          <div class="to-drawer-section">
+            <h3>Timeline</h3>
+            <to-timeline [items]="timeline()" />
+          </div>
+        </div>
+
+        <footer class="to-detail-actions">
+          <p-button
+            label="Return"
+            icon="pi pi-replay"
+            severity="secondary"
+            (click)="returnApproval()"
+          />
+
+          <p-button
+            label="Reject"
+            icon="pi pi-times"
+            severity="danger"
+            (click)="rejectApproval()"
+          />
+
+          <p-button
+            label="Approve & Close"
+            icon="pi pi-check"
+            (click)="approveApproval()"
+          />
+        </footer>
+      }
+    </section>
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    size="wide"
+    title="Approval Policy"
+    eyebrow="Closure Rules"
+    (closed)="closeDrawer()"
+  >
+    <div class="to-drawer-section">
+      <h3>Required Evidence</h3>
+
+      <div class="to-check-grid">
+        <label>
+          <p-checkbox [binary]="true" [ngModel]="true" />
+          <span>Before image required</span>
+        </label>
+
+        <label>
+          <p-checkbox [binary]="true" [ngModel]="true" />
+          <span>After image required</span>
+        </label>
+
+        <label>
+          <p-checkbox [binary]="true" [ngModel]="true" />
+          <span>Technician notes required</span>
+        </label>
+
+        <label>
+          <p-checkbox [binary]="true" [ngModel]="true" />
+          <span>Sensor recovery required</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="to-drawer-section">
+      <h3>Approval Levels</h3>
+
+      <div class="to-form-grid-wide">
+        <label>
+          <span>Critical Priority</span>
+          <input pInputText value="Tenant Admin + Super Admin" />
+        </label>
+
+        <label>
+          <span>High Priority</span>
+          <input pInputText value="Tenant Admin" />
+        </label>
+
+        <label>
+          <span>Medium Priority</span>
+          <input pInputText value="NOC Supervisor" />
+        </label>
+
+        <label>
+          <span>Low Priority</span>
+          <input pInputText value="Auto close after verification" />
+        </label>
+      </div>
+    </div>
+
+    <ng-container drawer-actions>
+      <p-button label="Cancel" severity="secondary" (click)="closeDrawer()" />
+      <p-button label="Save Policy" icon="pi pi-check" (click)="closeDrawer()" />
+    </ng-container>
+  </to-drawer>
+</section>

@@ -1,0 +1,195 @@
+<section class="to-dashboard-page" data-testid="dashboard-page">
+  <header class="to-dashboard-header">
+    <div>
+      <p class="to-eyebrow">{{ formatCategoryLabel(category()) }}</p>
+      <h1>{{ pageTitle() }}</h1>
+      <span>Live health, alerts and work orders for this network segment.</span>
+    </div>
+
+    <div class="to-header-actions">
+      <p class="to-sync-time">Last synced {{ formatLastSync() }}</p>
+      <p-button label="Refresh" icon="pi pi-refresh" size="small" [loading]="loading()"
+        (onClick)="refreshDashboard()" />
+    </div>
+  </header>
+
+  <div class="to-kpi-grid">
+    @for (kpi of kpis(); track kpi.label) {
+    <article class="to-kpi-card" [attr.data-testid]="kpi.testId">
+      <div>
+        <span>{{ kpi.label }}</span>
+        <strong>{{ kpi.value }}</strong>
+      </div>
+
+      <i [class]="kpi.icon"></i>
+    </article>
+    }
+  </div>
+
+  <div class="to-platform-grid">
+    <article class="to-card to-map-card">
+      <div class="to-card-header">
+        <div>
+          <p class="to-eyebrow">{{ formatCategoryLabel(category()) }} Network</p>
+          <h2>Live Site Map · {{ mapSites().length }}</h2>
+        </div>
+
+        <div class="to-map-legend">
+          <span><i class="healthy"></i>Healthy</span>
+          <span><i class="warning"></i>Warning</span>
+          <span><i class="critical"></i>Critical</span>
+          <span><i class="offline"></i>Offline</span>
+        </div>
+      </div>
+
+      <to-map [sites]="mapSites()" [height]="'420px'" [center]="mapCenter" [zoom]="mapZoom"
+        (siteSelected)="onMarkerSelected($event)" />
+    </article>
+
+    <aside class="to-side-stack">
+      <article class="to-card">
+        <div class="to-card-header">
+          <div>
+            <p class="to-eyebrow">Health</p>
+            <h2>Site Status</h2>
+          </div>
+        </div>
+
+        <div class="to-chart-box">
+          <p-chart type="doughnut" [data]="siteHealthChartData()" [options]="siteHealthChartOptions" />
+        </div>
+
+        <div class="to-distribution-legend">
+          @for (item of distribution(); track item.label) {
+          <span class="to-legend-item" [class]="item.tone">
+            <i></i>{{ item.label }} · {{ item.value }} ({{ item.percent }}%)
+          </span>
+          }
+        </div>
+      </article>
+
+      <article class="to-card">
+        <div class="to-card-header">
+          <div>
+            <p class="to-eyebrow">Recent</p>
+            <h2>Alerts</h2>
+          </div>
+
+          <button type="button" class="to-view-all" (click)="viewAlerts()">View all</button>
+        </div>
+
+        @for (alarm of alarms(); track alarm.title) {
+        <button type="button" class="to-alert-row" (click)="goTo('/alerts')">
+          <div>
+            <strong>{{ alarm.title }}</strong>
+            <span>{{ alarm.siteCode }} · {{ alarm.description }}</span>
+          </div>
+
+          <p-tag [value]="alarm.severity" [severity]="severityTag(alarm.severity)" />
+        </button>
+        }
+      </article>
+
+      <article class="to-card">
+        <div class="to-card-header">
+          <div>
+            <p class="to-eyebrow">Active</p>
+            <h2>Work Orders</h2>
+          </div>
+
+          <button type="button" class="to-view-all" (click)="viewWorkOrders()">View all</button>
+        </div>
+
+        @for (wo of activeWorkOrders(); track wo.id) {
+        <button type="button" class="to-alert-row" (click)="goTo('/work-orders/' + wo.id)">
+          <div>
+            <strong>{{ wo.id }} · {{ wo.title }}</strong>
+            <span>{{ wo.siteCode }} · {{ wo.engineer }}</span>
+          </div>
+
+          <p-tag [value]="wo.status" [severity]="statusSeverity(wo.status)" />
+        </button>
+        }
+      </article>
+    </aside>
+  </div>
+
+  <div class="to-secondary-grid">
+    <article class="to-card to-fuel-card">
+      <div class="to-card-header">
+        <div>
+          <p class="to-eyebrow">Generators</p>
+          <h2>Fuel Levels · Avg {{ avgFuel() }}%</h2>
+        </div>
+      </div>
+
+      @for (row of fuelRows(); track row.code) {
+      <div class="to-fuel-row">
+        <div>
+          <strong>{{ row.name }}</strong>
+          <span>{{ row.code }}</span>
+        </div>
+
+        <div class="to-fuel-bar">
+          <div class="to-fuel-bar__fill" [class]="row.tone" [style.width.%]="row.value"></div>
+        </div>
+
+        <b>{{ row.value }}%</b>
+      </div>
+      }
+    </article>
+
+    <article class="to-card to-trend-card">
+      <div class="to-card-header">
+        <div>
+          <p class="to-eyebrow">This Week</p>
+          <h2>Alarm Trend</h2>
+        </div>
+
+        <button type="button" class="to-view-all" (click)="viewMonitoring()">Monitoring</button>
+      </div>
+
+      <div class="to-chart-box to-chart-box--tall">
+        <p-chart type="bar" [data]="alarmTrendChartData" [options]="alarmTrendChartOptions" />
+      </div>
+    </article>
+  </div>
+
+  <article class="to-card to-sites-card">
+    <div class="to-card-header">
+      <div>
+        <p class="to-eyebrow">{{ formatCategoryLabel(category()) }}</p>
+        <h2>Site Directory</h2>
+      </div>
+    </div>
+
+    <div class="to-site-table">
+      <div class="to-site-table__head">
+        <span>Site</span>
+        <span>Devices</span>
+        <span>Fuel</span>
+        <span>Battery</span>
+        <span>Last Seen</span>
+        <span>Status</span>
+      </div>
+
+      @for (site of siteRows(); track site.id) {
+      <button type="button" class="to-site-table__row" (click)="openSite(site)">
+        <span>
+          <strong>{{ site.siteName }}</strong>
+          <small>{{ site.siteCode }}</small>
+        </span>
+
+        <span>{{ site.deviceCount }}</span>
+        <span>{{ site.fuel }}%</span>
+        <span>{{ site.battery }}%</span>
+        <span>{{ site.lastSeen }}</span>
+
+        <span>
+          <p-tag [value]="siteHealthLabel(site.health)" [severity]="siteHealthSeverity(site.health)" />
+        </span>
+      </button>
+      }
+    </div>
+  </article>
+</section>

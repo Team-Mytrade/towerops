@@ -1,5 +1,6 @@
 :host {
   display: block;
+<<<<<<< HEAD
 }
 
 .to-topbar {
@@ -16,15 +17,38 @@
 
 :host-context(.to-dark) .to-topbar {
   background: rgba(2, 6, 23, 0.78);
+=======
+  position: sticky;
+  top: 0;
+  z-index: 60;
 }
 
-.to-topbar__left,
-.to-topbar__right {
+.to-topbar {
+  height: 60px;
+  padding: 0 18px;
+
   display: flex;
   align-items: center;
-  min-width: 0;
+  gap: 10px;
+
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(18px);
+
+  border-bottom: 1px solid #e8eef6;
+>>>>>>> 07f97517238968882332611f88686810fc127484
 }
 
+.to-topbar__btn,
+.to-topbar__search,
+.to-topbar__tenant,
+.to-avatar {
+  height: 38px;
+  border: 1px solid #e8eef6;
+  background: #fff;
+  color: #334155;
+  border-radius: 12px;
+
+<<<<<<< HEAD
 .to-topbar__left {
   flex: 1;
   gap: 14px;
@@ -374,5 +398,88 @@
 
   .to-topbar__left {
     flex: 0 0 auto;
+=======
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+.to-topbar__btn {
+  width: 38px;
+  position: relative;
+}
+
+.to-topbar__search {
+  width: min(420px, 40vw);
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 12px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.to-topbar__spacer {
+  flex: 1;
+}
+
+.to-topbar__tenant {
+  gap: 8px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.to-avatar {
+  width: 38px;
+  border: 0;
+  color: #fff;
+  font-family: var(--to-font-heading);
+  font-size: 12px;
+  font-weight: 800;
+  background: var(--to-brand-gradient);
+}
+
+.to-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+
+  width: 7px;
+  height: 7px;
+
+  border-radius: 999px;
+  background: var(--to-danger);
+  border: 2px solid #fff;
+}
+
+.to-topbar__btn:hover,
+.to-topbar__search:hover,
+.to-topbar__tenant:hover {
+  background: #f8fbff;
+  border-color: rgba(0, 82, 255, 0.22);
+}
+
+@media (max-width: 768px) {
+  .to-topbar {
+    padding: 0 12px;
+  }
+
+  .to-topbar__search {
+    width: 38px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .to-topbar__search span,
+  .to-topbar__tenant span {
+    display: none;
+  }
+
+  .to-topbar__tenant {
+    width: 38px;
+    padding: 0;
+>>>>>>> 07f97517238968882332611f88686810fc127484
   }
 }

@@ -1,0 +1,101 @@
+:host {
+  display: block;
+}
+
+input[pInputText] {
+  width: 280px;
+}
+
+.to-card {
+  overflow: hidden;
+}
+
+:host ::ng-deep .to-prime-table tbody tr {
+  cursor: pointer;
+}
+
+:host ::ng-deep .to-prime-table td strong {
+  display: block;
+  font-weight: 500;
+  color: var(--to-text);
+}
+
+:host ::ng-deep .to-prime-table td span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--to-muted);
+}
+
+:host ::ng-deep .to-tenant-drawer {
+  width: min(440px, 100%);
+}
+
+:host ::ng-deep .to-tenant-drawer .p-drawer-header h2 {
+  margin: 3px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.to-drawer-section {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--to-border-soft);
+}
+
+.to-drawer-section h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--to-text);
+}
+.to-detail-grid,
+.to-form-grid {
+      display: flex !important;
+    gap: 12px;
+    flex-direction: column !important;
+}
+
+.to-form-grid label {
+  display: grid;
+  gap: 6px;
+}
+
+.to-form-grid span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--to-muted);
+}
+
+.to-drawer-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+@media (max-width: 640px) {
+  input[pInputText] {
+    width: 100%;
+  }
+}
+
+.to-check-list {
+  display: grid;
+  gap: 10px;
+}
+
+.to-check-list label {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--to-text);
+  font-size: 13px;
+}
+
+.to-check-list input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--to-primary);
+}

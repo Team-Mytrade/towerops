@@ -1,0 +1,205 @@
+<section class="to-page" data-testid="device-models-page">
+  <header class="to-page-header">
+    <div>
+      <h1 class="to-page-title">Device Models</h1>
+      <p class="to-page-description">
+        View registered device models and mapped device credentials.
+      </p>
+    </div>
+
+    <p-button
+      label="Refresh"
+      icon="pi pi-refresh"
+      severity="secondary"
+      [loading]="loading()"
+      data-testid="refresh-device-models-btn"
+      (click)="loadPageData()"
+    />
+  </header>
+
+  <div class="to-toolbar">
+    <div class="to-toolbar-left">
+      <input
+        pInputText
+        type="search"
+        placeholder="Search models..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        data-testid="device-model-search-input"
+      />
+
+      <p-select
+        [options]="categoryOptions"
+        [ngModel]="categoryFilter()"
+        (ngModelChange)="categoryFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Category"
+        appendTo="body"
+        data-testid="device-model-category-filter"
+      />
+    </div>
+  </div>
+
+  <div class="to-card">
+    <p-table
+      [value]="filteredModels()"
+      dataKey="id"
+      [rowHover]="true"
+      [loading]="loading()"
+      styleClass="to-prime-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Model</th>
+          <th>Manufacturer</th>
+          <th>Category</th>
+          <th>Firmware</th>
+          <th>Credentials</th>
+          <th>Status</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-model>
+        <tr
+          role="button"
+          tabindex="0"
+          [attr.data-testid]="'device-model-row-' + model.id"
+          (click)="openModel(model)"
+        >
+          <td>
+            <strong>{{ model.modelName }}</strong>
+            <span>{{ model.modelCode }}</span>
+          </td>
+
+          <td>{{ model.manufacturer || '-' }}</td>
+          <td>{{ model.category || '-' }}</td>
+          <td>{{ model.firmwareVersion || '-' }}</td>
+          <td>{{ credentialCount(model) }}</td>
+
+          <td>
+            <to-status-badge
+              [label]="statusLabel(model.enabled)"
+              [tone]="statusTone(model.enabled)"
+            />
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6">No device models found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <div class="to-card mt-6">
+    <header class="to-card-header">
+      <div>
+        <h2 class="to-card-title">Device Credentials</h2>
+        <p>
+          @if (selectedModel()) {
+            Showing credentials for {{ selectedModel()?.modelName }}
+          } @else {
+            Showing all credentials
+          }
+        </p>
+      </div>
+    </header>
+
+    <p-table
+      [value]="filteredCredentials()"
+      dataKey="id"
+      [rowHover]="true"
+      [loading]="loading()"
+      styleClass="to-prime-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Device</th>
+          <th>Tenant</th>
+          <th>Type</th>
+          <th>Model</th>
+          <th>Status</th>
+          <th>Updated</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-credential>
+        <tr
+          role="button"
+          tabindex="0"
+          [attr.data-testid]="'device-credential-row-' + credential.id"
+          (click)="openCredential(credential)"
+        >
+          <td>
+            <strong>{{ credential.deviceId }}</strong>
+            <span>ID: {{ credential.id }}</span>
+          </td>
+
+          <td>{{ credential.tenantId }}</td>
+          <td>{{ credential.deviceType || '-' }}</td>
+          <td>{{ credential.model || '-' }}</td>
+
+          <td>
+            <to-status-badge
+              [label]="statusLabel(credential.active)"
+              [tone]="statusTone(credential.active)"
+            />
+          </td>
+
+          <td>{{ formatDate(credential.updatedAt) }}</td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6">No credentials found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <to-drawer
+    [open]="drawerOpen()"
+    size="compact"
+    [title]="drawerTitle"
+    [eyebrow]="drawerEyebrow"
+    (closed)="closeDrawer()"
+  >
+    @if (drawerMode() === 'modelDetails' && selectedModel(); as model) {
+      <div class="to-detail-grid">
+        <to-detail-field label="Model Code" [value]="model.modelCode" />
+        <to-detail-field label="Model Name" [value]="model.modelName" />
+        <to-detail-field label="Manufacturer" [value]="model.manufacturer || '-'" />
+        <to-detail-field label="Category" [value]="model.category || '-'" />
+        <to-detail-field label="Firmware" [value]="model.firmwareVersion || '-'" />
+        <to-detail-field label="Description" [value]="model.description || '-'" />
+        <to-detail-field label="Status" [value]="statusLabel(model.enabled)" />
+        <to-detail-field label="Credential Count" [value]="credentialCount(model)" />
+      </div>
+    }
+
+    @if (drawerMode() === 'credentialDetails' && selectedCredential(); as credential) {
+      <div class="to-detail-grid">
+        <to-detail-field label="Credential ID" [value]="credential.id" />
+        <to-detail-field label="Device ID" [value]="credential.deviceId" />
+        <to-detail-field label="Tenant" [value]="credential.tenantId" />
+        <to-detail-field label="Device Type" [value]="credential.deviceType || '-'" />
+        <to-detail-field label="Model" [value]="credential.model || '-'" />
+        <to-detail-field label="Status" [value]="statusLabel(credential.active)" />
+        <to-detail-field label="Created" [value]="formatDate(credential.createdAt)" />
+        <to-detail-field label="Updated" [value]="formatDate(credential.updatedAt)" />
+      </div>
+    }
+
+    <ng-container drawer-actions>
+      <p-button
+        label="Close"
+        severity="secondary"
+        (click)="closeDrawer()"
+      />
+    </ng-container>
+  </to-drawer>
+</section>

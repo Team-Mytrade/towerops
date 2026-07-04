@@ -1,17 +1,7 @@
 export const environment = {
   production: false,
-  appName: 'TowerOps',
-  apiUrl: '/api',
-  useMockApi: true,
-  useMockAuth: true,
-
-  realtime: {
-    websocketUrl: 'ws://localhost:8080/ws',
-    mqtt: {
-      brokerUrl: 'ws://localhost:9001/mqtt',
-      username: '',
-      password: '',
-      clientIdPrefix: 'towerops-web',
-    },
-  },
+  appName: 'TowerOps [DEV]',
+  apiUrl: 'http://193.181.209.14:8787/api',
+  rootUrl: 'http://193.181.209.14:8787',
+  useMockData: true,
 };
